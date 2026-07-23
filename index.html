@@ -2397,12 +2397,13 @@ function updatePinDots(){
   }
 }
 function checkPin(){
-  const saved=S.g('i_parol')||'';
+  /* eski versiyalarda PIN raqam bo'lib saqlangan bo'lishi mumkin — matnga keltirib solishtiramiz */
+  var _sv=S.g('i_parol'); const saved=(_sv===null||_sv===undefined)?'':String(_sv).trim();
   if(_pinVal.length<4){
     const el=document.getElementById('pin-error');if(el){el.textContent='4 raqam kiriting';el.style.display='block';}
     return;
   }
-  if(_pinVal===saved){
+  if(String(_pinVal)===saved){
     _locked=false;
     S.s('i_parol_ok',Date.now());sessionStorage.setItem('i_pin_session','1');
     closeM('parol-kirish-modal');_pinVal='';updatePinDots();
@@ -2434,7 +2435,7 @@ function removeParol(){
   });
 }
 function openLock(){
-  const p=S.g('i_parol')||'';
+  var _p=S.g('i_parol'); const p=(_p===null||_p===undefined)?'':String(_p).trim();
   if(!p)return;
   _locked=true;_pinVal='';
   try{ document.querySelectorAll('.moverlay.open').forEach(function(x){ if(x.id!=='parol-kirish-modal') x.classList.remove('open'); }); }catch(e){}
