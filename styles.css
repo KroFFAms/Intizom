@@ -133,6 +133,9 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 /* PROGRESS RING */
 .prog-ring{position:relative;width:80px;height:80px}
 .prog-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.m-x{position:absolute;top:10px;right:12px;z-index:9;width:34px;height:34px;border-radius:50%;border:none;background:var(--bg);color:var(--t2);font-size:15px;line-height:1;cursor:pointer;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center}
+.m-x:active{transform:scale(.9)}
+
 /* ASOSIY OYNA — bir xil ikonka to'ri */
 .hgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .htile{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px 5px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:transform .12s}

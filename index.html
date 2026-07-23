@@ -8908,6 +8908,30 @@ function cloudBackupPull(){
   }).catch(function(e){ _setCloudStatus('Xato: '+(e.message||e)); showNotif('\u26A0\uFE0F','Bulut xatosi'); });
 }
 
+/* ===== HAR BIR OYNAGA YOPISH TUGMASI ===== */
+function _ensureCloseButtons(){
+  var skip={'parol-kirish-modal':1};              /* qulf ekrani ataylab yopilmaydi */
+  document.querySelectorAll('.moverlay').forEach(function(ov){
+    if(skip[ov.id]) return;
+    var m=ov.querySelector('.modal'); if(!m) return;
+    if(m.querySelector('.m-x')) return;
+    /* allaqachon yopish/bekor/to'xtatish tugmasi bormi? */
+    var has=false, all=m.querySelectorAll('[onclick]');
+    for(var i=0;i<all.length;i++){
+      var oc=all[i].getAttribute('onclick')||'';
+      if(oc.indexOf('closeM(')>=0 || oc.indexOf('stopMini')>=0 || oc.indexOf('closeKal')>=0){ has=true; break; }
+    }
+    if(has) return;
+    var b=document.createElement('button');
+    b.className='m-x'; b.type='button'; b.setAttribute('aria-label','Yopish');
+    b.innerHTML='&#10005;';
+    b.addEventListener('click',function(e){ e.stopPropagation(); try{closeM(ov.id);}catch(err){ ov.classList.remove('open'); } });
+    if(getComputedStyle(m).position==='static') m.style.position='relative';
+    m.insertBefore(b, m.firstChild);
+  });
+}
+try{ _ensureCloseButtons(); }catch(e){}
+
 /* ===== BOSHLASH ===== */
 try{ applyHomeWidgets(); }catch(e){}
 try{ updateNotifDesc(); }catch(e){}
