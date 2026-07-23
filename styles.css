@@ -133,6 +133,18 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 /* PROGRESS RING */
 .prog-ring{position:relative;width:80px;height:80px}
 .prog-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+/* ASOSIY OYNA — bir xil ikonka to'ri */
+.hgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.htile{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px 5px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:transform .12s}
+.htile:active{transform:scale(.94)}
+.hticon{display:flex;justify-content:center;align-items:center;height:24px}
+.hticon svg{width:22px;height:22px}
+.htlbl{font-size:10px;font-weight:600;color:var(--text);margin-top:6px;line-height:1.25;word-break:break-word}
+.hstrip{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px 14px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+
+/* QULF EKRANI — to'liq ekran, markazda (pastki "sheet" emas) */
+#parol-kirish-modal{align-items:center;justify-content:center;background:var(--bg);backdrop-filter:none;padding:20px}
+#parol-kirish-modal .modal{border-radius:24px;max-width:340px;margin:0 auto;max-height:none;box-shadow:none;background:transparent;padding:0;overflow:visible}
 .pin-btn{padding:16px;border-radius:16px;border:1.5px solid var(--bd);background:var(--card);font-size:22px;font-weight:600;cursor:pointer;color:var(--text);transition:all .15s;box-shadow:var(--shadow)}
 .pin-btn:active{transform:scale(.92);background:var(--g);color:#fff;border-color:var(--g)}
 @keyframes shake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-6px)}50%{transform:translateX(6px)}}

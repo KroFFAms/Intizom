@@ -222,170 +222,73 @@
     </div>
   </div>
   <div style="padding:16px">
-    <!-- Ob-havo -->
-    <div data-hw="obhavo" onclick="loadObhavo()" style="background:linear-gradient(135deg,#0EA5E9,#0284C7);border-radius:18px;padding:14px 18px;margin-bottom:14px;color:#fff;cursor:pointer;box-shadow:var(--shadow-lg)">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div id="ob-loc" style="font-size:11px;opacity:.75">📍 Aniqlanmoqda...</div>
-          <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px">
-            <div id="ob-temp" style="font-size:38px;font-weight:800;line-height:1;letter-spacing:-2px">--°</div>
-            <div id="ob-desc" style="font-size:13px;opacity:.85">Yuklanmoqda</div>
-          </div>
+
+    <div data-hw="obhavo" onclick="loadObhavo()" class="hstrip">
+      <div id="ob-icon" style="font-size:26px;line-height:1">&#127780;&#65039;</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <span id="ob-temp" style="font-size:20px;font-weight:800;color:var(--text)">--&deg;</span>
+          <span id="ob-desc" style="font-size:12px;color:var(--t2)">Yuklanmoqda</span>
         </div>
-        <div style="text-align:right">
-          <div id="ob-icon" style="font-size:50px;line-height:1">🌤️</div>
-          <div style="display:flex;gap:10px;margin-top:4px;justify-content:flex-end">
-            <span style="font-size:11px;opacity:.7">💧<span id="ob-hum">--</span>%</span>
-            <span style="font-size:11px;opacity:.7">💨<span id="ob-spd">--</span>m/s</span>
-          </div>
-        </div>
+        <div id="ob-loc" style="font-size:11px;color:var(--t2)">Aniqlanmoqda...</div>
       </div>
-    </div>
-    <!-- Motivatsiya -->
-    <div data-hw="motiv" onclick="nextMotiv()" style="background:linear-gradient(135deg,var(--navy),var(--nl));border-radius:18px;padding:16px;margin-bottom:14px;cursor:pointer;box-shadow:var(--shadow-lg)">
-      <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:6px;letter-spacing:1px">💬 KUNLIK IQTIBOS</div>
-      <div id="b-motiv" style="font-size:14px;font-weight:500;color:#fff;line-height:1.6;font-style:italic"></div>
-      <div id="b-motiv-a" style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px;text-align:right"></div>
-    </div>
-    <!-- Tezkor havolalar -->
-    <div data-hw="tezkor" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
-      <div onclick="gotoPage('odat',document.getElementById('nav-odat'))" style="background:var(--card);border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:var(--shadow);border:1px solid var(--bd)"><div style="margin-bottom:6px;color:#F97316;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3-1 4-2 6s0 4 2 4c1 0 1.8-1 1.8-2.8C16 11 17 13 17 16a5 5 0 11-10 0c0-3 2-5 3-7 1-2 1-4 2-6z"/></svg></div><div style="font-size:11px;font-weight:600;color:var(--text)">Odat</div></div>
-      <div onclick="gotoPage('reja',document.getElementById('nav-reja'))" style="background:var(--card);border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:var(--shadow);border:1px solid var(--bd)"><div style="margin-bottom:6px;color:#3B82F6;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 13l2 2 4-4"/></svg></div><div style="font-size:11px;font-weight:600;color:var(--text)">Reja</div></div>
-      <div onclick="gotoPage('din',document.getElementById('nav-din'))" style="background:var(--card);border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:var(--shadow);border:1px solid var(--bd)"><div style="margin-bottom:6px;color:#8B5CF6;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4a8 8 0 100 16 6 6 0 010-16z"/><path d="M18.5 4.5l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3L16.5 6.3l1.3-.5z" fill="currentColor" stroke="none"/></svg></div><div style="font-size:11px;font-weight:600;color:var(--text)">Namoz</div></div>
-      <div onclick="gotoPage('moliya',document.getElementById('nav-moliya'))" style="background:var(--card);border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:var(--shadow);border:1px solid var(--bd)"><div style="margin-bottom:6px;color:#10B981;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.2"/></svg></div><div style="font-size:11px;font-weight:600;color:var(--text)">Moliya</div></div>
+      <div style="text-align:right;font-size:11px;color:var(--t2);line-height:1.5">
+        <div>&#128167; <span id="ob-hum">--</span>%</div>
+        <div>&#128168; <span id="ob-spd">--</span> m/s</div>
+      </div>
     </div>
 
-    <!-- Yangi funksiyalar qatori -->
-    <div data-hw="funksiya" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
-      <div onclick="openMoodModal()" style="background:linear-gradient(135deg,#EC4899,#F43F5E);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:var(--shadow)">
-        <div id="bosh-mood-icon" style="font-size:22px;margin-bottom:4px">😊</div>
-        <div style="font-size:10px;font-weight:700;color:#fff">Kayfiyat</div>
-      </div>
-      <div onclick="openM('ai-reja-modal')" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:var(--shadow)">
-        <div style="margin-bottom:4px;color:#fff;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1.4"/><circle cx="9.3" cy="13" r="1.1" fill="currentColor" stroke="none"/><circle cx="14.7" cy="13" r="1.1" fill="currentColor" stroke="none"/><path d="M9.5 16h5"/></svg></div>
-        <div style="font-size:10px;font-weight:700;color:#fff">AI Reja</div>
-      </div>
-      <div onclick="openMissionModal()" style="background:linear-gradient(135deg,#F59E0B,#EF4444);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:var(--shadow)">
-        <div style="margin-bottom:4px;color:#fff;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div>
-        <div id="mission-badge" style="font-size:10px;font-weight:700;color:#fff">Missiya</div>
-      </div>
-      <div onclick="openLeaderModal()" style="background:linear-gradient(135deg,#FFD700,#FF8C00);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:var(--shadow)">
-        <div style="margin-bottom:4px;color:#fff;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 01-10 0V4z"/><path d="M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3M10 18v-3M14 18v-3M8 21h8"/></svg></div>
-        <div style="font-size:10px;font-weight:700;color:#000">Reyting</div>
-      </div>
+    <div data-hw="motiv" onclick="nextMotiv()" class="hstrip" style="display:block">
+      <div id="b-motiv" style="font-size:13px;color:var(--text);line-height:1.6;font-style:italic"></div>
+      <div id="b-motiv-a" style="font-size:11px;color:var(--t2);margin-top:4px;text-align:right"></div>
     </div>
-    <!-- Oila -->
-    <div data-hw="oila" onclick="gotoPage('oila',null)" style="background:linear-gradient(135deg,#8B5CF6,#EC4899);border-radius:18px;padding:16px;margin-bottom:14px;cursor:pointer;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:14px">
-      <div style="font-size:34px">👨‍👩‍👧</div>
-      <div style="flex:1"><div style="font-size:15px;font-weight:800;color:#fff">Oila</div><div style="font-size:12px;color:rgba(255,255,255,.85)">A'zolar · challenge · vazifa · taqvim</div></div>
-      <div style="color:#fff;font-size:22px">›</div>
+
+    <div class="hgrid">
+      <div data-hw="odat" onclick="gotoPage('odat',document.getElementById('nav-odat'))" class="htile"><div class="hticon" style="color:#F97316"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3-1 4-2 6s0 4 2 4c1 0 1.8-1 1.8-2.8C16 11 17 13 17 16a5 5 0 11-10 0c0-3 2-5 3-7 1-2 1-4 2-6z"/></svg></div><div class="htlbl">Odat</div></div>
+      <div data-hw="reja" onclick="gotoPage('reja',document.getElementById('nav-reja'))" class="htile"><div class="hticon" style="color:#3B82F6"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 13l2 2 4-4"/></svg></div><div class="htlbl">Reja</div></div>
+      <div data-hw="namoz" onclick="gotoPage('din',document.getElementById('nav-din'))" class="htile"><div class="hticon" style="color:#8B5CF6"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4a8 8 0 100 16 6 6 0 010-16z"/><path d="M18.5 4.5l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3L16.5 6.3l1.3-.5z" fill="currentColor" stroke="none"/></svg></div><div class="htlbl">Namoz</div></div>
+      <div data-hw="moliya" onclick="gotoPage('moliya',document.getElementById('nav-moliya'))" class="htile"><div class="hticon" style="color:#10B981"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.2"/></svg></div><div class="htlbl">Moliya</div></div>
+      <div data-hw="kayfiyat" onclick="openMoodModal()" class="htile"><div class="hticon" style="color:#EC4899"><span id="bosh-mood-icon" style="font-size:22px;line-height:1">&#128522;</span></div><div class="htlbl">Kayfiyat</div></div>
+      <div data-hw="suv" onclick="openSuvModal()" class="htile"><div class="hticon" style="color:#0EA5E9"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7 6 11a6 6 0 11-12 0c0-4 3-7 6-11z"/></svg></div><div class="htlbl"><span id="suv-bosh-lbl">Suv</span></div></div>
+      <div data-hw="dori" onclick="openM('dori-modal');renderDoriList()" class="htile"><div class="hticon" style="color:#EF4444"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="8" rx="4"/><path d="M12 8v8"/></svg></div><div class="htlbl">Dori</div></div>
+      <div data-hw="eslatma" onclick="openM('eslatma-modal');renderEslatmalar()" class="htile"><div class="hticon" style="color:#64748B"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4"/></svg></div><div class="htlbl">Eslatma</div></div>
+      <div data-hw="xarid" onclick="openM('xarid-modal');renderXaridList()" class="htile"><div class="hticon" style="color:#F97316"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="20" r="1.4" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.4" fill="currentColor" stroke="none"/><path d="M3 4h2l2.4 11h10l1.8-8H6.2"/></svg></div><div class="htlbl">Xarid</div></div>
+      <div data-hw="kundalik" onclick="gotoPage('jurnal',null)" class="htile"><div class="hticon" style="color:#0EA5E9"><span style="font-size:22px;line-height:1">&#128214;</span></div><div class="htlbl">Kundalik</div></div>
+      <div data-hw="kitoblar" onclick="openM('kitob-modal');renderKitobList()" class="htile"><div class="hticon" style="color:#8B5CF6"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a2 2 0 012 2v14H7a2 2 0 01-2-2V4z"/><path d="M5 18a2 2 0 012-2h11"/></svg></div><div class="htlbl">Kitoblar</div></div>
+      <div data-hw="inglizcha" onclick="openM('til-modal');renderTilBugun()" class="htile"><div class="hticon" style="color:#10B981"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-4 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg></div><div class="htlbl">Inglizcha</div></div>
+      <div data-hw="oila" onclick="gotoPage('oila',null)" class="htile"><div class="hticon" style="color:#EC4899"><span style="font-size:22px;line-height:1">&#128104;&#8205;&#128105;&#8205;&#128103;</span></div><div class="htlbl">Oila</div></div>
+      <div data-hw="tugilgankun" onclick="openM('oila-modal');renderOilaList()" class="htile"><div class="hticon" style="color:#F472B6"><span style="font-size:22px;line-height:1">&#127874;</span></div><div class="htlbl">Tug'ilgan kun</div></div>
+      <div data-hw="dua" onclick="openM('dua-modal');renderDuaList('kundalik')" class="htile"><div class="hticon" style="color:#7C6BE8"><span style="font-size:22px;line-height:1">&#129330;</span></div><div class="htlbl">Dua</div></div>
+      <div data-hw="aireja" onclick="openM('ai-reja-modal')" class="htile"><div class="hticon" style="color:#6366F1"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1.4"/><circle cx="9.3" cy="13" r="1.1" fill="currentColor" stroke="none"/><circle cx="14.7" cy="13" r="1.1" fill="currentColor" stroke="none"/><path d="M9.5 16h5"/></svg></div><div class="htlbl">AI Reja</div></div>
+      <div data-hw="missiya" onclick="openMissionModal()" class="htile"><div class="hticon" style="color:#F59E0B"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div><div class="htlbl"><span id="mission-badge">Missiya</span></div></div>
+      <div data-hw="reyting" onclick="openLeaderModal()" class="htile"><div class="hticon" style="color:#E8A200"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 01-10 0V4z"/><path d="M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3M10 18v-3M14 18v-3M8 21h8"/></svg></div><div class="htlbl">Reyting</div></div>
+      <div data-hw="spin" onclick="openSpinWheel()" class="htile"><div class="hticon" style="color:#FF6B35"><span style="font-size:22px;line-height:1">&#127905;</span></div><div class="htlbl">Omad</div></div>
+      <div data-hw="viktorina" onclick="openViktorina()" class="htile"><div class="hticon" style="color:#06B6D4"><span style="font-size:22px;line-height:1">&#129504;</span></div><div class="htlbl">Viktorina</div></div>
+      <div data-hw="mashq60" onclick="openMiniChallenge()" class="htile"><div class="hticon" style="color:#10B981"><span style="font-size:22px;line-height:1">&#9889;</span></div><div class="htlbl">60 soniya</div></div>
+      <div data-hw="avatar" onclick="openAvatar()" class="htile"><div class="hticon" style="color:#8B5CF6"><span id="avatar-display" style="font-size:22px;line-height:1">&#129489;</span></div><div class="htlbl">Avatarim</div></div>
+      <div data-hw="kunsir" onclick="openKunSir()" class="htile"><div class="hticon" style="color:#A855F7"><span style="font-size:22px;line-height:1">&#11088;</span></div><div class="htlbl">Kun siri</div></div>
     </div>
-    <div data-hw="kundalik" onclick="gotoPage('jurnal',null)" style="background:linear-gradient(135deg,#0EA5E9,#22C55E);border-radius:18px;padding:16px;margin-bottom:14px;cursor:pointer;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:14px">
-      <div style="font-size:34px">&#128214;</div>
-      <div style="flex:1"><div style="font-size:15px;font-weight:800;color:#fff">Kundalik</div><div style="font-size:12px;color:rgba(255,255,255,.85)">Kundalik &middot; g&#39;oya &middot; ilm &middot; shukr &middot; maqsad</div></div>
-      <div style="color:#fff;font-size:22px">›</div>
-    </div>
-    <!-- Sog'liq va kundalik hayot -->
-    <div data-hw="sogliq" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
-      <div onclick="openSuvModal()" style="background:linear-gradient(135deg,#0EA5E9,#0284C7);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:var(--shadow)">
-        <div style="margin-bottom:4px;color:#fff;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7 6 11a6 6 0 11-12 0c0-4 3-7 6-11z"/></svg></div>
-        <div id="suv-bosh-lbl" style="font-size:10px;font-weight:700;color:#fff">Suv</div>
-      </div>
-      <div onclick="openM('dori-modal');renderDoriList()" style="background:linear-gradient(135deg,#EF4444,#DC2626);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:var(--shadow)">
-        <div style="margin-bottom:4px;color:#fff;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="8" rx="4"/><path d="M12 8v8"/></svg></div>
-        <div style="font-size:10px;font-weight:700;color:#fff">Dori</div>
-      </div>
-      <div onclick="openM('xarid-modal');renderXaridList()" style="background:linear-gradient(135deg,#F97316,#EA580C);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:var(--shadow)">
-        <div style="margin-bottom:4px;color:#fff;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="20" r="1.4" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.4" fill="currentColor" stroke="none"/><path d="M3 4h2l2.4 11h10l1.8-8H6.2"/></svg></div>
-        <div style="font-size:10px;font-weight:700;color:#fff">Xarid</div>
-      </div>
-      <div onclick="openM('eslatma-modal');renderEslatmalar()" style="background:linear-gradient(135deg,#64748B,#475569);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:var(--shadow)">
-        <div style="margin-bottom:4px;color:#fff;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4"/></svg></div>
-        <div style="font-size:10px;font-weight:700;color:#fff">Eslatma</div>
-      </div>
-    </div>
-    <!-- Ta'lim va oila -->
-    <div data-hw="talim" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
-      <div onclick="openM('kitob-modal');renderKitobList()" style="background:linear-gradient(135deg,#8B5CF6,#6366F1);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:var(--shadow)">
-        <div style="margin-bottom:4px;color:#fff;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a2 2 0 012 2v14H7a2 2 0 01-2-2V4z"/><path d="M5 18a2 2 0 012-2h11"/></svg></div>
-        <div style="font-size:10px;font-weight:700;color:#fff">Kitoblar</div>
-      </div>
-      <div onclick="openM('til-modal');renderTilBugun()" style="background:linear-gradient(135deg,#10B981,#059669);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:var(--shadow)">
-        <div style="margin-bottom:4px;color:#fff;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-4 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg></div>
-        <div style="font-size:10px;font-weight:700;color:#fff">Inglizcha</div>
-      </div>
-      <div onclick="openM('oila-modal');renderOilaList()" style="background:linear-gradient(135deg,#EC4899,#BE185D);border-radius:16px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:var(--shadow)">
-        <div style="margin-bottom:4px;color:#fff;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.4"/><circle cx="16" cy="8" r="2.4"/><path d="M3.5 19c0-2.5 2-4.4 4.5-4.4S12.5 16.5 12.5 19M12.5 18.5c.4-1.9 2-3.4 4-3.4 2.2 0 4 1.8 4 4"/></svg></div>
-        <div style="font-size:10px;font-weight:700;color:#fff">Oila</div>
-      </div>
-    </div>
-    <!-- Din -->
-    <div data-hw="dua" onclick="openM('dua-modal');renderDuaList('kundalik')" style="background:linear-gradient(135deg,#1a1a3e,#2d2d6b);border-radius:16px;padding:14px 16px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-lg)">
-      <div style="font-size:32px">🤲</div>
-      <div>
-        <div style="font-size:14px;font-weight:700;color:#fff">Dua Kitobchasi</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.6)">Kundalik duolar · Ibodatdan keyin · Shifo · Rizq</div>
-      </div>
-      <div style="margin-left:auto;color:rgba(255,255,255,.4);font-size:18px">›</div>
-    </div>
-    <!-- Bugungi reja preview -->
+
     <div data-hw="bugunreja" class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <div class="sec-title" style="margin-bottom:0">Bugungi reja</div>
-        <button onclick="gotoPage('reja',document.getElementById('nav-reja'))" style="font-size:12px;color:var(--g);background:none;border:none;cursor:pointer;font-weight:600">Hammasi →</button>
+        <button onclick="gotoPage('reja',document.getElementById('nav-reja'))" style="font-size:12px;color:var(--g);background:none;border:none;cursor:pointer;font-weight:600">Hammasi &rarr;</button>
       </div>
       <div id="b-reja-list"></div>
     </div>
 
-    <!-- 🌟 KUN SIRI -->
-    <div data-hw="kunsir" id="kun-sir-card" onclick="openKunSir()" style="background:linear-gradient(135deg,#1a0533,#2d1060);border-radius:20px;padding:18px;margin-bottom:14px;cursor:pointer;box-shadow:0 8px 32px rgba(139,92,246,.3);border:1px solid rgba(139,92,246,.3);position:relative;overflow:hidden">
-      <div style="position:absolute;top:-20px;right:-20px;font-size:80px;opacity:.08">⭐</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:2px;margin-bottom:8px">✨ KUN SIRI</div>
-      <div id="kun-sir-preview" style="font-size:15px;font-weight:700;color:#fff;line-height:1.5">Bosing va bugungi sirni oching...</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px">Har kuni yangi sir 🔮</div>
-    </div>
-
-    <!-- 🎮 O'YIN QATORI -->
-    <div data-hw="oyin" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <!-- Spin Wheel -->
-      <div onclick="openSpinWheel()" style="background:linear-gradient(135deg,#FF6B35,#F97316);border-radius:18px;padding:16px;cursor:pointer;box-shadow:var(--shadow);text-align:center">
-        <div style="font-size:36px;margin-bottom:6px">🎡</div>
-        <div style="font-size:13px;font-weight:800;color:#fff">Omad g'ildiragi</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.7);margin-top:3px">Bugungi vazifani aylantir</div>
-      </div>
-      <!-- Viktorina -->
-      <div onclick="openViktorina()" style="background:linear-gradient(135deg,#06B6D4,#0284C7);border-radius:18px;padding:16px;cursor:pointer;box-shadow:var(--shadow);text-align:center">
-        <div style="font-size:36px;margin-bottom:6px">🧠</div>
-        <div style="font-size:13px;font-weight:800;color:#fff">Viktorina</div>
-        <div id="vikt-ball-lbl" style="font-size:10px;color:rgba(255,255,255,.7);margin-top:3px">Ball uchun savollar</div>
-      </div>
-    </div>
-
-    <!-- 🏃 60 SONIYA CHALLENGE + AVATAR -->
-    <div data-hw="challenge" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <!-- 60s Mini challenge -->
-      <div onclick="openMiniChallenge()" style="background:linear-gradient(135deg,#10B981,#059669);border-radius:18px;padding:16px;cursor:pointer;box-shadow:var(--shadow);text-align:center">
-        <div style="font-size:36px;margin-bottom:6px">⚡</div>
-        <div style="font-size:13px;font-weight:800;color:#fff">60 soniya!</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.7);margin-top:3px">Tez mini-mashq</div>
-      </div>
-      <!-- Avatar -->
-      <div onclick="openAvatar()" style="background:linear-gradient(135deg,#8B5CF6,#6366F1);border-radius:18px;padding:16px;cursor:pointer;box-shadow:var(--shadow);text-align:center;position:relative">
-        <div id="avatar-display" style="font-size:36px;margin-bottom:6px">🧑</div>
-        <div style="font-size:13px;font-weight:800;color:#fff">Avatarim</div>
-        <div id="avatar-level-lbl" style="font-size:10px;color:rgba(255,255,255,.7);margin-top:3px">Daraja: 1</div>
-      </div>
-    </div>
-
-    <!-- ❄️ STREAK FREEZE -->
-    <div id="streak-freeze-card" onclick="useStreakFreeze()" style="display:none;background:linear-gradient(135deg,#0EA5E9,#0284C7);border-radius:16px;padding:14px 16px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)">
-      <div style="font-size:32px">❄️</div>
+    <div id="streak-freeze-card" onclick="useStreakFreeze()" style="display:none;background:linear-gradient(135deg,#0EA5E9,#0284C7);border-radius:16px;padding:14px 16px;margin-bottom:14px;cursor:pointer;align-items:center;gap:12px;box-shadow:var(--shadow)">
+      <div style="font-size:32px">&#10052;&#65039;</div>
       <div style="flex:1">
         <div style="font-size:14px;font-weight:700;color:#fff">Streak Freeze mavjud!</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.75)">Streak'ingizni himoya qiling — bosing</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.75)">Streak&#39;ingizni himoya qiling &mdash; bosing</div>
       </div>
       <div id="sf-count" style="background:rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:4px 10px;font-size:13px;font-weight:800">3</div>
     </div>
+
+    <span id="avatar-level-lbl" style="display:none">Daraja: 1</span>
+    <span id="vikt-ball-lbl" style="display:none"></span>
+    <span id="kun-sir-preview" style="display:none"></span>
 
   </div>
 </div>
@@ -1911,7 +1814,7 @@
       <div id="pd-2" style="width:16px;height:16px;border-radius:50%;border:2px solid var(--bd);background:var(--bd)"></div>
       <div id="pd-3" style="width:16px;height:16px;border-radius:50%;border:2px solid var(--bd);background:var(--bd)"></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;max-width:260px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;max-width:280px;margin:0 auto">
       <button onclick="pinInput(1)" class="pin-btn">1</button>
       <button onclick="pinInput(2)" class="pin-btn">2</button>
       <button onclick="pinInput(3)" class="pin-btn">3</button>
@@ -1925,8 +1828,7 @@
       <button onclick="pinInput(0)" class="pin-btn">0</button>
       <button onclick="pinInput('del')" class="pin-btn">&#9003;</button>
     </div>
-    <div id="pin-error" style="color:var(--red);font-size:13px;text-align:center;margin-top:12px;display:none">Noto&#39;g&#39;ri PIN</div>
-    <button onclick="checkPin()" style="width:100%;max-width:260px;margin:18px auto 0;display:block;padding:14px;border-radius:14px;border:none;background:var(--g);color:#fff;font-size:16px;font-weight:800;cursor:pointer">Kirish</button>
+    <div id="pin-error" style="color:var(--red);font-size:13px;text-align:center;margin-top:14px;min-height:18px;display:none">Noto&#39;g&#39;ri PIN</div>
   </div>
 </div>
 
@@ -2486,6 +2388,7 @@ function pinInput(v){
   if(_pinVal.length>=4)return;
   _pinVal+=String(v);
   updatePinDots();
+  if(_pinVal.length===4){ setTimeout(function(){ try{checkPin();}catch(e){} }, 180); }
 }
 function updatePinDots(){
   for(let i=0;i<4;i++){
@@ -8844,17 +8747,30 @@ function renderDuaList(kat){
 var HOME_WIDGETS=[
   {k:'obhavo',   i:'\uD83C\uDF24\uFE0F', n:'Ob-havo'},
   {k:'motiv',    i:'\uD83D\uDCAC', n:'Kunlik iqtibos'},
-  {k:'tezkor',   i:'\u26A1', n:'Tezkor havolalar', d:'Odat \u00B7 Reja \u00B7 Namoz \u00B7 Moliya'},
-  {k:'funksiya', i:'\uD83E\uDD16', n:'AI, Kayfiyat, Missiya', d:'Kayfiyat \u00B7 AI Reja \u00B7 Missiya \u00B7 Reyting'},
+  {k:'odat',     i:'\uD83D\uDD25', n:'Odat'},
+  {k:'reja',     i:'\uD83D\uDCCB', n:'Reja'},
+  {k:'namoz',    i:'\uD83D\uDD4C', n:'Namoz'},
+  {k:'moliya',   i:'\uD83D\uDCB3', n:'Moliya'},
+  {k:'kayfiyat', i:'\uD83D\uDE0A', n:'Kayfiyat'},
+  {k:'suv',      i:'\uD83D\uDCA7', n:'Suv'},
+  {k:'dori',     i:'\uD83D\uDC8A', n:'Dori'},
+  {k:'eslatma',  i:'\uD83D\uDCDD', n:'Eslatma'},
+  {k:'xarid',    i:'\uD83D\uDED2', n:'Xarid ro\'yxati'},
+  {k:'kundalik', i:'\uD83D\uDCD6', n:'Kundalik'},
+  {k:'kitoblar', i:'\uD83D\uDCDA', n:'Kitoblar'},
+  {k:'inglizcha',i:'\uD83D\uDCAC', n:'Inglizcha'},
   {k:'oila',     i:'\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67', n:'Oila'},
-  {k:'kundalik', i:'\uD83D\uDCD4', n:'Kundalik'},
-  {k:'sogliq',   i:'\uD83D\uDCA7', n:"Sog'liq", d:'Suv \u00B7 Dori \u00B7 Xarid \u00B7 Eslatma'},
-  {k:'talim',    i:'\uD83D\uDCDA', n:"Ta'lim", d:'Kitoblar \u00B7 Inglizcha'},
-  {k:'dua',      i:'\uD83E\uDD32', n:'Dua kitobchasi'},
-  {k:'bugunreja',i:'\uD83D\uDCCB', n:'Bugungi reja'},
+  {k:'tugilgankun',i:'\uD83C\uDF82', n:'Tug\'ilgan kunlar'},
+  {k:'dua',      i:'\uD83E\uDD32', n:'Dua'},
+  {k:'aireja',   i:'\uD83E\uDD16', n:'AI Reja'},
+  {k:'missiya',  i:'\uD83C\uDFAF', n:'Missiya'},
+  {k:'reyting',  i:'\uD83C\uDFC6', n:'Reyting'},
+  {k:'spin',     i:'\uD83C\uDFA1', n:'Omad g\'ildiragi'},
+  {k:'viktorina',i:'\uD83E\uDDE0', n:'Viktorina'},
+  {k:'mashq60',  i:'\u26A1', n:'60 soniya mashq'},
+  {k:'avatar',   i:'\uD83E\uDDD1', n:'Avatarim'},
   {k:'kunsir',   i:'\u2B50', n:'Kun siri'},
-  {k:'oyin',     i:'\uD83C\uDFA1', n:"O'yinlar", d:"Omad g'ildiragi \u00B7 Viktorina"},
-  {k:'challenge',i:'\uD83C\uDFC3', n:'Mashq va Avatar', d:'60 soniya \u00B7 Avatarim'}
+  {k:'bugunreja',i:'\uD83D\uDCC5', n:'Bugungi reja'}
 ];
 function getHWCfg(){ return S.g('i_home_widgets')||{}; }
 function hwWidget(k){ for(var i=0;i<HOME_WIDGETS.length;i++){ if(HOME_WIDGETS[i].k===k) return HOME_WIDGETS[i]; } return null; }
@@ -8867,14 +8783,18 @@ function hwOrder(){
   return out;
 }
 function applyHomeWidgets(){
-  var cfg=getHWCfg(), order=hwOrder(), parent=null, els={};
+  var cfg=getHWCfg(), order=hwOrder(), groups=[];
   order.forEach(function(k){
     var el=document.querySelector('[data-hw="'+k+'"]');
     if(!el) return;
-    els[k]=el; if(!parent) parent=el.parentNode;
     el.style.display=(cfg[k]===false)?'none':'';
+    var g=null;
+    for(var i=0;i<groups.length;i++){ if(groups[i].p===el.parentNode){ g=groups[i]; break; } }
+    if(!g){ g={p:el.parentNode, els:[]}; groups.push(g); }
+    g.els.push(el);
   });
-  if(parent){ order.forEach(function(k){ if(els[k]) parent.appendChild(els[k]); }); }
+  /* tartib faqat o'z guruhi (bir xil ota-element) ichida qo'llanadi */
+  groups.forEach(function(g){ g.els.forEach(function(el){ g.p.appendChild(el); }); });
 }
 function toggleHW(k){
   var cfg=getHWCfg();
