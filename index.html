@@ -2534,6 +2534,7 @@ function openLock(){
   const p=S.g('i_parol')||'';
   if(!p)return;
   _locked=true;_pinVal='';
+  try{ document.querySelectorAll('.moverlay.open').forEach(function(x){ if(x.id!=='parol-kirish-modal') x.classList.remove('open'); }); }catch(e){}
   const m=document.getElementById('parol-kirish-modal');
   if(m)m.classList.add('open');
   updatePinDots();
@@ -8991,13 +8992,19 @@ try{ applyHomeWidgets(); }catch(e){}
 try{ updateNotifDesc(); }catch(e){}
 try{
   if(!S.g('i_hw_onboarded')){
-    setTimeout(function(){
+    var _obTry=0;
+    var _ob=function(){
+      _obTry++;
+      if(_obTry>20) return;                      /* taslim bo'ladi, keyingi safar qayta urinadi */
+      var busy=false;
+      try{ busy = (typeof _locked!=='undefined' && _locked) || !!document.querySelector('.moverlay.open'); }catch(e){}
+      if(busy){ setTimeout(_ob, 1500); return; } /* PIN yoki boshqa oyna ochiq — kutamiz */
       try{
         var bosh=document.getElementById('page-bosh');
-        if(bosh && bosh.classList.contains('active')) openHomeConfig();
+        if(bosh && bosh.classList.contains('active')){ openHomeConfig(); S.s('i_hw_onboarded', true); }
       }catch(e){}
-      S.s('i_hw_onboarded', true);
-    }, 1000);
+    };
+    setTimeout(_ob, 1600);
   }
 }catch(e){}
 </script>
