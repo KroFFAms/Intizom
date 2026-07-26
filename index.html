@@ -195,11 +195,17 @@
         <div id="b-ism" style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px">Foydalanuvchi</div>
         <div id="b-sana" style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px"></div>
       </div>
-      <div onclick="openM('profil-modal')" style="cursor:pointer;text-align:center">
-        <div id="b-avatar" style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--g),var(--gd));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(0,212,160,.4);overflow:hidden">
-          <span id="b-av-l">F</span><img id="b-av-i" style="display:none;width:100%;height:100%;object-fit:cover">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div onclick="lockApp()" style="cursor:pointer;text-align:center" title="Ilovadan chiqish">
+          <div style="width:44px;height:44px;border-radius:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px">&#128274;</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">Chiqish</div>
         </div>
-        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">Profil</div>
+        <div onclick="openM('profil-modal')" style="cursor:pointer;text-align:center">
+          <div id="b-avatar" style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--g),var(--gd));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(0,212,160,.4);overflow:hidden">
+            <span id="b-av-l">F</span><img id="b-av-i" style="display:none;width:100%;height:100%;object-fit:cover">
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">Profil</div>
+        </div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:relative;z-index:1">
@@ -258,6 +264,8 @@
       <div data-hw="inglizcha" onclick="openM('til-modal');renderTilBugun()" class="htile"><div class="hticon" style="color:#10B981"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-4 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg></div><div class="htlbl">Inglizcha</div></div>
       <div data-hw="oila" onclick="gotoPage('oila',null)" class="htile"><div class="hticon" style="color:#EC4899"><span style="font-size:22px;line-height:1">&#128104;&#8205;&#128105;&#8205;&#128103;</span></div><div class="htlbl">Oila</div></div>
       <div data-hw="tugilgankun" onclick="openM('oila-modal');renderOilaList()" class="htile"><div class="hticon" style="color:#F472B6"><span style="font-size:22px;line-height:1">&#127874;</span></div><div class="htlbl">Tug'ilgan kun</div></div>
+      <div data-hw="tilovat" onclick="gotoPage('din',document.getElementById('nav-din'));setTimeout(function(){var b=document.querySelectorAll('#page-din .topbar-tab')[2];if(b)showDinTab('tilovat',b);},60)" class="htile"><div class="hticon" style="color:#00A87E"><span style="font-size:22px;line-height:1">&#128214;</span></div><div class="htlbl">Tilovat</div></div>
+      <div data-hw="hifz" onclick="gotoPage('din',document.getElementById('nav-din'));setTimeout(function(){var b=document.querySelectorAll('#page-din .topbar-tab')[3];if(b)showDinTab('hifz',b);},60)" class="htile"><div class="hticon" style="color:#A855F7"><span style="font-size:22px;line-height:1">&#129504;</span></div><div class="htlbl">Hifz</div></div>
       <div data-hw="dua" onclick="openM('dua-modal');renderDuaList('kundalik')" class="htile"><div class="hticon" style="color:#7C6BE8"><span style="font-size:22px;line-height:1">&#129330;</span></div><div class="htlbl">Dua</div></div>
       <div data-hw="aireja" onclick="openM('ai-reja-modal')" class="htile"><div class="hticon" style="color:#6366F1"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1.4"/><circle cx="9.3" cy="13" r="1.1" fill="currentColor" stroke="none"/><circle cx="14.7" cy="13" r="1.1" fill="currentColor" stroke="none"/><path d="M9.5 16h5"/></svg></div><div class="htlbl">AI Reja</div></div>
       <div data-hw="missiya" onclick="openMissionModal()" class="htile"><div class="hticon" style="color:#F59E0B"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div><div class="htlbl"><span id="mission-badge">Missiya</span></div></div>
@@ -428,6 +436,8 @@
     <div class="topbar-tabs">
       <button class="topbar-tab active" onclick="showDinTab('namoz',this)">Namoz</button>
       <button class="topbar-tab" onclick="showDinTab('quron',this)">Qur&#39;on</button>
+      <button class="topbar-tab" onclick="showDinTab('tilovat',this)">&#128214; Tilovat</button>
+      <button class="topbar-tab" onclick="showDinTab('hifz',this)">&#129504; Hifz</button>
       <button class="topbar-tab" onclick="showDinTab('zikr',this)">&#9999;&#65039; Zikr</button>
       <button class="topbar-tab" onclick="showDinTab('asmo',this)">✨ 99 Ism</button>
     </div>
@@ -459,6 +469,8 @@
       </div>
       <div class="card"><div id="juz-detail"><div class="empty">Juz bosing</div></div></div>
     </div>
+    <div id="din-tilovat" style="display:none"></div>
+    <div id="din-hifz" style="display:none"></div>
     <div id="din-zikr" style="display:none">
       <!-- Zikr header -->
       <div style="background:linear-gradient(135deg,#1a1a3e,#2d2d6b);border-radius:20px;padding:16px;margin-bottom:14px">
@@ -3175,10 +3187,14 @@ function showDinTab(tab,el){
   el.classList.add('active');
   document.getElementById('din-namoz').style.display=tab==='namoz'?'block':'none';
   document.getElementById('din-quron').style.display=tab==='quron'?'block':'none';
+  var tEl=document.getElementById('din-tilovat');if(tEl)tEl.style.display=tab==='tilovat'?'block':'none';
+  var hEl=document.getElementById('din-hifz');if(hEl)hEl.style.display=tab==='hifz'?'block':'none';
   var zEl=document.getElementById('din-zikr');if(zEl)zEl.style.display=tab==='zikr'?'block':'none';
   var aEl=document.getElementById('din-asmo');if(aEl)aEl.style.display=tab==='asmo'?'block':'none';
   if(tab==='zikr')renderZikrlar();
   if(tab==='quron')renderQuron();
+  if(tab==='tilovat')renderTilovat();
+  if(tab==='hifz')renderHifz();
   if(tab==='asmo')renderAsmo();
 }
 var ASMAUL_HUSNA=[
@@ -3375,6 +3391,279 @@ function resetQuron(){
     state.din.quron={done:[],history:[]};_selJuz=null;S.s('i_din',state.din);renderQuron();
   });
 }
+
+/* ==================== TILOVAT (XATM) va HIFZ ==================== */
+var SURALAR=(function(){
+  return "Al-Fotiha:7|Al-Baqara:286|Ali Imron:200|An-Niso:176|Al-Moida:120|Al-An'om:165|Al-A'rof:206|Al-Anfol:75|At-Tavba:129|Yunus:109|Hud:123|Yusuf:111|Ar-Ra'd:43|Ibrohim:52|Al-Hijr:99|An-Nahl:128|Al-Isro:111|Al-Kahf:110|Maryam:98|Toha:135|Al-Anbiyo:112|Al-Haj:78|Al-Mu'minun:118|An-Nur:64|Al-Furqon:77|Ash-Shuaro:227|An-Naml:93|Al-Qasas:88|Al-Ankabut:69|Ar-Rum:60|Luqmon:34|As-Sajda:30|Al-Ahzob:73|Saba:54|Fotir:45|Yosin:83|As-Soffot:182|Sod:88|Az-Zumar:75|G'ofir:85|Fussilat:54|Ash-Shuro:53|Az-Zuxruf:89|Ad-Duxon:59|Al-Josiya:37|Al-Ahqof:35|Muhammad:38|Al-Fath:29|Al-Hujurot:18|Qof:45|Az-Zoriyot:60|At-Tur:49|An-Najm:62|Al-Qamar:55|Ar-Rahmon:78|Al-Voqia:96|Al-Hadid:29|Al-Mujodala:22|Al-Hashr:24|Al-Mumtahana:13|As-Saff:14|Al-Jumua:11|Al-Munofiqun:11|At-Tag'obun:18|At-Taloq:12|At-Tahrim:12|Al-Mulk:30|Al-Qalam:52|Al-Haqqa:52|Al-Maorij:44|Nuh:28|Al-Jinn:28|Al-Muzzammil:20|Al-Muddassir:56|Al-Qiyoma:40|Al-Inson:31|Al-Mursalot:50|An-Naba:40|An-Noziot:46|Abasa:42|At-Takvir:29|Al-Infitor:19|Al-Mutaffifin:36|Al-Inshiqoq:25|Al-Buruj:22|At-Toriq:17|Al-A'lo:19|Al-G'oshiya:26|Al-Fajr:30|Al-Balad:20|Ash-Shams:15|Al-Layl:21|Ad-Duho:11|Ash-Sharh:8|At-Tin:8|Al-Alaq:19|Al-Qadr:5|Al-Bayyina:8|Az-Zalzala:8|Al-Odiyot:11|Al-Qoria:11|At-Takosur:8|Al-Asr:3|Al-Humaza:9|Al-Fil:5|Quraysh:4|Al-Moun:7|Al-Kavsar:3|Al-Kofirun:6|An-Nasr:3|Al-Masad:5|Al-Ixlos:4|Al-Falaq:5|An-Nos:6".split("|").map(function(x,i){
+    var a=x.split(":"); return {n:i+1, nom:a[0], oyat:parseInt(a[1],10)};
+  });
+})();
+var QURON_BET=604, QURON_OYAT=6236;
+
+function _qDay(d){ d=d||new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function _qFmt(iso){ var p=iso.split('-'); return p[2]+'.'+p[1]+'.'+p[0]; }
+function _qSave(){ S.s('i_din',state.din); }
+
+/* ---------- TILOVAT ---------- */
+function tilovatS(){
+  if(!state.din) state.din={};
+  var t=state.din.tilovat;
+  if(!t) t=state.din.tilovat={};
+  if(typeof t.bet!=='number') t.bet=0;
+  if(typeof t.maqsad!=='number'||t.maqsad<1) t.maqsad=2;
+  if(!t.log||typeof t.log!=='object') t.log={};
+  if(typeof t.xatm!=='number') t.xatm=0;
+  return t;
+}
+function tilovatStreak(){
+  var t=tilovatS(), n=0, d=new Date();
+  if(!t.log[_qDay(d)]) d.setDate(d.getDate()-1);      /* bugun hali o'qilmagan bo'lsa kechadan sanaymiz */
+  for(var i=0;i<400;i++){
+    if(t.log[_qDay(d)]>0){ n++; d.setDate(d.getDate()-1); } else break;
+  }
+  return n;
+}
+function tilovatSurat(){
+  /* so'nggi 14 kundagi o'rtacha (bo'sh kunlar hisobga olinmaydi) */
+  var t=tilovatS(), sum=0, kun=0, d=new Date();
+  for(var i=0;i<14;i++){
+    var v=t.log[_qDay(d)]||0; if(v>0){ sum+=v; kun++; }
+    d.setDate(d.getDate()-1);
+  }
+  return kun? (sum/kun) : t.maqsad;
+}
+function tilovatQosh(n){
+  var t=tilovatS(), k=_qDay();
+  var yangi=Math.max(0, Math.min(QURON_BET, t.bet+n));
+  var farq=yangi-t.bet;
+  t.bet=yangi;
+  t.log[k]=Math.max(0,(t.log[k]||0)+farq);
+  if(!t.log[k]) delete t.log[k];
+  if(t.bet>=QURON_BET && farq>0){
+    t.xatm++; t.bet=0; t.oxirgiXatm=k;
+    _qSave(); renderTilovat();
+    if(typeof showNotif==='function') showNotif('\uD83C\uDF89 Xatm muborak!', t.xatm+'-marta xatm qildingiz');
+    return;
+  }
+  _qSave(); renderTilovat();
+}
+function tilovatMaqsad(v){
+  var t=tilovatS(); var n=parseInt(v,10);
+  if(n>0&&n<=100){ t.maqsad=n; _qSave(); renderTilovat(); }
+}
+function tilovatBetSet(){
+  var t=tilovatS();
+  var v=prompt("Hozir nechanchi betdasiz? (0 \u2014 "+QURON_BET+")", t.bet);
+  if(v===null) return;
+  var n=parseInt(v,10);
+  if(isNaN(n)||n<0||n>QURON_BET){ if(typeof showNotif==='function')showNotif('\u26A0\uFE0F Xato','0 dan '+QURON_BET+' gacha son kiriting'); return; }
+  t.bet=n; _qSave(); renderTilovat();
+}
+function tilovatReset(){
+  confirmDel('\uD83D\uDCD6',"Tilovat hisobini qayta boshlash?","Betlar va tarix o'chadi",function(){
+    state.din.tilovat={bet:0,maqsad:tilovatS().maqsad,log:{},xatm:0};
+    _qSave(); renderTilovat();
+  });
+}
+function renderTilovat(){
+  var el=document.getElementById('din-tilovat'); if(!el) return;
+  var t=tilovatS(), k=_qDay();
+  var bugun=t.log[k]||0, foiz=Math.round(t.bet/QURON_BET*100), qolgan=QURON_BET-t.bet;
+  var juz=Math.min(30, Math.floor(t.bet/20)+ (t.bet%20?1:0)) || 0;
+  var surat=tilovatSurat();
+  var kunlar=Math.ceil(qolgan/(surat||1));
+  var tugash=new Date(); tugash.setDate(tugash.getDate()+kunlar);
+  var streak=tilovatStreak();
+
+  /* 28 kunlik mini kalendar */
+  var kal='', d=new Date(); d.setDate(d.getDate()-27);
+  for(var i=0;i<28;i++){
+    var v=t.log[_qDay(d)]||0;
+    var rang = v===0 ? 'var(--bd)' : (v>=t.maqsad ? '#00A87E' : '#7DD3B0');
+    kal+='<div title="'+_qFmt(_qDay(d))+': '+v+' bet" style="width:100%;padding-top:100%;background:'+rang+';border-radius:4px"></div>';
+    d.setDate(d.getDate()+1);
+  }
+
+  el.innerHTML=
+  '<div style="background:linear-gradient(135deg,#1a1a3e,#2d2d6b);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow-lg)">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px">'+
+      '<div><div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:2px">Joriy bet</div>'+
+      '<div style="font-size:34px;font-weight:900;color:#fff;line-height:1">'+t.bet+'<span style="font-size:15px;font-weight:600;color:rgba(255,255,255,.5)"> / '+QURON_BET+'</span></div></div>'+
+      '<div style="text-align:right"><div style="font-size:26px;font-weight:900;color:#FFD700;line-height:1">'+foiz+'%</div>'+
+      '<div style="font-size:11px;color:rgba(255,255,255,.5)">'+(juz?juz+'-juz':'boshlanmagan')+'</div></div>'+
+    '</div>'+
+    '<div style="background:rgba(255,255,255,.15);border-radius:6px;height:8px;margin-bottom:10px">'+
+      '<div style="background:linear-gradient(90deg,#FFD700,#FFA500);height:8px;border-radius:6px;width:'+foiz+'%;transition:width .5s"></div></div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.55)">'+
+      '<span>'+qolgan+' bet qoldi</span>'+
+      '<span>'+(t.xatm?('\u2705 '+t.xatm+' marta xatm'):'birinchi xatm')+'</span></div>'+
+  '</div>'+
+
+  '<div class="card">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+      '<div class="sec-title" style="margin-bottom:0">Bugun o\'qildi: '+bugun+' bet</div>'+
+      '<div style="font-size:12px;color:'+(bugun>=t.maqsad?'#00A87E':'var(--t2)')+';font-weight:700">maqsad '+t.maqsad+'</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:8px;margin-bottom:10px">'+
+      '<button onclick="tilovatQosh(1)" style="flex:1;padding:14px;border-radius:14px;border:1.5px solid var(--bd);background:var(--card);color:var(--text);font-size:15px;font-weight:700;cursor:pointer">+1 bet</button>'+
+      '<button onclick="tilovatQosh('+t.maqsad+')" style="flex:2;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#00A87E,#00C896);color:#fff;font-size:15px;font-weight:700;cursor:pointer">+'+t.maqsad+' bet (kunlik)</button>'+
+      '<button onclick="tilovatQosh(-1)" style="width:52px;padding:14px;border-radius:14px;border:1.5px solid var(--bd);background:var(--card);color:var(--t2);font-size:15px;font-weight:700;cursor:pointer">&minus;</button>'+
+    '</div>'+
+    '<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--t2)">'+
+      '<span>Kunlik maqsad:</span>'+
+      '<input type="number" min="1" max="100" value="'+t.maqsad+'" onchange="tilovatMaqsad(this.value)" style="width:70px;padding:8px;border-radius:10px;border:1.5px solid var(--bd);background:var(--card);color:var(--text);font-size:14px;text-align:center">'+
+      '<span>bet</span>'+
+      '<button onclick="tilovatBetSet()" style="margin-left:auto;font-size:12px;color:var(--g);background:none;border:none;cursor:pointer;font-weight:600">Betni tuzatish</button>'+
+    '</div>'+
+  '</div>'+
+
+  '<div class="card">'+
+    '<div style="display:flex;gap:10px;text-align:center">'+
+      '<div style="flex:1"><div style="font-size:22px;font-weight:800;color:var(--g)">'+streak+'</div><div style="font-size:11px;color:var(--t2)">kun ketma-ket</div></div>'+
+      '<div style="flex:1"><div style="font-size:22px;font-weight:800;color:var(--text)">'+surat.toFixed(1)+'</div><div style="font-size:11px;color:var(--t2)">kunlik o\'rtacha</div></div>'+
+      '<div style="flex:1.4"><div style="font-size:15px;font-weight:800;color:#F59E0B">'+_qFmt(_qDay(tugash))+'</div><div style="font-size:11px;color:var(--t2)">shu sur\'atda xatm</div></div>'+
+    '</div>'+
+  '</div>'+
+
+  '<div class="card">'+
+    '<div class="sec-title">So\'nggi 4 hafta</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(14,1fr);gap:4px">'+kal+'</div>'+
+    '<div style="font-size:11px;color:var(--t2);margin-top:10px;line-height:1.5">Bir kun qoldirsangiz hisob nolga tushmaydi \u2014 o\'sha kun bo\'sh qoladi, davom etaverasiz.</div>'+
+    '<button onclick="tilovatReset()" style="margin-top:12px;width:100%;padding:11px;border-radius:12px;border:1.5px solid var(--bd);background:none;color:var(--t2);font-size:13px;cursor:pointer">Qayta boshlash</button>'+
+  '</div>';
+}
+
+/* ---------- HIFZ (YOD OLISH) ---------- */
+function hifzS(){
+  if(!state.din) state.din={};
+  var h=state.din.hifz;
+  if(!h) h=state.din.hifz={};
+  if(!Array.isArray(h.items)) h.items=[];
+  if(!h.log||typeof h.log!=='object') h.log={};
+  return h;
+}
+function hifzBosqich(it){ return it.rev<3?'sabaq':(it.rev<10?'sabqiy':'manzil'); }
+function hifzBosqichNom(b){ return {sabaq:'Sabaq \u2014 yangi',sabqiy:'Sabqiy \u2014 yaqin takror',manzil:'Manzil \u2014 uzoq takror'}[b]; }
+function hifzBosqichRang(b){ return {sabaq:'#F59E0B',sabqiy:'#3B82F6',manzil:'#00A87E'}[b]; }
+function hifzOyat(it){ return it.b-it.a+1; }
+function hifzJami(){ var h=hifzS(),n=0; h.items.forEach(function(it){ n+=hifzOyat(it); }); return n; }
+function hifzKunlar(iso){
+  if(!iso) return 999;
+  var a=new Date(iso+'T00:00:00'), b=new Date(_qDay()+'T00:00:00');
+  return Math.round((b-a)/86400000);
+}
+function hifzQosh(){
+  var si=parseInt(document.getElementById('hf-sura').value,10);
+  var a=parseInt(document.getElementById('hf-a').value,10);
+  var b=parseInt(document.getElementById('hf-b').value,10);
+  var sur=SURALAR[si-1];
+  if(!sur){ showNotif('\u26A0\uFE0F Xato','Sura tanlanmadi'); return; }
+  if(isNaN(a)||isNaN(b)||a<1||b<a||b>sur.oyat){
+    showNotif('\u26A0\uFE0F Xato', sur.nom+' surasida '+sur.oyat+' oyat bor'); return;
+  }
+  var h=hifzS(), k=_qDay();
+  h.items.push({id:Date.now(), s:si, a:a, b:b, qosh:k, oxir:k, rev:0});
+  if(!h.log[k]) h.log[k]={y:0,t:0};
+  h.log[k].y+=(b-a+1);
+  _qSave(); renderHifz();
+  showNotif('\uD83E\uDDE0 Yozildi', sur.nom+' '+a+'-'+b+' oyat');
+}
+function hifzTakror(id){
+  var h=hifzS(), k=_qDay();
+  for(var i=0;i<h.items.length;i++){
+    if(h.items[i].id===id){
+      h.items[i].rev++; h.items[i].oxir=k;
+      if(!h.log[k]) h.log[k]={y:0,t:0};
+      h.log[k].t++;
+      break;
+    }
+  }
+  _qSave(); renderHifz();
+}
+function hifzOchir(id){
+  var h=hifzS();
+  var it=null; h.items.forEach(function(x){ if(x.id===id) it=x; });
+  if(!it) return;
+  confirmDel('\uD83E\uDDE0', SURALAR[it.s-1].nom+' '+it.a+'-'+it.b, "Ro'yxatdan o'chirilsinmi?", function(){
+    var hh=hifzS();
+    hh.items=hh.items.filter(function(x){ return x.id!==id; });
+    _qSave(); renderHifz();
+  });
+}
+function renderHifz(){
+  var el=document.getElementById('din-hifz'); if(!el) return;
+  var h=hifzS(), k=_qDay(), bugun=h.log[k]||{y:0,t:0};
+  var jami=hifzJami(), foiz=(jami/QURON_OYAT*100);
+  var suralar={}; h.items.forEach(function(it){ suralar[it.s]=1; });
+  var suraSoni=Object.keys(suralar).length;
+
+  /* takror navbati — eng uzoq takrorlanmagani birinchi */
+  var navbat=h.items.slice().sort(function(x,y){ return (x.oxir||'').localeCompare(y.oxir||''); }).slice(0,5);
+
+  var opts=SURALAR.map(function(s){ return '<option value="'+s.n+'">'+s.n+'. '+s.nom+' ('+s.oyat+')</option>'; }).join('');
+
+  var navbatHtml = navbat.length ? navbat.map(function(it){
+    var sur=SURALAR[it.s-1], kun=hifzKunlar(it.oxir), b=hifzBosqich(it);
+    var kech = kun>=7;
+    return '<div class="item" style="align-items:center">'+
+      '<div style="width:40px;height:40px;border-radius:12px;background:'+hifzBosqichRang(b)+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800">'+it.s+'</div>'+
+      '<div style="flex:1;margin-left:10px">'+
+        '<div style="font-size:14px;font-weight:700;color:var(--text)">'+sur.nom+' '+it.a+'\u2013'+it.b+'</div>'+
+        '<div style="font-size:11px;color:'+(kech?'#EF4444':'var(--t2)')+'">'+(kun===0?'bugun takrorlandi':kun+' kun oldin')+' \u00B7 '+it.rev+' marta</div>'+
+      '</div>'+
+      '<button onclick="hifzTakror('+it.id+')" style="padding:9px 14px;border-radius:11px;border:none;background:linear-gradient(135deg,#00A87E,#00C896);color:#fff;font-size:13px;font-weight:700;cursor:pointer">Takrorladim</button>'+
+    '</div>';
+  }).join('') : '<div class="empty">\uD83E\uDDE0<br><br>Hozircha yod olingan joy yo\'q</div>';
+
+  var royxat='';
+  ['sabaq','sabqiy','manzil'].forEach(function(b){
+    var lst=h.items.filter(function(it){ return hifzBosqich(it)===b; });
+    if(!lst.length) return;
+    royxat+='<div style="font-size:12px;font-weight:700;color:'+hifzBosqichRang(b)+';margin:14px 0 8px">'+hifzBosqichNom(b)+' ('+lst.length+')</div>';
+    royxat+=lst.map(function(it){
+      var sur=SURALAR[it.s-1];
+      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd)">'+
+        '<div style="flex:1;font-size:13.5px;color:var(--text)">'+sur.nom+' <span style="color:var(--t2)">'+it.a+'\u2013'+it.b+'</span></div>'+
+        '<div style="font-size:12px;color:var(--t2)">'+hifzOyat(it)+' oyat</div>'+
+        '<button onclick="hifzOchir('+it.id+')" style="background:none;border:none;color:#EF4444;font-size:15px;cursor:pointer;padding:0 4px">&times;</button>'+
+      '</div>';
+    }).join('');
+  });
+
+  el.innerHTML=
+  '<div style="background:linear-gradient(135deg,#1a0533,#2d1060);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow-lg)">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px">'+
+      '<div><div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:2px">Yodlangan oyatlar</div>'+
+      '<div style="font-size:34px;font-weight:900;color:#fff;line-height:1">'+jami+'<span style="font-size:15px;font-weight:600;color:rgba(255,255,255,.5)"> / '+QURON_OYAT+'</span></div></div>'+
+      '<div style="text-align:right"><div style="font-size:24px;font-weight:900;color:#FFD700;line-height:1">'+foiz.toFixed(1)+'%</div>'+
+      '<div style="font-size:11px;color:rgba(255,255,255,.5)">'+suraSoni+' ta sura</div></div>'+
+    '</div>'+
+    '<div style="background:rgba(255,255,255,.15);border-radius:6px;height:8px;margin-bottom:10px">'+
+      '<div style="background:linear-gradient(90deg,#FFD700,#FFA500);height:8px;border-radius:6px;width:'+Math.min(100,foiz)+'%;transition:width .5s"></div></div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.55)">'+
+      '<span>Bugun yangi: '+bugun.y+' oyat</span><span>Bugun takror: '+bugun.t+' marta</span></div>'+
+  '</div>'+
+
+  '<div class="card">'+
+    '<div class="sec-title">\uD83D\uDD01 Bugun takrorlash</div>'+
+    navbatHtml+
+  '</div>'+
+
+  '<div class="card">'+
+    '<div class="sec-title">\u2795 Yangi yod olindi (sabaq)</div>'+
+    '<div class="igroup"><label class="ilabel">Sura</label>'+
+      '<select id="hf-sura" class="inp">'+opts+'</select></div>'+
+    '<div style="display:flex;gap:10px">'+
+      '<div class="igroup" style="flex:1"><label class="ilabel">Oyatdan</label><input id="hf-a" type="number" min="1" class="inp" placeholder="1"></div>'+
+      '<div class="igroup" style="flex:1"><label class="ilabel">Oyatgacha</label><input id="hf-b" type="number" min="1" class="inp" placeholder="7"></div>'+
+    '</div>'+
+    '<button onclick="hifzQosh()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#00A87E,#00C896);color:#fff;font-size:15px;font-weight:700;cursor:pointer">Qo\'shish</button>'+
+  '</div>'+
+
+  (royxat?('<div class="card"><div class="sec-title">Yodlanganlar</div>'+royxat+
+   '<div style="font-size:11px;color:var(--t2);margin-top:12px;line-height:1.6">3 martadan keyin <b>sabqiy</b>ga, 10 martadan keyin <b>manzil</b>ga o\'tadi. Eng uzoq takrorlanmagani yuqorida birinchi chiqadi.</div></div>'):'');
+}
+
 let _spType='yugurish',_spKal=8;
 const SP_KAL={yugurish:8,yurish:4,velosiped:6,suzish:7,zal:5,boshqa:5};
 function setST(type,icon,color){
@@ -8762,6 +9051,8 @@ var HOME_WIDGETS=[
   {k:'inglizcha',i:'\uD83D\uDCAC', n:'Inglizcha'},
   {k:'oila',     i:'\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67', n:'Oila'},
   {k:'tugilgankun',i:'\uD83C\uDF82', n:'Tug\'ilgan kunlar'},
+  {k:'tilovat',  i:'\uD83D\uDCD6', n:'Tilovat (xatm)'},
+  {k:'hifz',     i:'\uD83E\uDDE0', n:'Hifz (yod olish)'},
   {k:'dua',      i:'\uD83E\uDD32', n:'Dua'},
   {k:'aireja',   i:'\uD83E\uDD16', n:'AI Reja'},
   {k:'missiya',  i:'\uD83C\uDFAF', n:'Missiya'},
