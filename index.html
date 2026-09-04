@@ -1752,6 +1752,17 @@
       <div id="vz-bmi-val" style="font-size:28px;font-weight:800;color:var(--g)">—</div>
       <div id="vz-bmi-txt" style="font-size:12px;color:var(--t2)"></div>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="igroup"><label class="ilabel">Yosh</label><input class="inp" type="number" id="vz-yosh" placeholder="30" min="14" max="100"></div>
+      <div class="igroup"><label class="ilabel">Kunlik faollik</label>
+        <select class="inp" id="vz-faol">
+          <option value="1.2">Kam harakat</option>
+          <option value="1.375" selected>Yengil (1-3 mashq)</option>
+          <option value="1.55">O&#39;rtacha (3-5)</option>
+          <option value="1.725">Yuqori (6-7)</option>
+        </select>
+      </div>
+    </div>
     <div class="igroup"><label class="ilabel">Maqsad vazn (kg) — ixtiyoriy</label><input class="inp" type="number" id="vz-maqsad" placeholder="65" step="0.1"></div>
     <div class="mactions"><button class="btn btn-out" onclick="closeM('vazn-modal')">Bekor</button><button class="btn btn-g" onclick="addVazn()">Saqlash</button></div>
   </div>
@@ -2549,6 +2560,7 @@ document.addEventListener('visibilitychange',function(){
   }
 });
 setTimeout(()=>{try{checkParolOnLoad();}catch(e){console.error(e);}},600);
+setTimeout(function(){try{tozalash();}catch(e){console.error(e);}},2500);
 setTimeout(function(){try{renderKunMashq();}catch(e){}},800);
 
 function showHisobotTab(tab,el){
@@ -3491,6 +3503,46 @@ function addSport(){
   document.getElementById('sp-note').value='';
   renderSport();showNotif('💪 Barakalla!',item.icon+' '+mins+' daq · '+kal+' kcal!');
 }
+/* ============================================================
+   KUNLIK KALORIYA NORMASI (04.09.2026)
+   Ilgari hammaga 2000 deb qotirilgan edi. Endi Mifflin-St Jeor
+   formulasi bilan har kimga o'zinikini hisoblaymiz.
+   Ma'lumot yetishmasa 2000 ga qaytadi.
+   ============================================================ */
+function kunlikNorma(){
+  var natija = { kcal:2000, taxminiy:true, chegara:false, izoh:"Vazn va bo'y kiritilmagan" };
+  try{
+    var v = (state.sport && state.sport.vazn && state.sport.vazn[0]) || null;
+    var kg = v ? parseFloat(v.kg) : 0;
+    var boy = v ? parseFloat(v.boy) : 0;
+    if(!kg || !boy) return natija;
+
+    var yosh  = parseInt(S.g('i_yosh'),10) || 30;
+    var faol  = parseFloat(S.g('i_faollik')) || 1.375;
+    var jins  = S.g('i_ratsion_jins') || 'erkak';
+    var maqsad= S.g('i_ratsion_maqsad') || null;
+
+    /* Mifflin-St Jeor: asosiy almashinuv */
+    var bmr = 10*kg + 6.25*boy - 5*yosh + (jins==='ayol' ? -161 : 5);
+    var tdee = bmr * faol;
+
+    var q = 0, mIzoh = 'saqlash';
+    if(maqsad === 'yoqotish'){ q = -400; mIzoh = 'vazn kamaytirish'; }
+    else if(maqsad === 'massa'){ q = 400; mIzoh = "massa yig'ish"; }
+    else if(maqsad === 'relief'){ q = -250; mIzoh = 'relief'; }
+
+    var kcal = Math.round((tdee + q)/10)*10;
+
+    /* Xavfsiz quyi chegara */
+    var pol = (jins==='ayol') ? 1400 : 1600;
+    var chegara = false;
+    if(kcal < pol){ kcal = pol; chegara = true; }
+
+    return { kcal:kcal, taxminiy:false, chegara:chegara,
+             izoh: kg+' kg, '+boy+' sm, '+yosh+' yosh - '+mIzoh };
+  }catch(e){ return natija; }
+}
+
 function addVazn(){
   var kg=parseFloat(document.getElementById('vz-kg').value);
   if(!kg||kg<20||kg>300){showNotif('&#9888;&#65039; Xato','To\'g\'ri vazn kiriting');return;}
@@ -3499,6 +3551,10 @@ function addVazn(){
   var bmi=boy>0?parseFloat((kg/(boy/100)/(boy/100)).toFixed(1)):0;
   state.sport.vazn.unshift({kg:kg,boy:boy,maqsad:maqsad,bmi:bmi,date:new Date().toISOString()});
   if(state.sport.vazn.length>60)state.sport.vazn=state.sport.vazn.slice(0,60);
+  var _y=parseInt((document.getElementById('vz-yosh')||{}).value,10);
+  if(_y && _y>=14 && _y<=100) S.s('i_yosh',_y);
+  var _f=parseFloat((document.getElementById('vz-faol')||{}).value);
+  if(_f) S.s('i_faollik',_f);
   S.s('i_sport',state.sport);closeM('vazn-modal');
   document.getElementById('vz-kg').value='';
   document.getElementById('vz-bmi-wrap').style.display='none';
@@ -7412,7 +7468,8 @@ function renderKalHistory(){
     listEl.innerHTML='<div style="text-align:center;padding:12px;color:var(--t2);font-size:13px">Hali hech narsa qo\'shilmagan</div>';
     return;
   }
-  var goal = 2000;
+  var _n   = kunlikNorma();
+  var goal = _n.kcal;
   var pct  = Math.min(100, Math.round(total/goal*100));
   var barColor = pct<60?'var(--g)':pct<85?'#F59E0B':'#EF4444';
 
@@ -7420,6 +7477,10 @@ function renderKalHistory(){
     '<div style="margin-bottom:10px">'+
       '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:4px">'+
         '<span>0</span><span style="font-weight:700;color:'+barColor+'">'+pct+'%</span><span>'+goal+' kcal</span>'+
+      '</div>'+
+      '<div style="font-size:10px;color:var(--t2);text-align:center;margin-bottom:4px">'+
+        (_n.taxminiy ? 'Umumiy norma - aniq hisob uchun Sport bo\'limidan vazn va bo\'yingizni kiriting'
+                     : 'Sizning normangiz: '+_n.izoh + (_n.chegara ? ' (eng past xavfsiz daraja)' : ''))+
       '</div>'+
       '<div style="background:var(--bd);border-radius:6px;height:8px">'+
         '<div style="background:'+barColor+';height:8px;border-radius:6px;width:'+pct+'%;transition:width .5s"></div>'+

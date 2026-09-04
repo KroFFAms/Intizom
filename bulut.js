@@ -52,16 +52,33 @@
     dot.style.background = h === "xato" ? "#EF4444" : (h === "kutilmoqda" ? "#F59E0B" : "#10B981");
   }
 
+  var oxirgiImzo = null;   // oxirgi muvaffaqiyatli yuborilgan ma'lumot imzosi
+
+  // Arzon imzo: uzunlik + belgilar yig'indisi. Kriptografik emas,
+  // maqsad — "o'zgardimi yo'qmi" degan savolga tez javob berish.
+  function imzo(o) {
+    var s = JSON.stringify(o), h = 5381;
+    for (var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+    return s.length + ":" + h.toString(16);
+  }
+
   function pushNow() {
     if (!sb || !uid || pulling) return;
     // XAVFSIZLIK: serverdan hali bir marta ham muvaffaqiyatli o'qimagan bo'lsak,
     // hech narsa YOZMAYMIZ. Aks holda internet uzilganda bo'sh localStorage
     // serverdagi ma'lumot ustiga yozilib, hammasi yo'qolardi.
     if (!sinxronTayyor) { badgeHolat("kutilmoqda"); return; }
-    var row = { user_id: uid, data: collect(), updated_at: new Date().toISOString() };
+    var d = collect();
+    var yangiImzo = imzo(d);
+
+    // O'zgarmagan bo'lsa — yubormaymiz. Bu trafikning katta qismini kesadi:
+    // ilova ichida ko'p joyda localStorage qayta yoziladi, lekin qiymat o'sha.
+    if (yangiImzo === oxirgiImzo) { badgeHolat("ok"); return; }
+
+    var row = { user_id: uid, data: d, updated_at: new Date().toISOString() };
     sb.from(TABLE).upsert(row, { onConflict: "user_id" }).then(function (r) {
-      var dot = document.getElementById("bulut-dot");
-      if (dot) dot.style.background = r.error ? "#EF4444" : "#10B981";
+      if (!r.error) oxirgiImzo = yangiImzo;
+      badgeHolat(r.error ? "xato" : "ok");
     });
   }
   function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(pushNow, 1200); }
