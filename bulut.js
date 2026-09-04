@@ -43,9 +43,21 @@
 
   var SKIP_SYNC = { i_pin_session: 1, i_parol_ok: 1, i_parol: 1 };
   var sb = null, uid = null, saveTimer = null, pulling = false;
+  // Serverdan bir marta muvaffaqiyatli o'qimaguncha hech narsa yozilmaydi
+  var sinxronTayyor = false;
+
+  function badgeHolat(h) {
+    var dot = document.getElementById("bulut-dot");
+    if (!dot) return;
+    dot.style.background = h === "xato" ? "#EF4444" : (h === "kutilmoqda" ? "#F59E0B" : "#10B981");
+  }
 
   function pushNow() {
     if (!sb || !uid || pulling) return;
+    // XAVFSIZLIK: serverdan hali bir marta ham muvaffaqiyatli o'qimagan bo'lsak,
+    // hech narsa YOZMAYMIZ. Aks holda internet uzilganda bo'sh localStorage
+    // serverdagi ma'lumot ustiga yozilib, hammasi yo'qolardi.
+    if (!sinxronTayyor) { badgeHolat("kutilmoqda"); return; }
     var row = { user_id: uid, data: collect(), updated_at: new Date().toISOString() };
     sb.from(TABLE).upsert(row, { onConflict: "user_id" }).then(function (r) {
       var dot = document.getElementById("bulut-dot");
@@ -67,19 +79,62 @@
     };
   }
 
-  function pullThenStart() {
+  function pullThenStart(urinish) {
+    urinish = urinish || 1;
     pulling = true;
     sb.from(TABLE).select("data").eq("user_id", uid).maybeSingle().then(function (r) {
       pulling = false;
+
+      // --- Xato bo'lsa: HECH NARSA YOZMAYMIZ, qayta urinamiz ---
+      if (r.error) {
+        console.warn("Bulutdan o'qib bo'lmadi:", r.error.message);
+        badgeHolat("xato");
+        if (urinish < 5) { setTimeout(function () { pullThenStart(urinish + 1); }, 3000 * urinish); }
+        else { hookStorage(); badge(); }   // hook qo'yamiz, lekin sinxronTayyor=false -> yozmaydi
+        return;
+      }
+
+      // --- Serverda ma'lumot bor: mahalliy nusxani ZAXIRAGA olib, keyin qo'llaymiz ---
       if (r.data && r.data.data) {
+        zaxiraOl();                       // ustiga yozishdan oldin
         apply(r.data.data);
+        sinxronTayyor = true;
         sessionStorage.setItem("i_bulut_hydrated", "1");
         location.reload();
         return;
       }
+
+      // --- Serverda qator YO'Q (yangi foydalanuvchi): mahalliyni yuklaymiz ---
+      sinxronTayyor = true;
       hookStorage(); pushNow(); badge();
+    }).catch(function (e) {
+      pulling = false;
+      console.warn("Bulut xatosi:", e);
+      badgeHolat("xato");
+      if (urinish < 5) setTimeout(function () { pullThenStart(urinish + 1); }, 3000 * urinish);
+      else { hookStorage(); badge(); }
     });
   }
+
+  // Ustiga yozishdan oldin mahalliy nusxani saqlab qo'yamiz (bir kunlik zaxira)
+  function zaxiraOl() {
+    try {
+      var d = collect();
+      if (!Object.keys(d).length) return;
+      localStorage.setItem("zaxira_oxirgi", JSON.stringify({ vaqt: Date.now(), data: d }));
+    } catch (e) {}
+  }
+
+  // Zaxirani qaytarish — konsoldan: intizomZaxiraQaytar()
+  window.intizomZaxiraQaytar = function () {
+    try {
+      var z = JSON.parse(localStorage.getItem("zaxira_oxirgi") || "null");
+      if (!z || !z.data) { alert("Zaxira topilmadi."); return; }
+      if (!confirm("Zaxira " + new Date(z.vaqt).toLocaleString() + " holatiga qaytarilsinmi?")) return;
+      apply(z.data);
+      location.reload();
+    } catch (e) { alert("Zaxira o'qilmadi."); }
+  };
 
   // ============================================================
   //  OBUNA — sinov muddati / pro holati
@@ -139,7 +194,7 @@
     uid = user.id;
     removeGate();
     obunaYangila();
-    if (sessionStorage.getItem("i_bulut_hydrated") === "1") { hookStorage(); badge(); return; }
+    if (sessionStorage.getItem("i_bulut_hydrated") === "1") { sinxronTayyor = true; hookStorage(); badge(); return; }
     pullThenStart();
   }
 

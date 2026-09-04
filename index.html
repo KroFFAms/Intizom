@@ -1912,7 +1912,7 @@ let state={
   odatlar:S.g('i_odatlar')||[],
   reja:S.g('i_reja')||{shablon:[],bugun:{}},
   trans:S.g('i_trans')||[],
-  profil:S.g('i_profil')||{name:'Foydalanuvchi',job:'',motto:'',avatar:''},
+  profil:S.g('i_profil')||{name:(function(){try{return (localStorage.getItem('foydalanuvchi_ism')||'').trim()||'Foydalanuvchi';}catch(e){return 'Foydalanuvchi';}})(),job:'',motto:'',avatar:''},
   sport:S.g('i_sport')||{bugun:{},tarix:[],vazn:[]},
   din:S.g('i_din')||{namoz:{},quron:{done:[],history:[]}},
   uyqu:S.g('i_uyqu')||[],
@@ -3602,6 +3602,11 @@ function toggleDark(){
 function renderSozlama(){
   try{
     var p=state.profil||{name:'Foydalanuvchi',job:'',motto:'',avatar:''};
+    /* kirishda kiritilgan ism — profil hali to'ldirilmagan bo'lsa ishlatamiz */
+    try{
+      var _ki=(localStorage.getItem('foydalanuvchi_ism')||'').trim();
+      if(_ki && (!p.name || p.name==='Foydalanuvchi')){ p.name=_ki; state.profil=p; S.s('i_profil',p); }
+    }catch(e){}
   var curTema=S.g('i_tema')||'yashil';
   var curRejim=S.g('i_rejim')||'avto';
   try{if(typeof updateTemaUI==='function')updateTemaUI(curTema, curRejim);}catch(e){}
