@@ -154,6 +154,14 @@
   };
 
   // ---- bulut nuqtasi + hisob menyusi (parol qo'yish / chiqish) ----
+  // Hisob menyusida ko'rinadigan "kim" satri
+  function kimMatn() {
+    var ism = "", tel = "";
+    try { ism = localStorage.getItem("foydalanuvchi_ism") || ""; tel = localStorage.getItem("foydalanuvchi_tel") || ""; } catch (e) {}
+    if (ism && tel) return ism + " \u00b7 " + telChiroy(tel);
+    return ism || telChiroy(tel) || "...";
+  }
+
   function badge() {
     if (document.getElementById("bulut-badge")) return;
     var b = document.createElement("div");
@@ -173,14 +181,18 @@
       '<div style="width:100%;max-width:420px;background:#fff;border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));color:#111">' +
         '<div style="width:40px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 16px"></div>' +
         '<div style="font-size:18px;font-weight:800;margin-bottom:2px">Hisob</div>' +
-        '<div id="acc-email" style="font-size:13px;color:#666;margin-bottom:10px">' + (em || "...") + '</div>' +
+        '<div id="acc-email" style="font-size:13px;color:#666;margin-bottom:10px">' + kimMatn() + '</div>' +
         '<div id="acc-obuna" style="font-size:13px;font-weight:700;color:#111;background:#F3F4F6;border-radius:10px;padding:10px 12px;margin-bottom:16px">' + (obunaMatn() || "Holat tekshirilmoqda...") + '</div>' +
-        '<button id="acc-pass" style="width:100%;padding:14px;border:1px solid #e5e5e5;border-radius:12px;background:#f7f7f7;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px">🔑 Parol qo\'yish / o\'zgartirish</button>' +
         '<button id="acc-out" style="width:100%;padding:14px;border:none;border-radius:12px;background:#FEE2E2;color:#B91C1C;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">Chiqish</button>' +
         '<button id="acc-close" style="width:100%;padding:12px;border:none;border-radius:12px;background:transparent;color:#666;font-size:14px;cursor:pointer">Yopish</button>' +
       '</div>';
     document.body.appendChild(m);
-    try { sb.auth.getUser().then(function (r) { var e = document.getElementById("acc-email"); if (e) e.textContent = (r.data && r.data.user && r.data.user.email) || ""; }); } catch (e) {}
+    try { sb.auth.getUser().then(function (r) {
+      var u = r.data && r.data.user, md = (u && u.user_metadata) || {};
+      if (md.ism) { try { localStorage.setItem("foydalanuvchi_ism", md.ism); } catch (e) {} }
+      if (md.tel) { try { localStorage.setItem("foydalanuvchi_tel", md.tel); } catch (e) {} }
+      var e2 = document.getElementById("acc-email"); if (e2) e2.textContent = kimMatn();
+    }); } catch (e) {}
     obunaYangila().then(function () {
       var o = document.getElementById("acc-obuna");
       if (o) o.textContent = obunaMatn() || "Holat aniqlanmadi";
@@ -189,35 +201,6 @@
     m.onclick = function (e) { if (e.target === m) m.remove(); };
     m.querySelector("#acc-out").onclick = function () {
       sb.auth.signOut().then(function () { sessionStorage.removeItem("i_bulut_hydrated"); location.reload(); });
-    };
-    m.querySelector("#acc-pass").onclick = function () {
-      m.remove(); setPasswordDialog();
-    };
-  }
-
-  function setPasswordDialog() {
-    var d = document.createElement("div");
-    d.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:22px;font-family:system-ui";
-    d.innerHTML =
-      '<div style="width:100%;max-width:340px;background:#fff;border-radius:18px;padding:20px;color:#111">' +
-        '<div style="font-size:17px;font-weight:800;margin-bottom:4px">Parol qo\'yish</div>' +
-        '<div style="font-size:13px;color:#666;margin-bottom:14px">Parol qo\'ysangiz, keyingi safar kod kutmасдан tez kirasiz.</div>' +
-        '<input id="sp-pass" type="password" placeholder="Yangi parol (kamida 6 belgi)" style="width:100%;box-sizing:border-box;padding:13px;border:1px solid #e0e0e0;border-radius:11px;font-size:15px;outline:none;margin-bottom:8px">' +
-        '<div id="sp-err" style="color:#DC2626;font-size:13px;min-height:16px;margin:2px 2px 8px"></div>' +
-        '<button id="sp-go" style="width:100%;padding:13px;border:none;border-radius:11px;background:#00D4A0;color:#04231b;font-weight:800;font-size:15px;cursor:pointer">Saqlash</button>' +
-        '<button id="sp-cancel" style="width:100%;padding:11px;border:none;border-radius:11px;background:transparent;color:#666;font-size:14px;cursor:pointer;margin-top:6px">Bekor qilish</button>' +
-      '</div>';
-    document.body.appendChild(d);
-    d.querySelector("#sp-cancel").onclick = function () { d.remove(); };
-    d.querySelector("#sp-go").onclick = function () {
-      var pw = d.querySelector("#sp-pass").value || "";
-      var err = d.querySelector("#sp-err");
-      if (pw.length < 6) { err.textContent = "Parol kamida 6 ta belgi bo'lsin"; return; }
-      sb.auth.updateUser({ password: pw }).then(function (r) {
-        if (r.error) { err.textContent = r.error.message; return; }
-        d.remove();
-        toast("✅ Parol saqlandi");
-      });
     };
   }
 
@@ -230,8 +213,41 @@
   }
 
   // ============================================================
-  //  KIRISH oynasi — EMAIL + KOD (OTP), parol ixtiyoriy
+  //  KIRISH — ism + telefon raqami (04.09.2026)
+  //  Email/SMS/kod yo'q. Raqam hisobning kaliti.
+  //  Supabase ichida raqamdan yasalgan email + hosila parol ishlatiladi
+  //  (foydalanuvchi buni ko'rmaydi, hech qanday xat yuborilmaydi).
+  //  MUHIM: raqam TASDIQLANMAYDI — himoya PIN qulfida.
+  //  Keyingi bosqichda Telegram orqali tasdiqlash qo'shiladi.
   // ============================================================
+  var TEL_DOMEN = "intizom.app";
+
+  function telNorm(t) {
+    var d = (t || "").replace(/\D/g, "");
+    if (d.length === 9) d = "998" + d;                       // 901234567
+    if (d.length === 12 && d.slice(0, 3) === "998") return d; // 998901234567
+    return null;
+  }
+  function telChiroy(d) {
+    if (!d || d.length !== 12) return d || "";
+    return "+" + d.slice(0, 3) + " " + d.slice(3, 5) + " " + d.slice(5, 8) + "-" + d.slice(8, 10) + "-" + d.slice(10);
+  }
+  function telEmail(d) { return "u" + d + "@" + TEL_DOMEN; }
+
+  // Raqamdan barqaror parol — har qurilmada bir xil chiqadi
+  function telParol(d) {
+    var s = "intizom-parol-v1:" + d;
+    try {
+      return crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)).then(function (b) {
+        return Array.from(new Uint8Array(b)).map(function (x) { return x.toString(16).padStart(2, "0"); }).join("").slice(0, 32);
+      });
+    } catch (e) {
+      var h = 5381;
+      for (var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+      return Promise.resolve("z" + h.toString(16) + "-intizom");
+    }
+  }
+
   function gate() {
     var wrap = document.createElement("div");
     wrap.id = "bulut-gate";
@@ -239,118 +255,92 @@
     wrap.innerHTML =
       '<div style="width:100%;max-width:360px;color:#fff">' +
         '<div style="text-align:center;margin-bottom:22px">' +
-          '<div style="font-size:40px">🎯</div>' +
+          '<div style="font-size:40px">&#127919;</div>' +
           '<div style="font-size:26px;font-weight:800;margin-top:6px">Intizom</div>' +
-          '<div id="bg-sub" style="font-size:14px;opacity:.7;margin-top:4px">Emailingizni kiriting — kod yuboramiz</div>' +
+          '<div style="font-size:14px;opacity:.7;margin-top:4px">Ismingiz va raqamingizni kiriting</div>' +
         '</div>' +
         '<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px">' +
-          // 1-bosqich: email
-          '<div id="bg-step1">' +
-            '<input id="bg-email" type="email" inputmode="email" autocomplete="email" placeholder="Email" ' +
-              'style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:15px;outline:none">' +
-            '<div id="bg-err1" style="color:#FCA5A5;font-size:13px;min-height:18px;margin:8px 2px 0"></div>' +
-            '<button id="bg-send" style="width:100%;padding:14px;border:none;border-radius:12px;background:#00D4A0;color:#04231b;font-weight:800;font-size:16px;cursor:pointer;margin-top:2px">Kod olish</button>' +
-            '<div style="text-align:center;margin-top:12px;font-size:13px;opacity:.75">' +
-              '<a id="bg-havepass" href="#" style="color:#93C5FD;text-decoration:none">Parolим bор — parol bilan kirаман</a>' +
-            '</div>' +
-          '</div>' +
-          // 2-bosqich: kod
-          '<div id="bg-step2" style="display:none">' +
-            '<div style="font-size:13px;opacity:.8;margin-bottom:8px" id="bg-sent"></div>' +
-            '<input id="bg-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="6 xonali kod" ' +
-              'style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:20px;letter-spacing:4px;text-align:center;outline:none">' +
-            '<div id="bg-err2" style="color:#FCA5A5;font-size:13px;min-height:18px;margin:8px 2px 0"></div>' +
-            '<button id="bg-verify" style="width:100%;padding:14px;border:none;border-radius:12px;background:#00D4A0;color:#04231b;font-weight:800;font-size:16px;cursor:pointer">Kirish</button>' +
-            '<div style="text-align:center;margin-top:12px;font-size:13px;opacity:.75">' +
-              '<a id="bg-back" href="#" style="color:#93C5FD;text-decoration:none">← Emailни o\'zгартириш</a>' +
-            '</div>' +
-          '</div>' +
-          // parol bilan kirish
-          '<div id="bg-stepP" style="display:none">' +
-            '<input id="bg-pemail" type="email" inputmode="email" autocomplete="email" placeholder="Email" ' +
-              'style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:15px;outline:none;margin-bottom:10px">' +
-            '<input id="bg-ppass" type="password" autocomplete="current-password" placeholder="Parol" ' +
-              'style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:15px;outline:none">' +
-            '<div id="bg-errP" style="color:#FCA5A5;font-size:13px;min-height:18px;margin:8px 2px 0"></div>' +
-            '<button id="bg-pgo" style="width:100%;padding:14px;border:none;border-radius:12px;background:#00D4A0;color:#04231b;font-weight:800;font-size:16px;cursor:pointer">Kirish</button>' +
-            '<div style="text-align:center;margin-top:12px;font-size:13px;opacity:.75">' +
-              '<a id="bg-tocode" href="#" style="color:#93C5FD;text-decoration:none">← Kod bilan kirish</a>' +
-            '</div>' +
+          '<input id="bg-ism" type="text" autocomplete="name" placeholder="Ism familiya" ' +
+            'style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:15px;outline:none;margin-bottom:10px">' +
+          '<input id="bg-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="90 123 45 67" ' +
+            'style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:17px;letter-spacing:1px;outline:none">' +
+          '<div id="bg-err" style="color:#FCA5A5;font-size:13px;min-height:18px;margin:8px 2px 0"></div>' +
+          '<button id="bg-go" style="width:100%;padding:15px;border:none;border-radius:12px;background:#00D4A0;color:#04231b;font-weight:800;font-size:16px;cursor:pointer">Kirish</button>' +
+          '<div style="font-size:12px;opacity:.55;margin-top:12px;line-height:1.5;text-align:center">' +
+            'Raqamingiz hisobingiz kaliti. Telefoningiz almashsa, shu raqam bilan ma\'lumotlaringizni qaytarasiz.' +
           '</div>' +
         '</div>' +
-        '<div style="text-align:center;font-size:11px;opacity:.4;margin-top:16px">Ma\'lumotlaringiz xavfsiz saqlanadi</div>' +
+        '<div style="text-align:center;font-size:11px;opacity:.4;margin-top:16px">Ma\'lumotlaringiz bulutda saqlanadi</div>' +
       '</div>';
     document.body.appendChild(wrap);
 
     var $ = function (id) { return wrap.querySelector(id); };
-    var step1 = $("#bg-step1"), step2 = $("#bg-step2"), stepP = $("#bg-stepP");
-    var curEmail = "";
 
-    // --- 1: kod yuborish ---
-    $("#bg-send").onclick = function () {
-      var em = ($("#bg-email").value || "").trim();
-      var err = $("#bg-err1");
-      err.textContent = "";
-      if (!em || em.indexOf("@") < 0) { err.textContent = "To'g'ri email kiriting"; return; }
-      var btn = $("#bg-send"); btn.disabled = true; btn.textContent = "Yuborilmoqda...";
-      // shouldCreateUser: true -> yangi bo'lsa ham avtomatik ochadi
-      sb.auth.signInWithOtp({ email: em, options: { shouldCreateUser: true } }).then(function (r) {
-        btn.disabled = false; btn.textContent = "Kod olish";
-        if (r.error) { err.textContent = tr(r.error.message); return; }
-        curEmail = em;
-        $("#bg-sent").textContent = em + " ga kod yuborildi. Pochtangizni tekshiring.";
-        step1.style.display = "none"; step2.style.display = "block";
-        setTimeout(function () { $("#bg-code").focus(); }, 100);
-      });
-    };
-    $("#bg-email").addEventListener("keydown", function (e) { if (e.key === "Enter") $("#bg-send").click(); });
+    // raqamni yozayotganda chiroyli ko'rinishi
+    $("#bg-tel").addEventListener("input", function () {
+      var d = this.value.replace(/\D/g, "").slice(0, 12);
+      if (d.length > 9 && d.slice(0, 3) === "998") d = d.slice(3);
+      var p = [];
+      if (d.length > 0) p.push(d.slice(0, 2));
+      if (d.length > 2) p.push(d.slice(2, 5));
+      if (d.length > 5) p.push(d.slice(5, 7));
+      if (d.length > 7) p.push(d.slice(7, 9));
+      this.value = p.join(" ");
+    });
 
-    // --- 2: kodni tekshirish ---
-    $("#bg-verify").onclick = function () {
-      var code = ($("#bg-code").value || "").trim().replace(/\s/g, "");
-      var err = $("#bg-err2");
+    function kir() {
+      var ism = ($("#bg-ism").value || "").trim();
+      var tel = telNorm($("#bg-tel").value);
+      var err = $("#bg-err");
       err.textContent = "";
-      if (code.length < 4) { err.textContent = "Kodni to'liq kiriting"; return; }
-      var btn = $("#bg-verify"); btn.disabled = true; btn.textContent = "...";
-      sb.auth.verifyOtp({ email: curEmail, token: code, type: "email" }).then(function (r) {
-        btn.disabled = false; btn.textContent = "Kirish";
-        if (r.error) { err.textContent = "Kod noto'g'ri yoki eskirgan"; return; }
-        if (r.data && r.data.user) afterAuth(r.data.user);
-      });
-    };
-    $("#bg-code").addEventListener("keydown", function (e) { if (e.key === "Enter") $("#bg-verify").click(); });
-    $("#bg-back").onclick = function (e) { e.preventDefault(); step2.style.display = "none"; step1.style.display = "block"; };
+      if (ism.length < 2) { err.textContent = "Ismingizni kiriting"; $("#bg-ism").focus(); return; }
+      if (!tel) { err.textContent = "Raqamni to'liq kiriting (90 123 45 67)"; $("#bg-tel").focus(); return; }
 
-    // --- parol bilan kirish ---
-    $("#bg-havepass").onclick = function (e) {
-      e.preventDefault();
-      step1.style.display = "none"; stepP.style.display = "block";
-      var pe = $("#bg-pemail"); if (($("#bg-email").value || "").trim()) pe.value = $("#bg-email").value.trim();
-    };
-    $("#bg-tocode").onclick = function (e) { e.preventDefault(); stepP.style.display = "none"; step1.style.display = "block"; };
-    $("#bg-pgo").onclick = function () {
-      var em = ($("#bg-pemail").value || "").trim();
-      var pw = $("#bg-ppass").value || "";
-      var err = $("#bg-errP");
-      err.textContent = "";
-      if (!em || em.indexOf("@") < 0) { err.textContent = "To'g'ri email kiriting"; return; }
-      if (!pw) { err.textContent = "Parolni kiriting"; return; }
-      var btn = $("#bg-pgo"); btn.disabled = true; btn.textContent = "...";
-      sb.auth.signInWithPassword({ email: em, password: pw }).then(function (r) {
+      var btn = $("#bg-go");
+      btn.disabled = true; btn.textContent = "Kirilmoqda...";
+      var em = telEmail(tel);
+
+      telParol(tel).then(function (pw) {
+        // avval mavjud hisobga kirishga urinamiz
+        return sb.auth.signInWithPassword({ email: em, password: pw }).then(function (r) {
+          if (r.data && r.data.user) return r;
+          // yo'q ekan — yangi hisob ochamiz
+          return sb.auth.signUp({
+            email: em, password: pw,
+            options: { data: { ism: ism, tel: tel } }
+          });
+        });
+      }).then(function (r) {
         btn.disabled = false; btn.textContent = "Kirish";
         if (r.error) { err.textContent = tr(r.error.message); return; }
-        if (r.data && r.data.user) afterAuth(r.data.user);
+        if (r.data && r.data.user) {
+          try {
+            localStorage.setItem("foydalanuvchi_ism", ism);
+            localStorage.setItem("foydalanuvchi_tel", tel);
+          } catch (e) {}
+          afterAuth(r.data.user);
+        } else {
+          err.textContent = "Kirib bo'lmadi — qaytadan urinib ko'ring";
+        }
+      }).catch(function (e) {
+        btn.disabled = false; btn.textContent = "Kirish";
+        err.textContent = tr((e && e.message) || "Xatolik");
       });
-    };
-    $("#bg-ppass").addEventListener("keydown", function (e) { if (e.key === "Enter") $("#bg-pgo").click(); });
+    }
+
+    $("#bg-go").onclick = kir;
+    $("#bg-tel").addEventListener("keydown", function (e) { if (e.key === "Enter") kir(); });
+    $("#bg-ism").addEventListener("keydown", function (e) { if (e.key === "Enter") $("#bg-tel").focus(); });
+    setTimeout(function () { try { $("#bg-ism").focus(); } catch (e) {} }, 150);
   }
 
   function tr(m) {
     m = (m || "").toLowerCase();
-    if (m.indexOf("invalid login") >= 0) return "Email yoki parol noto'g'ri";
+    if (m.indexOf("invalid login") >= 0) return "Bu raqam band yoki xato";
+    if (m.indexOf("already registered") >= 0) return "Kirib bo'lmadi — qaytadan urinib ko'ring";
     if (m.indexOf("rate") >= 0 || m.indexOf("too many") >= 0) return "Ko'p urinildi — biroz kuting";
-    if (m.indexOf("password") >= 0) return "Parol xato yoki qisqa";
-    return m;
+    if (m.indexOf("network") >= 0 || m.indexOf("fetch") >= 0) return "Internet yo'q — ulanishni tekshiring";
+    return m || "Xatolik";
   }
 
   function removeGate() { var g = document.getElementById("bulut-gate"); if (g) g.remove(); }
