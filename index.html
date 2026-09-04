@@ -805,6 +805,7 @@
     <div class="card">
       <div class="sitem" onclick="openM('profil-modal')"><div class="sicon" style="background:rgba(0,212,160,.12)">👤</div><div style="flex:1"><div class="sec-title" style="margin-bottom:0;font-size:15px">Profil</div><div style="font-size:12px;color:var(--t2)">Ism, kasb, rasm</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="openHomeConfig()"><div class="sicon" style="background:rgba(139,92,246,.12)">🏠</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Asosiy oynani sozlash</div><div style="font-size:12px;color:var(--t2)">Qaysi bo'limlar ko'rinsin — tanlang</div></div><span style="color:var(--t2)">›</span></div>
+      <div class="sitem" onclick="qollanmaOch()"><div class="sicon" style="background:rgba(59,130,246,.12)">📘</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Qo'llanma</div><div style="font-size:12px;color:var(--t2)">Har bo'lim nima uchun kerak</div></div><span style="color:var(--t2)">›</span></div>
       <div class="card" style="margin-bottom:12px">
         <div class="sec-title">&#127912; Rang va tema</div>
         <div style="margin-bottom:12px">
@@ -1993,17 +1994,354 @@ function oilaPoints(id){
   state.oila.challenges.forEach(function(c){ p += ((c.log&&c.log[id])||0)*5; });
   return p;
 }
+/* ============================================================
+   OILA — BULUT ORQALI BIRGA (04.09.2026)
+   Haqiqiy oila: har kim o'z telefonida, ma'lumot serverda.
+   Ko'rinadigan narsa FAQAT sonlar — kundalik, kayfiyat, eslatma
+   hech qachon yuborilmaydi.
+   ============================================================ */
+
+var _oilaKesh = null;      /* oxirgi olingan manzara */
+var _oilaYuklanmoqda = false;
+
+function _oilaRpc(nom, args){
+  if(!window.BULUT || !window.BULUT.rpc) return Promise.resolve({error:{message:'Bulut yo\'q'}});
+  return window.BULUT.rpc(nom, args);
+}
+
+/* ---------- Kunlik xulosani serverga yuborish ---------- */
+function oilaHolatYubor(){
+  try{
+    if(!window.BULUT || !window.BULUT.kirganmi || !window.BULUT.kirganmi()) return;
+    var t = bugunKun();
+
+    var odatJ = (state.odatlar||[]).length;
+    var odatB = (state.odatlar||[]).filter(function(o){ return o.hist && o.hist[t]; }).length;
+
+    var rejaB = 0, rejaJ = 0;
+    try{
+      var r = state.reja && state.reja.bugun && state.reja.bugun[t];
+      if(Array.isArray(r)){ rejaJ = r.length; rejaB = r.filter(function(x){return x && x.done;}).length; }
+      else if(r && typeof r === 'object'){ var ks=Object.keys(r); rejaJ=ks.length; rejaB=ks.filter(function(k){return r[k];}).length; }
+    }catch(e){}
+
+    var namozB = 0;
+    try{
+      var n = state.din && state.din.namoz && state.din.namoz[t];
+      if(n) namozB = Object.keys(n).filter(function(k){return n[k];}).length;
+    }catch(e){}
+
+    var streak = parseInt(S.g('i_streak'),10) || 0;
+    var ball   = parseInt(S.g('i_ball'),10) || 0;
+
+    _oilaRpc('oila_holat_yoz', {
+      p_odat_b: odatB, p_odat_j: odatJ,
+      p_reja_b: rejaB, p_reja_j: rejaJ,
+      p_namoz_b: namozB, p_streak: streak, p_ball: ball
+    });
+  }catch(e){}
+}
+
+/* ---------- Tab ichi ---------- */
+function renderOilaBulut(){
+  if(_oilaKesh === null && !_oilaYuklanmoqda){ oilaBulutYukla(); }
+  if(_oilaKesh === null){
+    return '<div class="empty">🌐<br><br>Yuklanmoqda...</div>';
+  }
+
+  var d = _oilaKesh;
+
+  /* --- Oilasi yo'q: yaratish yoki qo'shilish --- */
+  if(d.holat === 'oila_yoq'){
+    return '<div class="card" style="text-align:center;padding:22px">' +
+      '<div style="font-size:40px">🌐</div>' +
+      '<div style="font-size:17px;font-weight:800;margin:8px 0 6px">Oilangiz bilan birga</div>' +
+      '<div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:18px">' +
+        'Har kim o\'z telefonida Intizom yuritadi, bu yerda esa bir-biringizning natijangizni ko\'rasiz va umumiy topshiriqlar qo\'yasiz.' +
+      '</div>' +
+      '<button class="btn btn-g btn-block" onclick="oilaYaratBulut()" style="margin-bottom:10px">Oila yaratish</button>' +
+      '<button class="btn btn-out btn-block" onclick="oilaQoshilSora()">Kod bilan qo\'shilish</button>' +
+      '<div style="font-size:11px;color:var(--t2);margin-top:16px;line-height:1.6;text-align:left;background:var(--bg);border-radius:12px;padding:12px">' +
+        '<b>Nima ko\'rinadi:</b> bajarilgan odat va reja soni, namoz soni, ball va streak.<br>' +
+        '<b>Nima ko\'rinmaydi:</b> kundalik yozuvlaringiz, kayfiyatingiz, eslatma va shaxsiy qaydlaringiz. Ular serverga umuman yuborilmaydi.' +
+      '</div>' +
+    '</div>';
+  }
+
+  if(d.holat !== 'ok'){
+    return '<div class="empty">⚠️<br><br>Yuklanmadi<br><small>Internetni tekshirib, qayta urinib ko\'ring</small></div>';
+  }
+
+  var men = d.men;
+  var azolar = d.azolar || [];
+  var vazifalar = d.vazifalar || [];
+
+  /* --- Sarlavha va taklif kodi --- */
+  var h = '<div class="card" style="margin-bottom:12px;display:flex;align-items:center;gap:12px">' +
+      '<div style="flex:1"><div style="font-size:16px;font-weight:800">' + (d.nom||'Oilam') + '</div>' +
+      '<div style="font-size:12px;color:var(--t2)">' + azolar.length + ' a\'zo</div></div>' +
+      '<div style="text-align:right">' +
+        '<div style="font-size:10px;color:var(--t2)">Taklif kodi</div>' +
+        '<div style="font-size:19px;font-weight:800;letter-spacing:2px;color:var(--g)">' + (d.kod||'') + '</div>' +
+      '</div>' +
+      '<button onclick="oilaKodNusxa(\'' + (d.kod||'') + '\')" style="background:none;border:none;font-size:18px;cursor:pointer">📋</button>' +
+    '</div>';
+
+  /* --- Reyting --- */
+  var medal = ['🥇','🥈','🥉'];
+  var ro = azolar.map(function(a, i){
+    var pct = a.odat_j ? Math.round(a.odat_b/a.odat_j*100) : 0;
+    var meni = (a.user_id === men);
+    var vaqt = a.yangilandi ? '' : '<span style="font-size:10px;color:var(--t2)"> · bugun kirmagan</span>';
+    return '<div class="card" style="margin-bottom:8px;padding:12px' + (meni?';border:1px solid var(--g)':'') + '">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<div style="font-size:20px;width:26px;text-align:center">' + (medal[i]||(i+1)) + '</div>' +
+        '<div style="flex:1">' +
+          '<div style="font-size:14px;font-weight:700">' + (a.ism||'—') +
+            (meni?' <span style="font-size:10px;color:var(--g)">(siz)</span>':'') +
+            (a.rol==='ota'?' <span style="font-size:10px;color:var(--t2)">ota-ona</span>':'') + vaqt + '</div>' +
+          '<div style="font-size:11px;color:var(--t2);margin-top:2px">' +
+            'Odat ' + a.odat_b + '/' + a.odat_j +
+            ' · Reja ' + a.reja_b + '/' + a.reja_j +
+            ' · Namoz ' + a.namoz_b + '/5' +
+            (a.streak? ' · 🔥' + a.streak : '') +
+          '</div>' +
+          '<div style="background:var(--bd);border-radius:5px;height:6px;margin-top:6px">' +
+            '<div style="background:var(--g);height:6px;border-radius:5px;width:' + pct + '%"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:right">' +
+          '<div style="font-size:17px;font-weight:800;color:var(--g)">' + (a.hafta_ball||0) + '</div>' +
+          '<div style="font-size:9px;color:var(--t2)">7 kun</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  /* --- Oilaviy topshiriqlar --- */
+  var vz = vazifalar.map(function(v){
+    var kim = v.kimga ? (v.kimga_ism||'—') : 'Hammaga';
+    var mud = v.muddat ? (' · ' + v.muddat) : '';
+    return '<div class="card" style="margin-bottom:8px;padding:12px;display:flex;align-items:center;gap:10px' +
+        (v.bajarildi?';opacity:.5':'') + '">' +
+      '<button onclick="oilaVazBelgila(' + v.id + ',' + (v.bajarildi?'false':'true') + ')" ' +
+        'style="width:26px;height:26px;border-radius:9px;border:2px solid ' + (v.bajarildi?'var(--g)':'var(--bd)') +
+        ';background:' + (v.bajarildi?'var(--g)':'transparent') + ';color:#fff;font-size:14px;cursor:pointer;flex-shrink:0">' +
+        (v.bajarildi?'✓':'') + '</button>' +
+      '<div style="flex:1">' +
+        '<div style="font-size:14px;font-weight:600' + (v.bajarildi?';text-decoration:line-through':'') + '">' + v.matn + '</div>' +
+        '<div style="font-size:11px;color:var(--t2)">' + kim + mud + '</div>' +
+      '</div>' +
+      (v.yaratuvchi === men ? '<button onclick="oilaVazOchir(' + v.id + ')" style="background:none;border:none;font-size:15px;cursor:pointer;color:var(--t2)">🗑</button>' : '') +
+    '</div>';
+  }).join('');
+
+  if(!vz) vz = '<div style="text-align:center;padding:14px;color:var(--t2);font-size:13px">Hali topshiriq yo\'q</div>';
+
+  return h +
+    '<div class="sec-title" style="margin:16px 0 8px">🏆 Haftalik reyting</div>' + ro +
+    '<div class="sec-title" style="margin:18px 0 8px">✅ Oilaviy topshiriqlar</div>' +
+    '<button class="btn btn-g btn-block" onclick="oilaVazSora()" style="margin-bottom:10px">+ Topshiriq qo\'shish</button>' +
+    vz +
+    '<button class="btn btn-out btn-block" onclick="oilaChiqBulut()" style="margin-top:20px;color:var(--red)">Oiladan chiqish</button>';
+}
+
+/* ---------- Ma'lumotni yuklash ---------- */
+function oilaBulutYukla(qayta){
+  if(_oilaYuklanmoqda) return;
+  _oilaYuklanmoqda = true;
+  oilaHolatYubor();                       /* avval o'z holatimizni yuboramiz */
+  _oilaRpc('oila_korish').then(function(r){
+    _oilaYuklanmoqda = false;
+    _oilaKesh = (r && r.data) ? r.data : {holat:'xato'};
+    try{ if(document.getElementById('oila-body').getAttribute('data-tab')==='bulut') renderOila(); }catch(e){}
+  }).catch(function(){
+    _oilaYuklanmoqda = false;
+    _oilaKesh = {holat:'xato'};
+    try{ renderOila(); }catch(e){}
+  });
+}
+
+/* ---------- Amallar ---------- */
+function oilaYaratBulut(){
+  var nom = prompt('Oila nomi:', 'Oilam');
+  if(nom === null) return;
+  _oilaRpc('oila_yarat', {p_nom: (nom||'Oilam').trim()}).then(function(r){
+    if(r.error){ showNotif('⚠️','Xatolik: '+r.error.message); return; }
+    _oilaKesh = null; oilaBulutYukla();
+    showNotif('🌐','Oila yaratildi! Kodni yaqinlaringizga bering.');
+  });
+}
+
+function oilaQoshilSora(){
+  var k = prompt('Taklif kodini kiriting (6 belgi):');
+  if(!k) return;
+  _oilaRpc('oila_qoshil', {p_kod: k.trim()}).then(function(r){
+    if(r.error){ showNotif('⚠️','Xatolik'); return; }
+    var d = r.data || {};
+    if(d.holat === 'yoq'){ showNotif('⚠️','Bunday kod topilmadi'); return; }
+    if(d.holat === 'allaqachon'){ showNotif('ℹ️','Siz allaqachon oiladasiz'); return; }
+    _oilaKesh = null; oilaBulutYukla();
+    showNotif('🌐','Qo\'shildingiz: ' + (d.nom||''));
+  });
+}
+
+function oilaVazSora(){
+  var m = prompt('Topshiriq matni:');
+  if(!m || !m.trim()) return;
+  _oilaRpc('vazifa_qosh', {p_matn: m.trim(), p_kimga: null, p_muddat: null}).then(function(r){
+    if(r.error){ showNotif('⚠️','Qo\'shilmadi'); return; }
+    _oilaKesh = null; oilaBulutYukla();
+  });
+}
+
+function oilaVazBelgila(id, holat){
+  _oilaRpc('vazifa_belgila', {p_id: id, p_holat: holat}).then(function(){
+    _oilaKesh = null; oilaBulutYukla();
+  });
+}
+
+function oilaVazOchir(id){
+  confirmDel('Topshiriq o\'chirilsinmi?','','',function(){
+    _oilaRpc('vazifa_ochir', {p_id: id}).then(function(){
+      _oilaKesh = null; oilaBulutYukla();
+    });
+  });
+}
+
+function oilaChiqBulut(){
+  confirmDel('Oiladan chiqasizmi?','Natijalaringiz oila a\'zolariga ko\'rinmay qoladi. Istagan payt kod bilan qayta qo\'shilasiz.','',function(){
+    _oilaRpc('oila_chiq').then(function(){
+      _oilaKesh = null; oilaBulutYukla();
+      showNotif('👋','Oiladan chiqdingiz');
+    });
+  });
+}
+
+function oilaKodNusxa(k){
+  try{ navigator.clipboard.writeText(k); showNotif('📋','Kod nusxalandi: '+k); }
+  catch(e){ showNotif('ℹ️','Kod: '+k); }
+}
+
+/* ============================================================
+   TANISHTIRUV va QO'LLANMA (04.09.2026)
+   - Birinchi kirishda 5 ta qisqa ekran
+   - Sozlamalarda to'liq qo'llanma
+   ============================================================ */
+
+var QOL_KORILDI = 'qollanma_korildi';
+
+var TANISH = [
+  { emo:'🎯', sar:'Intizom — kunlik hamrohingiz',
+    matn:'Odat, reja, namoz, moliya va sog\'liq — barchasi bir joyda. Kuniga bir necha daqiqa yetadi.' },
+  { emo:'🔥', sar:'Odatlaringizni belgilang',
+    matn:'Har kuni bajargan odatingizni bir bosishda belgilaysiz. Ketma-ket kunlar streak bo\'lib yig\'iladi — uzilmasligi uchun kurashasiz.' },
+  { emo:'📋', sar:'Kuningizni rejalashtiring',
+    matn:'Ertalab bugungi vazifalarni yozing, kun davomida belgilab boring. Kechqurun nima qilganingiz ko\'rinib turadi.' },
+  { emo:'📊', sar:'Natijangiz o\'zi hisoblanadi',
+    matn:'Har bajarilgan ish ball beradi. Hisobot bo\'limida haftalik va oylik o\'sishingizni ko\'rasiz.' },
+  { emo:'👨‍👩‍👧', sar:'Oilangiz bilan birga',
+    matn:'Oila bo\'limida yaqinlaringiz bilan bog\'lanib, bir-biringizning natijangizni ko\'rasiz va umumiy topshiriqlar qo\'yasiz.' }
+];
+
+function tanishtiruvKorsat(majburiy){
+  try{
+    if(!majburiy && localStorage.getItem(QOL_KORILDI) === '1') return;
+    if(document.getElementById('bulut-gate')){ setTimeout(function(){tanishtiruvKorsat(majburiy);},1000); return; }
+    if(document.getElementById('tanish-ovl')) return;
+
+    var i = 0;
+    var d = document.createElement('div');
+    d.id = 'tanish-ovl';
+    d.style.cssText = 'position:fixed;inset:0;z-index:99996;background:linear-gradient(160deg,#0b1220,#111827);display:flex;align-items:center;justify-content:center;padding:24px';
+    d.innerHTML = '<div style="width:100%;max-width:340px;color:#fff;text-align:center">' +
+        '<div id="tn-emo" style="font-size:64px;margin-bottom:18px"></div>' +
+        '<div id="tn-sar" style="font-size:22px;font-weight:800;margin-bottom:10px;line-height:1.3"></div>' +
+        '<div id="tn-matn" style="font-size:14px;opacity:.75;line-height:1.7;min-height:88px"></div>' +
+        '<div id="tn-nuqta" style="display:flex;gap:6px;justify-content:center;margin:22px 0"></div>' +
+        '<button id="tn-next" style="width:100%;padding:15px;border:none;border-radius:14px;background:#00D4A0;color:#04231b;font-weight:800;font-size:16px;cursor:pointer">Keyingisi</button>' +
+        '<button id="tn-skip" style="width:100%;padding:12px;border:none;border-radius:14px;background:transparent;color:rgba(255,255,255,.5);font-size:14px;cursor:pointer;margin-top:6px">O\'tkazib yuborish</button>' +
+      '</div>';
+    document.body.appendChild(d);
+
+    function chiz(){
+      var t = TANISH[i];
+      d.querySelector('#tn-emo').textContent = t.emo;
+      d.querySelector('#tn-sar').textContent = t.sar;
+      d.querySelector('#tn-matn').textContent = t.matn;
+      d.querySelector('#tn-nuqta').innerHTML = TANISH.map(function(_,j){
+        return '<div style="width:'+(j===i?'20px':'7px')+';height:7px;border-radius:4px;background:'+(j===i?'#00D4A0':'rgba(255,255,255,.2)')+';transition:all .25s"></div>';
+      }).join('');
+      d.querySelector('#tn-next').textContent = (i === TANISH.length-1) ? 'Boshlash' : 'Keyingisi';
+      d.querySelector('#tn-skip').style.display = (i === TANISH.length-1) ? 'none' : 'block';
+    }
+
+    function yop(){
+      try{ localStorage.setItem(QOL_KORILDI,'1'); }catch(e){}
+      d.remove();
+    }
+
+    d.querySelector('#tn-next').onclick = function(){
+      if(i < TANISH.length-1){ i++; chiz(); } else { yop(); }
+    };
+    d.querySelector('#tn-skip').onclick = yop;
+    chiz();
+  }catch(e){}
+}
+
+/* ---------------- TO'LIQ QO'LLANMA ---------------- */
+
+var QOL_BOLIM = [
+  { emo:'🔥', nom:'Odat', matn:'Har kuni takrorlanadigan ishlar. Belgilaganingizda streak o\'sadi, bir kun o\'tkazsangiz nolga tushadi.' },
+  { emo:'📋', nom:'Reja', matn:'Bugungi vazifalar. Shablon qo\'ysangiz, har kuni o\'zi takrorlanadi.' },
+  { emo:'🌙', nom:'Namoz', matn:'Besh vaqt namozni belgilash va vaqtlarini ko\'rish.' },
+  { emo:'💳', nom:'Moliya', matn:'Kirim-chiqimni yozib borish. Oylik xulosa o\'zi hisoblanadi.' },
+  { emo:'📖', nom:'Kundalik', matn:'Kun haqidagi shaxsiy yozuvlaringiz. Bu bo\'lim hech kimga ko\'rinmaydi.' },
+  { emo:'😊', nom:'Kayfiyat', matn:'Kun kayfiyatini belgilaysiz. Vaqt o\'tib qaysi kunlar og\'ir kechganini ko\'rasiz.' },
+  { emo:'💧', nom:'Suv', matn:'Kuniga qancha suv ichganingiz. Bir bosish = 250 ml.' },
+  { emo:'🍎', nom:'Ratsion', matn:'Ovqat va kaloriya. Kunlik normangiz vazn, bo\'y va yoshingizdan hisoblanadi — Sport bo\'limidan kiriting.' },
+  { emo:'🏃', nom:'Sport', matn:'Mashqlar, vazn va uyqu. Vaznni muntazam kiritsangiz o\'zgarish ko\'rinadi.' },
+  { emo:'👨‍👩‍👧', nom:'Oila', matn:'Yaqinlaringiz bilan bog\'lanib natijalarni ko\'rish va umumiy topshiriqlar. Faqat sonlar ulashiladi — kundalik va kayfiyatingiz ko\'rinmaydi.' },
+  { emo:'📊', nom:'Hisobot', matn:'Haftalik va oylik o\'sishingiz, grafiklar va tahlil.' },
+  { emo:'🔒', nom:'PIN qulf', matn:'Ilovani 4 xonali kod bilan yopish. Kod telefoningizdan chiqmaydi.' },
+  { emo:'☁️', nom:'Bulut', matn:'Ma\'lumotlaringiz serverga saqlanadi. Telefon almashsa, o\'sha raqam bilan qaytarasiz.' }
+];
+
+function qollanmaOch(){
+  if(document.getElementById('qol-ovl')) return;
+  var d = document.createElement('div');
+  d.id = 'qol-ovl';
+  d.style.cssText = 'position:fixed;inset:0;z-index:99995;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
+  d.innerHTML = '<div style="width:100%;max-width:520px;max-height:86vh;background:var(--card,#fff);color:var(--text,#111);border-radius:22px 22px 0 0;padding:20px;overflow:auto">' +
+      '<div style="width:38px;height:4px;background:var(--bd,#ddd);border-radius:3px;margin:0 auto 14px"></div>' +
+      '<div style="font-size:19px;font-weight:800;margin-bottom:6px">📘 Qo\'llanma</div>' +
+      '<div style="font-size:13px;color:var(--t2,#666);margin-bottom:16px;line-height:1.6">Har bir bo\'lim nima uchun kerak. Hammasini birdan ishlatish shart emas — ikki-uchtasidan boshlang.</div>' +
+      QOL_BOLIM.map(function(b){
+        return '<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--bd,#eee)">' +
+          '<div style="font-size:22px;width:30px;text-align:center;flex-shrink:0">'+b.emo+'</div>' +
+          '<div><div style="font-size:14px;font-weight:700;margin-bottom:3px">'+b.nom+'</div>' +
+          '<div style="font-size:12.5px;color:var(--t2,#666);line-height:1.6">'+b.matn+'</div></div>' +
+        '</div>';
+      }).join('') +
+      '<button onclick="tanishtiruvKorsat(true)" style="width:100%;padding:13px;border:1px solid var(--bd,#e5e5e5);border-radius:14px;background:var(--bg,#f7f7f7);color:var(--text,#111);font-size:14px;font-weight:600;cursor:pointer;margin-top:16px">Tanishtiruvni qayta ko\'rish</button>' +
+      '<button onclick="document.getElementById(\'qol-ovl\').remove()" style="width:100%;padding:15px;border:none;border-radius:14px;background:var(--g,#00D4A0);color:#04231b;font-weight:800;font-size:15px;cursor:pointer;margin-top:8px">Yopish</button>' +
+    '</div>';
+  document.body.appendChild(d);
+  d.onclick = function(e){ if(e.target === d) d.remove(); };
+}
+
 function renderOila(){
   var el=document.getElementById('oila-body');
   if(!el) return;
   var tab = el.getAttribute('data-tab') || 'azo';
-  var tabs = [['azo','👨‍👩‍👧 A\'zolar'],['chal','🏆 Challenge'],['vaz','✅ Vazifa'],['taqvim','📅 Taqvim']];
+  var tabs = [['bulut','🌐 Birga'],['azo','👨‍👩‍👧 A\'zolar'],['chal','🏆 Challenge'],['vaz','✅ Vazifa'],['taqvim','📅 Taqvim']];
   var bar = '<div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">' + tabs.map(function(t){
     var sel = t[0]===tab;
     return `<button onclick="switchOilaTab('${t[0]}')" style="flex:1;min-width:68px;padding:8px 4px;border-radius:12px;border:1.5px solid ${sel?'var(--g)':'var(--bd)'};background:${sel?'var(--g)':'var(--bg)'};color:${sel?'#fff':'var(--t2)'};font-size:11px;font-weight:700;cursor:pointer">${t[1]}</button>`;
   }).join('') + '</div>';
   var body='';
-  if(tab==='azo') body=renderOilaAzo();
+  if(tab==='bulut') body=renderOilaBulut();
+  else if(tab==='azo') body=renderOilaAzo();
   else if(tab==='chal') body=renderOilaChal();
   else if(tab==='vaz') body=renderOilaVaz();
   else if(tab==='taqvim') body=renderOilaTaqvim();
@@ -2561,6 +2899,10 @@ document.addEventListener('visibilitychange',function(){
 });
 setTimeout(()=>{try{checkParolOnLoad();}catch(e){console.error(e);}},600);
 setTimeout(function(){try{tozalash();}catch(e){console.error(e);}},2500);
+/* Oila xulosasi: kirgandan 6 soniya keyin va har 5 daqiqada */
+setTimeout(function(){try{tanishtiruvKorsat();}catch(e){}},1200);
+setTimeout(function(){try{oilaHolatYubor();}catch(e){}},6000);
+setInterval(function(){try{oilaHolatYubor();}catch(e){}},5*60*1000);
 setTimeout(function(){try{renderKunMashq();}catch(e){}},800);
 
 function showHisobotTab(tab,el){
