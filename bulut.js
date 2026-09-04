@@ -213,19 +213,18 @@
   }
 
   // ============================================================
-  //  KIRISH — ism + telefon raqami (04.09.2026)
-  //  Email/SMS/kod yo'q. Raqam hisobning kaliti.
-  //  Supabase ichida raqamdan yasalgan email + hosila parol ishlatiladi
-  //  (foydalanuvchi buni ko'rmaydi, hech qanday xat yuborilmaydi).
-  //  MUHIM: raqam TASDIQLANMAYDI — himoya PIN qulfida.
-  //  Keyingi bosqichda Telegram orqali tasdiqlash qo'shiladi.
+  //  KIRISH — TELEGRAM orqali (04.09.2026)
+  //  Raqam Telegram'ning o'zidan keladi, qo'lda yozilmaydi.
+  //  Bot: @IIntizom_bot
+  //  Zaxira yo'l: ism + raqam (Telegram'i yo'q odam uchun)
   // ============================================================
+  var BOT_NOMI = "IIntizom_bot";
   var TEL_DOMEN = "intizom.app";
 
   function telNorm(t) {
     var d = (t || "").replace(/\D/g, "");
-    if (d.length === 9) d = "998" + d;                       // 901234567
-    if (d.length === 12 && d.slice(0, 3) === "998") return d; // 998901234567
+    if (d.length === 9) d = "998" + d;
+    if (d.length === 12 && d.slice(0, 3) === "998") return d;
     return null;
   }
   function telChiroy(d) {
@@ -233,8 +232,6 @@
     return "+" + d.slice(0, 3) + " " + d.slice(3, 5) + " " + d.slice(5, 8) + "-" + d.slice(8, 10) + "-" + d.slice(10);
   }
   function telEmail(d) { return "u" + d + "@" + TEL_DOMEN; }
-
-  // Raqamdan barqaror parol — har qurilmada bir xil chiqadi
   function telParol(d) {
     var s = "intizom-parol-v1:" + d;
     try {
@@ -251,32 +248,134 @@
   function gate() {
     var wrap = document.createElement("div");
     wrap.id = "bulut-gate";
-    wrap.style.cssText = "position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#0b1220,#111827);display:flex;align-items:center;justify-content:center;padding:22px;font-family:system-ui,-apple-system,sans-serif";
+    wrap.style.cssText = "position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#0b1220,#111827);display:flex;align-items:center;justify-content:center;padding:22px;font-family:system-ui,-apple-system,sans-serif;overflow:auto";
     wrap.innerHTML =
       '<div style="width:100%;max-width:360px;color:#fff">' +
         '<div style="text-align:center;margin-bottom:22px">' +
           '<div style="font-size:40px">&#127919;</div>' +
           '<div style="font-size:26px;font-weight:800;margin-top:6px">Intizom</div>' +
-          '<div style="font-size:14px;opacity:.7;margin-top:4px">Ismingiz va raqamingizni kiriting</div>' +
+          '<div id="bg-sub" style="font-size:14px;opacity:.7;margin-top:4px">Kirish uchun Telegram yetarli</div>' +
         '</div>' +
-        '<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px">' +
+
+        // --- 1-bosqich: Telegram tugmasi ---
+        '<div id="bg-tg" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px">' +
+          '<button id="bg-tgo" style="width:100%;padding:15px;border:none;border-radius:12px;background:#229ED9;color:#fff;font-weight:800;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">' +
+            '<span style="font-size:19px">&#9993;</span> Telegram orqali kirish' +
+          '</button>' +
+          '<div style="font-size:12px;opacity:.55;margin-top:12px;line-height:1.5;text-align:center">' +
+            'Bot ochiladi, bir tugma bilan raqamingizni tasdiqlaysiz. Parol o\'ylash shart emas.' +
+          '</div>' +
+          '<div style="text-align:center;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)">' +
+            '<a id="bg-qol" href="#" style="color:#93C5FD;text-decoration:none;font-size:13px">Telegramim yo\'q — qo\'lda kiritaman</a>' +
+          '</div>' +
+        '</div>' +
+
+        // --- 2-bosqich: kutish ---
+        '<div id="bg-kut" style="display:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:22px;text-align:center">' +
+          '<div id="bg-spin" style="width:36px;height:36px;margin:0 auto 14px;border:3px solid rgba(255,255,255,.15);border-top-color:#229ED9;border-radius:50%;animation:bgspin 1s linear infinite"></div>' +
+          '<div style="font-weight:700;font-size:16px;margin-bottom:6px">Telegram kutilmoqda...</div>' +
+          '<div style="font-size:13px;opacity:.65;line-height:1.5">Botda <b>Raqamimni yuborish</b> tugmasini bosing. Tasdiqlangach bu yerga o\'zi kiradi.</div>' +
+          '<div id="bg-kuterr" style="color:#FCA5A5;font-size:13px;margin-top:12px;min-height:18px"></div>' +
+          '<button id="bg-qayta" style="width:100%;padding:13px;border:none;border-radius:12px;background:#229ED9;color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:14px">Botni qayta ochish</button>' +
+          '<button id="bg-bekor" style="width:100%;padding:11px;border:none;border-radius:12px;background:transparent;color:#93C5FD;font-size:14px;cursor:pointer;margin-top:6px">&#8592; Orqaga</button>' +
+        '</div>' +
+
+        // --- Zaxira: ism + raqam ---
+        '<div id="bg-man" style="display:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px">' +
           '<input id="bg-ism" type="text" autocomplete="name" placeholder="Ism familiya" ' +
             'style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:15px;outline:none;margin-bottom:10px">' +
           '<input id="bg-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="90 123 45 67" ' +
             'style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:17px;letter-spacing:1px;outline:none">' +
           '<div id="bg-err" style="color:#FCA5A5;font-size:13px;min-height:18px;margin:8px 2px 0"></div>' +
           '<button id="bg-go" style="width:100%;padding:15px;border:none;border-radius:12px;background:#00D4A0;color:#04231b;font-weight:800;font-size:16px;cursor:pointer">Kirish</button>' +
-          '<div style="font-size:12px;opacity:.55;margin-top:12px;line-height:1.5;text-align:center">' +
-            'Raqamingiz hisobingiz kaliti. Telefoningiz almashsa, shu raqam bilan ma\'lumotlaringizni qaytarasiz.' +
+          '<div style="text-align:center;margin-top:14px">' +
+            '<a id="bg-tgqayt" href="#" style="color:#93C5FD;text-decoration:none;font-size:13px">&#8592; Telegram orqali kirish</a>' +
           '</div>' +
         '</div>' +
+
         '<div style="text-align:center;font-size:11px;opacity:.4;margin-top:16px">Ma\'lumotlaringiz bulutda saqlanadi</div>' +
-      '</div>';
+      '</div>' +
+      '<style>@keyframes bgspin{to{transform:rotate(360deg)}}</style>';
     document.body.appendChild(wrap);
 
     var $ = function (id) { return wrap.querySelector(id); };
+    var qTimer = null, qKod = null;
 
-    // raqamni yozayotganda chiroyli ko'rinishi
+    function korsat(qaysi) {
+      $("#bg-tg").style.display  = qaysi === "tg"  ? "block" : "none";
+      $("#bg-kut").style.display = qaysi === "kut" ? "block" : "none";
+      $("#bg-man").style.display = qaysi === "man" ? "block" : "none";
+      var s = $("#bg-sub");
+      s.textContent = qaysi === "man" ? "Ismingiz va raqamingizni kiriting" : "Kirish uchun Telegram yetarli";
+    }
+
+    function kutishniToxtat() { if (qTimer) { clearInterval(qTimer); qTimer = null; } }
+
+    // ---------- TELEGRAM YO'LI ----------
+    function tgBoshla() {
+      var btn = $("#bg-tgo");
+      btn.disabled = true;
+      sb.rpc("tg_kod_yarat").then(function (r) {
+        btn.disabled = false;
+        if (r.error || !r.data) { alert("Ulanishda xatolik. Internetni tekshiring."); return; }
+        qKod = r.data;
+        try { window.open("https://t.me/" + BOT_NOMI + "?start=" + qKod, "_blank"); }
+        catch (e) { location.href = "https://t.me/" + BOT_NOMI + "?start=" + qKod; }
+        korsat("kut");
+        surash();
+      }).catch(function () { btn.disabled = false; alert("Ulanishda xatolik."); });
+    }
+
+    // har 2 soniyada sessiya tayyormi deb so'raymiz
+    function surash() {
+      kutishniToxtat();
+      var boshlandi = Date.now();
+      qTimer = setInterval(function () {
+        if (Date.now() - boshlandi > 10 * 60 * 1000) {   // 10 daqiqa
+          kutishniToxtat();
+          $("#bg-kuterr").textContent = "Vaqt tugadi. Qaytadan boshlang.";
+          return;
+        }
+        sb.rpc("tg_holat", { p_kod: qKod }).then(function (r) {
+          var d = r.data;
+          if (!d) return;
+          if (d.holat === "tayyor" && d.sessiya) {
+            kutishniToxtat();
+            sb.auth.setSession({
+              access_token: d.sessiya.access_token,
+              refresh_token: d.sessiya.refresh_token,
+            }).then(function (s) {
+              if (s.error || !s.data || !s.data.user) {
+                $("#bg-kuterr").textContent = "Sessiya o'rnatilmadi. Qaytadan urinib ko'ring.";
+                return;
+              }
+              try {
+                if (d.ism) localStorage.setItem("foydalanuvchi_ism", d.ism);
+                if (d.tel) localStorage.setItem("foydalanuvchi_tel", d.tel);
+              } catch (e) {}
+              afterAuth(s.data.user);
+            });
+          } else if (d.holat === "eskirgan" || d.holat === "yoq") {
+            kutishniToxtat();
+            $("#bg-kuterr").textContent = "Havola eskirdi. Qaytadan boshlang.";
+          }
+        });
+      }, 2000);
+    }
+
+    $("#bg-tgo").onclick = tgBoshla;
+    $("#bg-qayta").onclick = function () {
+      if (!qKod) { korsat("tg"); return; }
+      $("#bg-kuterr").textContent = "";
+      window.open("https://t.me/" + BOT_NOMI + "?start=" + qKod, "_blank");
+      if (!qTimer) surash();
+    };
+    $("#bg-bekor").onclick = function () { kutishniToxtat(); qKod = null; korsat("tg"); };
+
+    // ---------- QO'LDA KIRITISH (zaxira) ----------
+    $("#bg-qol").onclick = function (e) { e.preventDefault(); kutishniToxtat(); korsat("man"); setTimeout(function () { try { $("#bg-ism").focus(); } catch (x) {} }, 100); };
+    $("#bg-tgqayt").onclick = function (e) { e.preventDefault(); korsat("tg"); };
+
     $("#bg-tel").addEventListener("input", function () {
       var d = this.value.replace(/\D/g, "").slice(0, 12);
       if (d.length > 9 && d.slice(0, 3) === "998") d = d.slice(3);
@@ -288,7 +387,7 @@
       this.value = p.join(" ");
     });
 
-    function kir() {
+    function qolKir() {
       var ism = ($("#bg-ism").value || "").trim();
       var tel = telNorm($("#bg-tel").value);
       var err = $("#bg-err");
@@ -301,14 +400,9 @@
       var em = telEmail(tel);
 
       telParol(tel).then(function (pw) {
-        // avval mavjud hisobga kirishga urinamiz
         return sb.auth.signInWithPassword({ email: em, password: pw }).then(function (r) {
           if (r.data && r.data.user) return r;
-          // yo'q ekan — yangi hisob ochamiz
-          return sb.auth.signUp({
-            email: em, password: pw,
-            options: { data: { ism: ism, tel: tel } }
-          });
+          return sb.auth.signUp({ email: em, password: pw, options: { data: { ism: ism, tel: tel } } });
         });
       }).then(function (r) {
         btn.disabled = false; btn.textContent = "Kirish";
@@ -328,10 +422,14 @@
       });
     }
 
-    $("#bg-go").onclick = kir;
-    $("#bg-tel").addEventListener("keydown", function (e) { if (e.key === "Enter") kir(); });
+    $("#bg-go").onclick = qolKir;
+    $("#bg-tel").addEventListener("keydown", function (e) { if (e.key === "Enter") qolKir(); });
     $("#bg-ism").addEventListener("keydown", function (e) { if (e.key === "Enter") $("#bg-tel").focus(); });
-    setTimeout(function () { try { $("#bg-ism").focus(); } catch (e) {} }, 150);
+
+    // Telegram'dan qaytganda darhol tekshirib ko'ramiz
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible" && qKod && qTimer) surash();
+    });
   }
 
   function tr(m) {
