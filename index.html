@@ -806,6 +806,7 @@
       <div class="sitem" onclick="openM('profil-modal')"><div class="sicon" style="background:rgba(0,212,160,.12)">👤</div><div style="flex:1"><div class="sec-title" style="margin-bottom:0;font-size:15px">Profil</div><div style="font-size:12px;color:var(--t2)">Ism, kasb, rasm</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="openHomeConfig()"><div class="sicon" style="background:rgba(139,92,246,.12)">🏠</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Asosiy oynani sozlash</div><div style="font-size:12px;color:var(--t2)">Qaysi bo'limlar ko'rinsin — tanlang</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="qollanmaOch()"><div class="sicon" style="background:rgba(59,130,246,.12)">📘</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Qo'llanma</div><div style="font-size:12px;color:var(--t2)">Har bo'lim nima uchun kerak</div></div><span style="color:var(--t2)">›</span></div>
+      <div class="sitem" onclick="yordamOch()"><div class="sicon" style="background:rgba(245,158,11,.12)">💬</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Yordam va taklif</div><div style="font-size:12px;color:var(--t2)">Xatolik, savol yoki taklif yuborish</div></div><span style="color:var(--t2)">›</span></div>
       <div class="card" style="margin-bottom:12px">
         <div class="sec-title">&#127912; Rang va tema</div>
         <div style="margin-bottom:12px">
@@ -2306,6 +2307,29 @@ var QOL_BOLIM = [
   { emo:'🔒', nom:'PIN qulf', matn:'Ilovani 4 xonali kod bilan yopish. Kod telefoningizdan chiqmaydi.' },
   { emo:'☁️', nom:'Bulut', matn:'Ma\'lumotlaringiz serverga saqlanadi. Telefon almashsa, o\'sha raqam bilan qaytarasiz.' }
 ];
+
+/* Yordam va taklif — botga olib boradi */
+function yordamOch(){
+  var d = document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;z-index:99995;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:22px';
+  d.innerHTML = '<div style="width:100%;max-width:340px;background:var(--card,#fff);color:var(--text,#111);border-radius:20px;padding:24px;text-align:center">' +
+      '<div style="font-size:42px;margin-bottom:10px">\uD83D\uDCAC</div>' +
+      '<div style="font-size:18px;font-weight:800;margin-bottom:8px">Yordam va taklif</div>' +
+      '<div style="font-size:13px;color:var(--t2,#666);line-height:1.6;margin-bottom:18px">' +
+        'Xatolik topdingizmi, taklifingiz bormi yoki savol tug\'ildimi \u2014 yozing. Telegram orqali javob beramiz.' +
+      '</div>' +
+      '<button id="yo-go" style="width:100%;padding:14px;border:none;border-radius:14px;background:#229ED9;color:#fff;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:8px">Telegramda yozish</button>' +
+      '<button id="yo-x" style="width:100%;padding:12px;border:none;border-radius:14px;background:transparent;color:var(--t2,#666);font-size:14px;cursor:pointer">Yopish</button>' +
+    '</div>';
+  document.body.appendChild(d);
+  d.querySelector('#yo-go').onclick=function(){
+    try{ window.open('https://t.me/IIntizom_bot?start=yordam','_blank'); }
+    catch(e){ location.href='https://t.me/IIntizom_bot?start=yordam'; }
+    d.remove();
+  };
+  d.querySelector('#yo-x').onclick=function(){ d.remove(); };
+  d.onclick=function(e){ if(e.target===d) d.remove(); };
+}
 
 function qollanmaOch(){
   if(document.getElementById('qol-ovl')) return;
@@ -3845,6 +3869,161 @@ function addSport(){
   document.getElementById('sp-note').value='';
   renderSport();showNotif('💪 Barakalla!',item.icon+' '+mins+' daq · '+kal+' kcal!');
 }
+/* ============================================================
+   MA'LUMOTNI SIQISH (04.09.2026)
+
+   Muammo: sana bo'yicha to'planadigan yozuvlar hech qachon
+   tozalanmasdi. Bir yildan keyin bitta foydalanuvchining
+   ma'lumoti yuz kilobaytga chiqadi va har tugma bosilganda
+   o'shancha trafik ketadi.
+
+   Yechim: eski yozuvlar O'CHIRILMAYDI, balki OYLIK XULOSAGA
+   aylantiriladi. Ya'ni "iyul oyida 24 kun namoz o'qilgan" degan
+   ma'lumot qoladi, lekin 24 ta alohida yozuv o'rniga bitta qator.
+
+   Kuniga bir marta ishlaydi.
+   ============================================================ */
+
+var TOZ_KUN = 120;              /* shu kundan eskisi xulosaga aylanadi */
+var TOZ_OXIRGI = 'toz_oxirgi';  /* i_ bilan boshlanmaydi -> bulutga ketmaydi */
+
+/* 'YYYY-MM-DD' -> 'YYYY-MM' */
+function _oyKal(k){ return (k && k.length >= 7) ? k.slice(0,7) : null; }
+
+/* Shu sanadan eskimi? */
+function _eski(k, chegara){ return k < chegara; }
+
+function _chegaraSana(){
+  var d = new Date();
+  d.setDate(d.getDate() - TOZ_KUN);
+  return kunKal(d);
+}
+
+/* ---- 1) ODATLAR: har odatning hist{sana:true} -> xulosa{oy:son} ---- */
+function _tozalaOdat(chegara){
+  var ozgardi = 0;
+  try{
+    (state.odatlar||[]).forEach(function(o){
+      if(!o || !o.hist) return;
+      o.xulosa = o.xulosa || {};
+      Object.keys(o.hist).forEach(function(k){
+        if(!_eski(k, chegara)) return;
+        var oy = _oyKal(k);
+        if(oy){ o.xulosa[oy] = (o.xulosa[oy]||0) + 1; }
+        delete o.hist[k];
+        ozgardi++;
+      });
+    });
+    if(ozgardi) S.s('i_odatlar', state.odatlar);
+  }catch(e){}
+  return ozgardi;
+}
+
+/* ---- 2) SPORT: bugun{sana:[mashqlar]} -> xulosa{oy:{son,daq,kcal}} ---- */
+function _tozalaSport(chegara){
+  var n = 0;
+  try{
+    var sp = state.sport; if(!sp || !sp.bugun) return 0;
+    sp.xulosa = sp.xulosa || {};
+    Object.keys(sp.bugun).forEach(function(k){
+      if(!_eski(k, chegara)) return;
+      var oy = _oyKal(k); var arr = sp.bugun[k] || [];
+      if(oy){
+        var x = sp.xulosa[oy] || {son:0, daq:0, kcal:0};
+        arr.forEach(function(s){ x.son++; x.daq += (+s.min||0); x.kcal += (+s.kcal||0); });
+        sp.xulosa[oy] = x;
+      }
+      delete sp.bugun[k]; n++;
+    });
+    /* vazn tarixi: oxirgi 60 o'lchov yetarli */
+    if(sp.vazn && sp.vazn.length > 60){ sp.vazn = sp.vazn.slice(0,60); n++; }
+    if(n) S.s('i_sport', sp);
+  }catch(e){}
+  return n;
+}
+
+/* ---- 3) KALORIYA: hist{sana:[ovqatlar]} -> xulosa{oy:{kun,kcal}} ---- */
+function _tozalaKal(chegara){
+  var n = 0;
+  try{
+    var h = S.g('i_kal_hist') || {};
+    var x = S.g('i_kal_xulosa') || {};
+    Object.keys(h).forEach(function(k){
+      if(!_eski(k, chegara)) return;
+      var oy = _oyKal(k); var arr = h[k] || [];
+      if(oy){
+        var r = x[oy] || {kun:0, kcal:0};
+        r.kun++;
+        arr.forEach(function(v){ r.kcal += (+v.kcal||0); });
+        x[oy] = r;
+      }
+      delete h[k]; n++;
+    });
+    if(n){ S.s('i_kal_hist', h); S.s('i_kal_xulosa', x); }
+  }catch(e){}
+  return n;
+}
+
+/* ---- 4) SUV: sana{ml} -> oylik o'rtacha ---- */
+function _tozalaSuv(chegara){
+  var n = 0;
+  try{
+    var s = S.g('i_suv') || {};
+    var x = S.g('i_suv_xulosa') || {};
+    Object.keys(s).forEach(function(k){
+      if(!_eski(k, chegara)) return;
+      var oy = _oyKal(k);
+      if(oy){
+        var r = x[oy] || {kun:0, ml:0};
+        r.kun++; r.ml += (+s[k]||0);
+        x[oy] = r;
+      }
+      delete s[k]; n++;
+    });
+    if(n){ S.s('i_suv', s); S.s('i_suv_xulosa', x); }
+  }catch(e){}
+  return n;
+}
+
+/* ---- Kuniga bir marta ishga tushadi ---- */
+function tozalash(majburiy){
+  try{
+    var bugun = bugunKun();
+    if(!majburiy && localStorage.getItem(TOZ_OXIRGI) === bugun) return null;
+
+    var chegara = _chegaraSana();
+    var natija = {
+      odat:  _tozalaOdat(chegara),
+      sport: _tozalaSport(chegara),
+      kal:   _tozalaKal(chegara),
+      suv:   _tozalaSuv(chegara)
+    };
+    localStorage.setItem(TOZ_OXIRGI, bugun);
+
+    var jami = natija.odat + natija.sport + natija.kal + natija.suv;
+    if(jami) console.log('Tozalandi:', natija, '(chegara: '+chegara+')');
+    return natija;
+  }catch(e){ return null; }
+}
+
+/* Ma'lumot hajmini ko'rish — konsoldan: intizomHajm() */
+window.intizomHajm = function(){
+  var jami = 0, ro = [];
+  for(var i=0;i<localStorage.length;i++){
+    var k = localStorage.key(i);
+    if(k && k.indexOf('i_') === 0){
+      var b = (localStorage.getItem(k)||'').length;
+      jami += b; ro.push([k, b]);
+    }
+  }
+  ro.sort(function(a,b){ return b[1]-a[1]; });
+  console.log('JAMI: ' + (jami/1024).toFixed(1) + ' KB');
+  ro.slice(0,12).forEach(function(r){
+    console.log('  ' + r[0].padEnd(20) + (r[1]/1024).toFixed(1) + ' KB');
+  });
+  return (jami/1024).toFixed(1) + ' KB';
+};
+
 /* ============================================================
    KUNLIK KALORIYA NORMASI (04.09.2026)
    Ilgari hammaga 2000 deb qotirilgan edi. Endi Mifflin-St Jeor
