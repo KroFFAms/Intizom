@@ -2006,6 +2006,7 @@ function oilaPoints(id){
 var _oilaKesh = null;      /* oxirgi olingan manzara */
 var _guruhlar = null;      /* mening guruhlarim ro'yxati */
 var _joriyGuruh = null;    /* qaysi guruh ochiq */
+var _chKesh = null;        /* guruh challenge'lari */
 var GTUR = { oila:'\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67 Oila', dost:'\uD83E\uDD1D Do\'stlar', sport:'\uD83C\uDFC3 Sport', ish:'\uD83D\uDCBC Ish' };
 var _oilaYuklanmoqda = false;
 
@@ -2045,6 +2046,151 @@ function oilaHolatYubor(){
       p_namoz_b: namozB, p_streak: streak, p_ball: ball
     });
   }catch(e){}
+}
+
+function _azoKarta(a, i, men, medal){
+    var pct = a.odat_j ? Math.round(a.odat_b/a.odat_j*100) : 0;
+    var meni = (a.user_id === men);
+    var vaqt = a.yangilandi ? '' : '<span style="font-size:10px;color:var(--t2)"> · bugun kirmagan</span>';
+    return '<div class="card" style="margin-bottom:8px;padding:12px' + (meni?';border:1px solid var(--g)':'') + '">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<div style="font-size:20px;width:26px;text-align:center">' + (medal[i]||(i+1)) + '</div>' +
+        '<div style="flex:1">' +
+          '<div style="font-size:14px;font-weight:700">' + (a.ism||'—') +
+            (meni?' <span style="font-size:10px;color:var(--g)">(siz)</span>':'') +
+            (a.rol==='ota'?' <span style="font-size:10px;color:var(--t2)">ota-ona</span>':'') + vaqt + '</div>' +
+          '<div style="font-size:11px;color:var(--t2);margin-top:2px">' +
+            'Odat ' + a.odat_b + '/' + a.odat_j +
+            ' · Reja ' + a.reja_b + '/' + a.reja_j +
+            ' · Namoz ' + a.namoz_b + '/5' +
+            (a.streak? ' · 🔥' + a.streak : '') +
+          '</div>' +
+          '<div style="background:var(--bd);border-radius:5px;height:6px;margin-top:6px">' +
+            '<div style="background:var(--g);height:6px;border-radius:5px;width:' + pct + '%"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:right">' +
+          '<div style="font-size:17px;font-weight:800;color:var(--g)">' + (a.hafta_ball||0) + '</div>' +
+          '<div style="font-size:9px;color:var(--t2)">7 kun</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+/* ---------- Guruh challenge'lari ---------- */
+function _chBlok(men){
+  var t = '<div class="sec-title" style="margin:18px 0 8px">\uD83C\uDFC6 Challenge</div>' +
+    '<button class="btn btn-out btn-block" onclick="chQoshSora()" style="margin-bottom:10px">+ Challenge qo\'shish</button>';
+
+  if(!_chKesh || !_chKesh.length){
+    return t + '<div style="text-align:center;padding:14px;color:var(--t2);font-size:13px;line-height:1.6">' +
+      'Hali challenge yo\'q<br><span style="font-size:11.5px">Masalan: kuniga 10 sahifa Qur\'on, kuniga 3 km yugurish</span></div>';
+  }
+
+  t += _chKesh.map(function(c){
+    var az = c.azolar || [];
+    var meniki = az.filter(function(a){ return a.user_id === men; })[0] || {bugun:0,jami:0};
+    var korsatkich = (c.turi === 'jami') ? meniki.jami : meniki.bugun;
+    var pct = c.maqsad ? Math.min(100, Math.round(korsatkich / c.maqsad * 100)) : 0;
+    var bajardi = c.maqsad && korsatkich >= c.maqsad;
+
+    var qator = az.slice(0,8).map(function(a,i){
+      var son = (c.turi==='jami') ? a.jami : a.bugun;
+      var yetdi = c.maqsad && son >= c.maqsad;
+      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px">' +
+        '<span style="width:18px;color:var(--t2)">'+(i+1)+'</span>' +
+        '<span style="flex:1' + (a.user_id===men?';font-weight:700':'') + '">' + (a.ism||'—') +
+          (a.user_id===men?' <span style="font-size:9px;color:var(--g)">(siz)</span>':'') + '</span>' +
+        '<span style="font-weight:700;color:'+(yetdi?'var(--g)':'var(--text)')+'">' + son + '</span>' +
+        '<span style="color:var(--t2);font-size:10px">' + (c.birlik||'') + '</span>' +
+      '</div>';
+    }).join('');
+
+    return '<div class="card" style="margin-bottom:10px;padding:14px">' +
+      '<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">' +
+        '<div style="flex:1">' +
+          '<div style="font-size:14px;font-weight:700">' + c.nom + (bajardi?' \u2705':'') + '</div>' +
+          '<div style="font-size:11px;color:var(--t2);margin-top:2px">' +
+            (c.maqsad ? ((c.turi==='jami'?'Jami ':'Kuniga ') + c.maqsad + ' ' + (c.birlik||'')) : 'Cheksiz') +
+            (c.tugaydi ? ' \u00b7 ' + c.tugaydi + ' gacha' : '') +
+          '</div>' +
+        '</div>' +
+        (c.yaratuvchi === men ? '<button onclick="chOchir('+c.id+')" style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--t2)">\uD83D\uDDD1</button>' : '') +
+      '</div>' +
+
+      (c.maqsad ? '<div style="background:var(--bd);border-radius:5px;height:7px;margin-bottom:10px">' +
+        '<div style="background:'+(bajardi?'var(--g)':'#F59E0B')+';height:7px;border-radius:5px;width:'+pct+'%"></div></div>' : '') +
+
+      '<div style="display:flex;gap:6px;margin-bottom:10px">' +
+        '<button onclick="chBelgila('+c.id+',1)" style="flex:1;padding:10px;border:none;border-radius:10px;background:var(--g);color:#04231b;font-weight:800;font-size:14px;cursor:pointer">+1</button>' +
+        '<button onclick="chBelgila('+c.id+',5)" style="padding:10px 14px;border:1px solid var(--bd);border-radius:10px;background:transparent;color:var(--text);font-weight:700;font-size:13px;cursor:pointer">+5</button>' +
+        '<button onclick="chBelgila('+c.id+',-1)" style="padding:10px 14px;border:1px solid var(--bd);border-radius:10px;background:transparent;color:var(--t2);font-size:13px;cursor:pointer">\u2212</button>' +
+      '</div>' +
+
+      '<div style="border-top:1px solid var(--bd);padding-top:6px">' + qator + '</div>' +
+    '</div>';
+  }).join('');
+
+  return t;
+}
+
+function chQoshSora(){
+  if(document.getElementById('ch-ovl')) return;
+  var d=document.createElement('div');
+  d.id='ch-ovl';
+  d.style.cssText='position:fixed;inset:0;z-index:99995;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:22px';
+  d.innerHTML='<div style="width:100%;max-width:340px;background:var(--card,#fff);color:var(--text,#111);border-radius:20px;padding:22px;max-height:86vh;overflow:auto">' +
+      '<div style="font-size:18px;font-weight:800;margin-bottom:14px;text-align:center">\uD83C\uDFC6 Yangi challenge</div>' +
+      '<input id="ch-nom" class="inp" placeholder="Masalan: Qur\'on o\'qish" style="width:100%;box-sizing:border-box;margin-bottom:10px">' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">' +
+        '<input id="ch-maq" class="inp" type="number" min="0" placeholder="Maqsad (10)" style="width:100%;box-sizing:border-box">' +
+        '<select id="ch-bir" class="inp" style="width:100%;box-sizing:border-box">' +
+          '<option value="marta">marta</option><option value="sahifa">sahifa</option>' +
+          '<option value="daqiqa">daqiqa</option><option value="km">km</option>' +
+        '</select>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">' +
+        '<select id="ch-tur" class="inp" style="width:100%;box-sizing:border-box">' +
+          '<option value="kunlik">Har kuni</option><option value="jami">Jami yig\'iladi</option>' +
+        '</select>' +
+        '<select id="ch-kun" class="inp" style="width:100%;box-sizing:border-box">' +
+          '<option value="0">Muddatsiz</option><option value="7">7 kun</option>' +
+          '<option value="30">30 kun</option><option value="90">90 kun</option>' +
+        '</select>' +
+      '</div>' +
+      '<button id="ch-ok" style="width:100%;padding:14px;border:none;border-radius:14px;background:var(--g,#00D4A0);color:#04231b;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:8px">Yaratish</button>' +
+      '<button id="ch-x" style="width:100%;padding:11px;border:none;border-radius:14px;background:transparent;color:var(--t2,#666);font-size:14px;cursor:pointer">Bekor</button>' +
+    '</div>';
+  document.body.appendChild(d);
+  d.querySelector('#ch-ok').onclick=function(){
+    var nom=(d.querySelector('#ch-nom').value||'').trim();
+    if(!nom){ d.querySelector('#ch-nom').focus(); return; }
+    var maq=parseInt(d.querySelector('#ch-maq').value,10)||0;
+    var bir=d.querySelector('#ch-bir').value;
+    var tur=d.querySelector('#ch-tur').value;
+    var kun=parseInt(d.querySelector('#ch-kun').value,10)||0;
+    d.remove();
+    _oilaRpc('challenge_qosh',{p_nom:nom,p_maqsad:maq,p_birlik:bir,p_turi:tur,p_kun:kun,p_oila:_joriyGuruh})
+      .then(function(r){
+        if(r.error){ showNotif('\u26A0\uFE0F','Qo\'shilmadi'); return; }
+        _chKesh=null; guruhOch(_joriyGuruh);
+        showNotif('\uD83C\uDFC6', nom+' boshlandi');
+      });
+  };
+  d.querySelector('#ch-x').onclick=function(){ d.remove(); };
+  d.onclick=function(e){ if(e.target===d) d.remove(); };
+}
+
+function chBelgila(id, qadam){
+  _oilaRpc('challenge_belgila',{p_id:id,p_qadam:qadam}).then(function(){
+    guruhOch(_joriyGuruh);
+  });
+}
+
+function chOchir(id){
+  confirmDel('Challenge o\'chirilsinmi?','Barcha natijalar ham o\'chadi.','',function(){
+    _oilaRpc('challenge_ochir',{p_id:id}).then(function(){ guruhOch(_joriyGuruh); });
+  });
 }
 
 /* ---------- Tab ichi ---------- */
@@ -2095,34 +2241,31 @@ function renderOilaBulut(){
 
   /* --- Reyting --- */
   var medal = ['🥇','🥈','🥉'];
-  var ro = azolar.map(function(a, i){
-    var pct = a.odat_j ? Math.round(a.odat_b/a.odat_j*100) : 0;
-    var meni = (a.user_id === men);
-    var vaqt = a.yangilandi ? '' : '<span style="font-size:10px;color:var(--t2)"> · bugun kirmagan</span>';
-    return '<div class="card" style="margin-bottom:8px;padding:12px' + (meni?';border:1px solid var(--g)':'') + '">' +
-      '<div style="display:flex;align-items:center;gap:10px">' +
-        '<div style="font-size:20px;width:26px;text-align:center">' + (medal[i]||(i+1)) + '</div>' +
-        '<div style="flex:1">' +
-          '<div style="font-size:14px;font-weight:700">' + (a.ism||'—') +
-            (meni?' <span style="font-size:10px;color:var(--g)">(siz)</span>':'') +
-            (a.rol==='ota'?' <span style="font-size:10px;color:var(--t2)">ota-ona</span>':'') + vaqt + '</div>' +
-          '<div style="font-size:11px;color:var(--t2);margin-top:2px">' +
-            'Odat ' + a.odat_b + '/' + a.odat_j +
-            ' · Reja ' + a.reja_b + '/' + a.reja_j +
-            ' · Namoz ' + a.namoz_b + '/5' +
-            (a.streak? ' · 🔥' + a.streak : '') +
-          '</div>' +
-          '<div style="background:var(--bd);border-radius:5px;height:6px;margin-top:6px">' +
-            '<div style="background:var(--g);height:6px;border-radius:5px;width:' + pct + '%"></div>' +
-          '</div>' +
-        '</div>' +
-        '<div style="text-align:right">' +
-          '<div style="font-size:17px;font-weight:800;color:var(--g)">' + (a.hafta_ball||0) + '</div>' +
-          '<div style="font-size:9px;color:var(--t2)">7 kun</div>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
+
+  /* Ko'p kishilik guruhda hammasini ko'rsatish ma'nosiz:
+     yuqoridagi 3 ta + o'z atrofingiz. Kichik guruhda hammasi. */
+  var korsat = azolar, qisqa = false;
+  if(azolar.length > 12){
+    var meni = azolar.findIndex(function(a){ return a.user_id === men; });
+    if(meni < 0) meni = 0;
+    var boshi = Math.max(3, meni - 2), oxiri = Math.min(azolar.length, meni + 3);
+    var idx = {};
+    [0,1,2].forEach(function(i){ idx[i]=1; });
+    for(var i2=boshi;i2<oxiri;i2++) idx[i2]=1;
+    korsat = azolar.filter(function(_,i3){ return idx[i3]; });
+    qisqa = true;
+  }
+
+  var oxirgiO = -2;
+  var ro = korsat.map(function(a){
+    var i = azolar.indexOf(a);
+    var uzilish = (i > oxirgiO + 1) ? '<div style="text-align:center;color:var(--t2);font-size:16px;letter-spacing:3px;padding:2px 0">\u00b7\u00b7\u00b7</div>' : '';
+    oxirgiO = i;
+    return uzilish + _azoKarta(a, i, men, medal);
   }).join('');
+
+  if(qisqa) ro += '<div style="text-align:center;font-size:11px;color:var(--t2);padding:6px">Jami ' + azolar.length + ' a\'zo</div>';
+
 
   /* --- Oilaviy topshiriqlar --- */
   var vz = vazifalar.map(function(v){
@@ -2146,7 +2289,8 @@ function renderOilaBulut(){
 
   return h +
     '<div class="sec-title" style="margin:16px 0 8px">🏆 Haftalik reyting</div>' + ro +
-    '<div class="sec-title" style="margin:18px 0 8px">✅ Oilaviy topshiriqlar</div>' +
+    _chBlok(men) +
+    '<div class="sec-title" style="margin:18px 0 8px">✅ Topshiriqlar</div>' +
     '<button class="btn btn-g btn-block" onclick="oilaVazSora()" style="margin-bottom:10px">+ Topshiriq qo\'shish</button>' +
     vz +
     '<button class="btn btn-out btn-block" onclick="oilaChiqBulut()" style="margin-top:20px;color:var(--red)">Guruhdan chiqish</button>';
@@ -2164,8 +2308,11 @@ function oilaBulutYukla(qayta){
     if(!_joriyGuruh && _guruhlar.length) _joriyGuruh = _guruhlar[0].id;
     return _oilaRpc('oila_korish', _joriyGuruh ? {p_id:_joriyGuruh} : {});
   }).then(function(r){
-    _oilaYuklanmoqda = false;
     _oilaKesh = (r && r.data) ? r.data : {holat:'xato'};
+    return _oilaRpc('challenge_royxat', _joriyGuruh ? {p_oila:_joriyGuruh} : {});
+  }).then(function(c){
+    _oilaYuklanmoqda = false;
+    _chKesh = (c && c.data && c.data.challenge) ? c.data.challenge : [];
     try{ if(document.getElementById('oila-body').getAttribute('data-tab')==='bulut') renderOila(); }catch(e){}
   }).catch(function(){
     _oilaYuklanmoqda = false;
@@ -2193,9 +2340,13 @@ function guruhOch(id){
   _joriyGuruh = id; _oilaKesh = null;
   try{ renderOila(); }catch(e){}
   _oilaYuklanmoqda = true;
+  _chKesh = null;
   _oilaRpc('oila_korish', {p_id:id}).then(function(r){
-    _oilaYuklanmoqda = false;
     _oilaKesh = (r && r.data) ? r.data : {holat:'xato'};
+    return _oilaRpc('challenge_royxat', {p_oila:id});
+  }).then(function(c){
+    _oilaYuklanmoqda = false;
+    _chKesh = (c && c.data && c.data.challenge) ? c.data.challenge : [];
     try{ renderOila(); }catch(e){}
   }).catch(function(){ _oilaYuklanmoqda=false; });
 }
