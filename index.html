@@ -2004,6 +2004,9 @@ function oilaPoints(id){
    ============================================================ */
 
 var _oilaKesh = null;      /* oxirgi olingan manzara */
+var _guruhlar = null;      /* mening guruhlarim ro'yxati */
+var _joriyGuruh = null;    /* qaysi guruh ochiq */
+var GTUR = { oila:'\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67 Oila', dost:'\uD83E\uDD1D Do\'stlar', sport:'\uD83C\uDFC3 Sport', ish:'\uD83D\uDCBC Ish' };
 var _oilaYuklanmoqda = false;
 
 function _oilaRpc(nom, args){
@@ -2055,13 +2058,13 @@ function renderOilaBulut(){
 
   /* --- Oilasi yo'q: yaratish yoki qo'shilish --- */
   if(d.holat === 'oila_yoq'){
-    return '<div class="card" style="text-align:center;padding:22px">' +
+    return _guruhTasma() + '<div class="card" style="text-align:center;padding:22px">' +
       '<div style="font-size:40px">🌐</div>' +
       '<div style="font-size:17px;font-weight:800;margin:8px 0 6px">Oilangiz bilan birga</div>' +
       '<div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:18px">' +
         'Har kim o\'z telefonida Intizom yuritadi, bu yerda esa bir-biringizning natijangizni ko\'rasiz va umumiy topshiriqlar qo\'yasiz.' +
       '</div>' +
-      '<button class="btn btn-g btn-block" onclick="oilaYaratBulut()" style="margin-bottom:10px">Oila yaratish</button>' +
+      '<button class="btn btn-g btn-block" onclick="guruhYangiSora()" style="margin-bottom:10px">Guruh yaratish</button>' +
       '<button class="btn btn-out btn-block" onclick="oilaQoshilSora()">Kod bilan qo\'shilish</button>' +
       '<div style="font-size:11px;color:var(--t2);margin-top:16px;line-height:1.6;text-align:left;background:var(--bg);border-radius:12px;padding:12px">' +
         '<b>Nima ko\'rinadi:</b> bajarilgan odat va reja soni, namoz soni, ball va streak.<br>' +
@@ -2079,9 +2082,10 @@ function renderOilaBulut(){
   var vazifalar = d.vazifalar || [];
 
   /* --- Sarlavha va taklif kodi --- */
-  var h = '<div class="card" style="margin-bottom:12px;display:flex;align-items:center;gap:12px">' +
+  var h = _guruhTasma() +
+    '<div class="card" style="margin-bottom:12px;display:flex;align-items:center;gap:12px">' +
       '<div style="flex:1"><div style="font-size:16px;font-weight:800">' + (d.nom||'Oilam') + '</div>' +
-      '<div style="font-size:12px;color:var(--t2)">' + azolar.length + ' a\'zo</div></div>' +
+      '<div style="font-size:12px;color:var(--t2)">' + (GTUR[d.turi]||GTUR.oila) + ' \u00b7 ' + azolar.length + ' a\'zo</div></div>' +
       '<div style="text-align:right">' +
         '<div style="font-size:10px;color:var(--t2)">Taklif kodi</div>' +
         '<div style="font-size:19px;font-weight:800;letter-spacing:2px;color:var(--g)">' + (d.kod||'') + '</div>' +
@@ -2145,7 +2149,7 @@ function renderOilaBulut(){
     '<div class="sec-title" style="margin:18px 0 8px">✅ Oilaviy topshiriqlar</div>' +
     '<button class="btn btn-g btn-block" onclick="oilaVazSora()" style="margin-bottom:10px">+ Topshiriq qo\'shish</button>' +
     vz +
-    '<button class="btn btn-out btn-block" onclick="oilaChiqBulut()" style="margin-top:20px;color:var(--red)">Oiladan chiqish</button>';
+    '<button class="btn btn-out btn-block" onclick="oilaChiqBulut()" style="margin-top:20px;color:var(--red)">Guruhdan chiqish</button>';
 }
 
 /* ---------- Ma'lumotni yuklash ---------- */
@@ -2153,7 +2157,13 @@ function oilaBulutYukla(qayta){
   if(_oilaYuklanmoqda) return;
   _oilaYuklanmoqda = true;
   oilaHolatYubor();                       /* avval o'z holatimizni yuboramiz */
-  _oilaRpc('oila_korish').then(function(r){
+
+  _oilaRpc('guruhlarim').then(function(g){
+    _guruhlar = (g && g.data) ? g.data : [];
+    if(_joriyGuruh && !_guruhlar.some(function(x){return x.id===_joriyGuruh;})) _joriyGuruh = null;
+    if(!_joriyGuruh && _guruhlar.length) _joriyGuruh = _guruhlar[0].id;
+    return _oilaRpc('oila_korish', _joriyGuruh ? {p_id:_joriyGuruh} : {});
+  }).then(function(r){
     _oilaYuklanmoqda = false;
     _oilaKesh = (r && r.data) ? r.data : {holat:'xato'};
     try{ if(document.getElementById('oila-body').getAttribute('data-tab')==='bulut') renderOila(); }catch(e){}
@@ -2162,6 +2172,80 @@ function oilaBulutYukla(qayta){
     _oilaKesh = {holat:'xato'};
     try{ renderOila(); }catch(e){}
   });
+}
+
+/* Guruhlar tasmasi — yuqorida */
+function _guruhTasma(){
+  if(!_guruhlar || _guruhlar.length < 1) return '';
+  var t = '<div style="display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;-webkit-overflow-scrolling:touch">';
+  t += _guruhlar.map(function(g){
+    var a = (g.id === _joriyGuruh);
+    return '<div onclick="guruhOch(\''+g.id+'\')" style="flex:0 0 auto;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:'+(a?'700':'500')+
+      ';background:'+(a?'var(--g)':'var(--bg)')+';color:'+(a?'#04231b':'var(--t2)')+';border:1px solid '+(a?'var(--g)':'var(--bd)')+';white-space:nowrap">'+
+      (g.nom||'Guruh')+' <span style="opacity:.7">'+g.azolar+'</span></div>';
+  }).join('');
+  t += '<div onclick="guruhYangiSora()" style="flex:0 0 auto;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;background:transparent;color:var(--g);border:1px dashed var(--g);white-space:nowrap">+ Yangi</div>';
+  t += '</div>';
+  return t;
+}
+
+function guruhOch(id){
+  _joriyGuruh = id; _oilaKesh = null;
+  try{ renderOila(); }catch(e){}
+  _oilaYuklanmoqda = true;
+  _oilaRpc('oila_korish', {p_id:id}).then(function(r){
+    _oilaYuklanmoqda = false;
+    _oilaKesh = (r && r.data) ? r.data : {holat:'xato'};
+    try{ renderOila(); }catch(e){}
+  }).catch(function(){ _oilaYuklanmoqda=false; });
+}
+
+/* Yangi guruh: tur va nom */
+function guruhYangiSora(){
+  if(document.getElementById('gy-ovl')) return;
+  var d=document.createElement('div');
+  d.id='gy-ovl';
+  d.style.cssText='position:fixed;inset:0;z-index:99995;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:22px';
+  d.innerHTML='<div style="width:100%;max-width:340px;background:var(--card,#fff);color:var(--text,#111);border-radius:20px;padding:22px">' +
+      '<div style="font-size:18px;font-weight:800;margin-bottom:14px;text-align:center">Yangi guruh</div>' +
+      '<div style="font-size:12px;color:var(--t2,#666);margin-bottom:8px">Turi</div>' +
+      '<div id="gy-tur" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">' +
+        Object.keys(GTUR).map(function(k,i){
+          return '<div data-t="'+k+'" style="padding:12px;border-radius:12px;text-align:center;cursor:pointer;font-size:13px;border:1px solid '+(i===0?'var(--g)':'var(--bd,#e5e5e5)')+';background:'+(i===0?'rgba(0,212,160,.1)':'transparent')+'">'+GTUR[k]+'</div>';
+        }).join('') +
+      '</div>' +
+      '<input id="gy-nom" class="inp" placeholder="Guruh nomi" style="width:100%;box-sizing:border-box;margin-bottom:14px">' +
+      '<button id="gy-ok" style="width:100%;padding:14px;border:none;border-radius:14px;background:var(--g,#00D4A0);color:#04231b;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:8px">Yaratish</button>' +
+      '<button id="gy-qo" style="width:100%;padding:12px;border:1px solid var(--bd,#e5e5e5);border-radius:14px;background:transparent;color:var(--text,#111);font-size:14px;cursor:pointer;margin-bottom:6px">Kod bilan qo\'shilish</button>' +
+      '<button id="gy-x" style="width:100%;padding:10px;border:none;border-radius:14px;background:transparent;color:var(--t2,#666);font-size:14px;cursor:pointer">Bekor</button>' +
+    '</div>';
+  document.body.appendChild(d);
+  var tur='oila';
+  d.querySelectorAll('#gy-tur div').forEach(function(el){
+    el.onclick=function(){
+      tur=el.getAttribute('data-t');
+      d.querySelectorAll('#gy-tur div').forEach(function(x){
+        var a=(x===el);
+        x.style.border='1px solid '+(a?'var(--g)':'var(--bd,#e5e5e5)');
+        x.style.background=a?'rgba(0,212,160,.1)':'transparent';
+      });
+    };
+  });
+  d.querySelector('#gy-ok').onclick=function(){
+    var nom=(d.querySelector('#gy-nom').value||'').trim() || GTUR[tur].replace(/^\S+\s/,'');
+    d.remove();
+    _oilaRpc('oila_yarat',{p_nom:nom,p_turi:tur}).then(function(r){
+      if(r.error){ showNotif('\u26A0\uFE0F','Xatolik'); return; }
+      var x=r.data||{};
+      if(x.holat==='kop'){ showNotif('\u2139\uFE0F','8 tadan ko\'p guruhga kirib bo\'lmaydi'); return; }
+      _joriyGuruh = x.oila_id || null; _oilaKesh=null; _guruhlar=null;
+      oilaBulutYukla();
+      showNotif('\uD83C\uDF89', nom+' yaratildi');
+    });
+  };
+  d.querySelector('#gy-qo').onclick=function(){ d.remove(); oilaQoshilSora(); };
+  d.querySelector('#gy-x').onclick=function(){ d.remove(); };
+  d.onclick=function(e){ if(e.target===d) d.remove(); };
 }
 
 /* ---------- Amallar ---------- */
@@ -2183,7 +2267,7 @@ function oilaQoshilSora(){
     var d = r.data || {};
     if(d.holat === 'yoq'){ showNotif('⚠️','Bunday kod topilmadi'); return; }
     if(d.holat === 'allaqachon'){ showNotif('ℹ️','Siz allaqachon oiladasiz'); return; }
-    _oilaKesh = null; oilaBulutYukla();
+    _joriyGuruh = d.oila_id || null; _oilaKesh = null; _guruhlar = null; oilaBulutYukla();
     showNotif('🌐','Qo\'shildingiz: ' + (d.nom||''));
   });
 }
@@ -2191,7 +2275,7 @@ function oilaQoshilSora(){
 function oilaVazSora(){
   var m = prompt('Topshiriq matni:');
   if(!m || !m.trim()) return;
-  _oilaRpc('vazifa_qosh', {p_matn: m.trim(), p_kimga: null, p_muddat: null}).then(function(r){
+  _oilaRpc('vazifa_qosh', {p_matn: m.trim(), p_kimga: null, p_muddat: null, p_oila: _joriyGuruh}).then(function(r){
     if(r.error){ showNotif('⚠️','Qo\'shilmadi'); return; }
     _oilaKesh = null; oilaBulutYukla();
   });
@@ -2212,10 +2296,10 @@ function oilaVazOchir(id){
 }
 
 function oilaChiqBulut(){
-  confirmDel('Oiladan chiqasizmi?','Natijalaringiz oila a\'zolariga ko\'rinmay qoladi. Istagan payt kod bilan qayta qo\'shilasiz.','',function(){
-    _oilaRpc('oila_chiq').then(function(){
-      _oilaKesh = null; oilaBulutYukla();
-      showNotif('👋','Oiladan chiqdingiz');
+  confirmDel(((_oilaKesh&&_oilaKesh.nom)||'Guruh')+' guruhidan chiqasizmi?','Natijalaringiz a\'zolarga ko\'rinmay qoladi. Istagan payt kod bilan qayta qo\'shilasiz.','',function(){
+    _oilaRpc('oila_chiq', {p_id:_joriyGuruh}).then(function(){
+      _joriyGuruh = null; _oilaKesh = null; _guruhlar = null; oilaBulutYukla();
+      showNotif('👋','Guruhdan chiqdingiz');
     });
   });
 }
