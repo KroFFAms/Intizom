@@ -10259,28 +10259,46 @@ function proHolat(){
   try{
     if(window.BULUT && typeof window.BULUT.isPro==='function') return window.BULUT.isPro()!==false;
     if(typeof isPro==='function') return isPro()!==false;
+    /* Zaxira: obuna_holat() javobining keshidan o'qiymiz */
+    var c=_obunaKesh();
+    if(c && c.ochiq!==undefined) return c.ochiq!==false;
   }catch(e){}
-  return true;
+  return true;   /* noaniq bo'lsa qulflamaymiz */
 }
-/* Sinov/obuna matnini keshdan yumshoq o'qiydi (format o'zgarsa ham yiqilmaydi) */
+
+/* obuna_holat() qaytaradigan kalitlar:
+   bor, server_vaqt, boshlangan, sinov_tugash, sinov_qoldi,
+   pro, obuna_tugash, ochiq */
+function _obunaKesh(){
+  try{
+    var c=JSON.parse(localStorage.getItem('obuna_cache_v1')||'null');
+    if(!c) return null;
+    /* kesh ba'zan {data:{...}} shaklida saqlanadi */
+    if(c.ochiq===undefined && c.data && typeof c.data==='object') c=c.data;
+    return c;
+  }catch(e){ return null; }
+}
+
 function _proMatn(){
   try{
-    if(window.BULUT && typeof window.BULUT.obunaMatn==='function'){
-      var m=window.BULUT.obunaMatn(); if(m) return m;
-    }
-    var c=JSON.parse(localStorage.getItem('obuna_cache_v1')||'null');
+    var c=_obunaKesh();
     if(!c) return '';
-    if(c.pro===true || c.holat==='pro') return '\u2705 PRO faollashtirilgan';
-    var kun = c.qolgan!=null?c.qolgan : (c.kun!=null?c.kun : (c.qolgan_kun!=null?c.qolgan_kun:null));
-    if(kun!=null) return kun>0 ? ('Sinov muddati \u2014 yana '+kun+' kun') : 'Sinov muddati tugadi';
-    /* Yillik obuna: tugash sanasidan qolgan kunni hisoblaymiz */
-    if(c.obuna_tugash){
-      var q = Math.ceil((new Date(c.obuna_tugash) - new Date()) / 86400000);
-      if(q > 0) return '\u2705 PRO \u2014 yana ' + q + ' kun';
+    /* To'lagan foydalanuvchi */
+    if(c.pro===true){
+      if(!c.obuna_tugash) return '\u2705 PRO faollashtirilgan';
+      var q=Math.ceil((new Date(c.obuna_tugash)-new Date())/86400000);
+      return q>0 ? ('\u2705 PRO \u2014 yana '+q+' kun') : 'Obuna muddati tugadi';
+    }
+    /* Sinov muddati */
+    if(c.sinov_qoldi!=null){
+      return c.sinov_qoldi>0
+        ? ('Sinov muddati \u2014 yana '+c.sinov_qoldi+' kun')
+        : 'Sinov muddati tugadi';
     }
   }catch(e){}
   return '';
 }
+
 function paywallOch(nomi){
   try{
     var s=document.getElementById('pro-sabab');
@@ -10927,8 +10945,11 @@ function hifzButunSura(){
     </div>
   </div>
   <div style="text-align:center;margin-bottom:6px">
-    <div id="pro-narx" style="font-size:30px;font-weight:900;color:var(--text);letter-spacing:-.5px">149 000 so'm</div>
-    <div style="font-size:13px;color:var(--t2);margin-top:2px">Bir marta to'lanadi &mdash; umrbod ochiq</div>
+    <div style="display:flex;align-items:baseline;justify-content:center;gap:6px">
+      <div id="pro-narx" style="font-size:30px;font-weight:900;color:var(--text);letter-spacing:-.5px">99 000 so'm</div>
+      <div style="font-size:15px;font-weight:700;color:var(--t2)">/ yil</div>
+    </div>
+    <div style="font-size:13px;color:var(--t2);margin-top:2px"><span id="pro-oylik">Oyiga 8 250 so'm</span> &mdash; bir chashka choy puli</div>
   </div>
   <div style="font-size:13px;color:var(--t2);text-align:center;line-height:1.6;margin:10px 0 4px">
     Odat, reja, namoz, kundalik, suv, kayfiyat, dua, dori,<br>eslatma, oila, xarid va moliya <b>doim bepul</b>.
