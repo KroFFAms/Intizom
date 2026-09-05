@@ -2086,10 +2086,17 @@ function _oilaHolatIchki(){
     try{ streak = (state.odatlar||[]).reduce(function(m,o){ return Math.max(m, o.streak||0); }, 0); }catch(e){}
     try{ ball = parseInt(S.g('i_ball'),10) || 0; }catch(e){}
 
+    /* Vaqt mintaqasi: UTC dan farq, daqiqada (Toshkent = 300).
+       Server har a'zoning "bugun"ini shu ofset bo'yicha hisoblaydi,
+       shuning uchun chet elda yurgan a'zo ham to'g'ri ko'rinadi. */
+    var ofset = 300;
+    try{ ofset = -(new Date().getTimezoneOffset()); }catch(e){}
+
     return _oilaRpc('oila_holat_yoz', {
       p_odat_b: odatB, p_odat_j: odatJ,
       p_reja_b: rejaB, p_reja_j: rejaJ,
-      p_namoz_b: namozB, p_streak: streak, p_ball: ball
+      p_namoz_b: namozB, p_streak: streak, p_ball: ball,
+      p_ofset: ofset
     });
   }catch(e){ return Promise.resolve(); }
 }
