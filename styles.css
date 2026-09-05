@@ -13,13 +13,13 @@
 --shadow:0 3px 16px rgba(0,0,0,.06); --shadow-lg:0 6px 28px rgba(0,0,0,.09);
 }
 .dark{--bg:#0A0F14;--card:#101A17;--text:#EAF3EF;--t2:#8FA9A1;--bd:#1E2B27;--navy:#0C231D;--nl:#123128;--nl2:#1A4034}
-body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100vh;padding-bottom:90px;transition:background .3s,color .3s}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15.5px;line-height:1.55;min-height:100vh;padding-bottom:90px;transition:background .3s,color .3s}
 
 /* TOPBAR */
-.topbar{background:linear-gradient(150deg,rgba(0,200,150,.18),rgba(0,200,150,.05) 55%,var(--card));color:var(--text);padding:52px 20px 18px;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(0,0,0,.04)}
+.topbar{background:linear-gradient(150deg,rgba(0,200,150,.30),rgba(0,200,150,.12) 60%,var(--card));color:var(--text);padding:52px 20px 18px;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(0,0,0,.04)}
 /* Oq naqsh olib tashlandi — yorug' fonda ko'rinmaydi */
 .topbar-inner{display:flex;align-items:center;justify-content:space-between;position:relative}
-.topbar h2{font-size:23px;font-weight:800;letter-spacing:-.5px}
+.topbar h2{font-size:24px;font-weight:800;letter-spacing:-.5px}
 .topbar-tabs{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;position:relative}
 .topbar-tab{background:var(--bg);border:1px solid var(--bd);color:var(--t2);padding:8px 16px;border-radius:20px;font-size:14px;font-weight:500;cursor:pointer;transition:all .25s}
 .topbar-tab.active{background:var(--g);color:#fff;border-color:var(--g);box-shadow:0 3px 10px rgba(0,200,150,.3)}
@@ -27,7 +27,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bd);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 20px rgba(0,0,0,.06)}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0 6px;cursor:pointer;color:var(--t2);font-size:10px;font-weight:500;gap:2px;border:none;background:none;transition:all .2s}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 0 7px;cursor:pointer;color:var(--t2);font-size:10.5px;font-weight:600;gap:2px;border:none;background:none;transition:all .2s}
 .nav-item.active{color:var(--g)}
 .nav-item svg{width:20px;height:20px;transition:transform .2s}
 .nav-item:active svg{transform:scale(.85)}
@@ -42,10 +42,10 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .dark .card{border-color:var(--bd)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
 .grid2 .card{margin-bottom:0}
-.sec-title{font-size:17px;font-weight:700;margin-bottom:14px;color:var(--text);letter-spacing:-.2px}
+.sec-title{font-size:18px;font-weight:800;margin-bottom:14px;color:var(--text);letter-spacing:-.2px}
 
 /* BTNS */
-.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:14px;font-size:15px;font-weight:600;border:none;cursor:pointer;transition:all .2s;font-family:inherit}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:14px;font-size:15.5px;font-weight:700;border:none;cursor:pointer;transition:all .2s;font-family:inherit}
 .btn-g{background:linear-gradient(135deg,var(--g),var(--gd));color:#fff;box-shadow:0 4px 15px rgba(0,200,150,.35)}
 .btn-out{background:var(--card);color:var(--text);border:1.5px solid var(--bd)}
 .btn-red{background:linear-gradient(135deg,var(--red),#C24E4E);color:#fff}
@@ -55,7 +55,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .fab:active{transform:scale(.92)}
 
 /* HERO */
-.hero{background:linear-gradient(150deg,rgba(0,200,150,.20),rgba(0,200,150,.06) 60%,var(--card));border:1px solid rgba(0,200,150,.18);border-radius:20px;padding:20px;margin-bottom:14px;color:var(--text);position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.hero{background:linear-gradient(150deg,rgba(0,200,150,.32),rgba(0,200,150,.12) 60%,var(--card));border:1px solid rgba(0,200,150,.18);border-radius:20px;padding:20px;margin-bottom:14px;color:var(--text);position:relative;overflow:hidden;box-shadow:var(--shadow)}
 .hero::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(0,200,150,.12)}
 
 /* ITEMS */
@@ -93,9 +93,9 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .moverlay.open{display:flex;animation:fadeIn .2s ease}
 .modal{background:var(--card);border-radius:28px 28px 0 0;padding:24px 20px 32px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.2)}
 .mhandle{width:40px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 20px}
-.mtitle{font-size:21px;font-weight:800;margin-bottom:18px;color:var(--text);letter-spacing:-.5px}
+.mtitle{font-size:22px;font-weight:800;margin-bottom:18px;color:var(--text);letter-spacing:-.5px}
 .igroup{margin-bottom:16px}
-.ilabel{font-size:14px;color:var(--t2);margin-bottom:8px;display:block;font-weight:500}
+.ilabel{font-size:14px;color:var(--t2);margin-bottom:8px;display:block;font-weight:600}
 .inp{width:100%;padding:14px 16px;border:2px solid var(--bd);border-radius:14px;font-size:16px;outline:none;background:var(--bg);color:var(--text);transition:border-color .2s;font-family:inherit}
 .inp:focus{border-color:var(--g);background:var(--card)}
 .sel{width:100%;padding:13px 16px;border:2px solid var(--bd);border-radius:14px;font-size:15px;outline:none;background:var(--bg);color:var(--text);-webkit-appearance:none;font-family:inherit}
@@ -120,7 +120,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .notif.show{transform:translateY(0)}
 
 /* PROFILE HEADER */
-.phdr{background:linear-gradient(150deg,rgba(0,200,150,.22),rgba(0,200,150,.06) 60%,var(--card));border:1px solid rgba(0,200,150,.18);border-radius:24px;padding:28px;margin-bottom:16px;color:var(--text);text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.phdr{background:linear-gradient(150deg,rgba(0,200,150,.34),rgba(0,200,150,.14) 62%,var(--card));border:1px solid rgba(0,200,150,.18);border-radius:24px;padding:28px;margin-bottom:16px;color:var(--text);text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow)}
 .phdr::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(0,200,150,.10)}
 .phdr::after{content:'';position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;border-radius:50%;background:rgba(0,200,150,.1)}
 .pavatar{width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,var(--g),var(--gd));display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;margin:0 auto 14px;color:#fff;position:relative;z-index:1;box-shadow:0 8px 24px rgba(0,200,150,.4);overflow:hidden;cursor:pointer}
@@ -148,12 +148,12 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .m-x:active{transform:scale(.9)}
 
 /* ASOSIY OYNA — bir xil ikonka to'ri */
-.hgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-.htile{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:13px 4px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:transform .12s}
+.hgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}
+.htile{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:18px 5px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:transform .12s}
 .htile:active{transform:scale(.94)}
-.hticon{display:flex;justify-content:center;align-items:center;height:24px}
-.hticon svg{width:22px;height:22px}
-.htlbl{font-size:11.5px;font-weight:600;color:var(--text);margin-top:6px;line-height:1.3;word-break:break-word}
+.hticon{display:flex;justify-content:center;align-items:center;height:28px}
+.hticon svg{width:25px;height:25px}
+.htlbl{font-size:12.5px;font-weight:700;color:var(--text);margin-top:8px;line-height:1.3;word-break:break-word}
 .hstrip{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px 14px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
 
 /* QULF EKRANI — to'liq ekran, markazda (pastki "sheet" emas) */
