@@ -2017,8 +2017,12 @@ function _oilaRpc(nom, args){
 
 /* ---------- Kunlik xulosani serverga yuborish ---------- */
 function oilaHolatYubor(){
+  return _oilaHolatIchki();
+}
+function _oilaHolatIchki(){
   try{
-    if(!window.BULUT || !window.BULUT.kirganmi || !window.BULUT.kirganmi()) return;
+    if(!window.BULUT || !window.BULUT.kirganmi){ return Promise.resolve(); }
+    if(!window.BULUT.kirganmi()){ return Promise.resolve(); }
     var t = bugunKun();
 
     var odatJ = (state.odatlar||[]).length;
@@ -2037,15 +2041,16 @@ function oilaHolatYubor(){
       if(n) namozB = Object.keys(n).filter(function(k){return n[k];}).length;
     }catch(e){}
 
-    var streak = parseInt(S.g('i_streak'),10) || 0;
-    var ball   = parseInt(S.g('i_ball'),10) || 0;
+    var streak = 0, ball = 0;
+    try{ streak = (state.odatlar||[]).reduce(function(m,o){ return Math.max(m, o.streak||0); }, 0); }catch(e){}
+    try{ ball = parseInt(S.g('i_ball'),10) || 0; }catch(e){}
 
-    _oilaRpc('oila_holat_yoz', {
+    return _oilaRpc('oila_holat_yoz', {
       p_odat_b: odatB, p_odat_j: odatJ,
       p_reja_b: rejaB, p_reja_j: rejaJ,
       p_namoz_b: namozB, p_streak: streak, p_ball: ball
     });
-  }catch(e){}
+  }catch(e){ return Promise.resolve(); }
 }
 
 function _azoKarta(a, i, men, medal){
@@ -2256,7 +2261,7 @@ function renderOilaBulut(){
     qisqa = true;
   }
 
-  var oxirgiO = -2;
+  var oxirgiO = -1;
   var ro = korsat.map(function(a){
     var i = azolar.indexOf(a);
     var uzilish = (i > oxirgiO + 1) ? '<div style="text-align:center;color:var(--t2);font-size:16px;letter-spacing:3px;padding:2px 0">\u00b7\u00b7\u00b7</div>' : '';
@@ -2300,9 +2305,11 @@ function renderOilaBulut(){
 function oilaBulutYukla(qayta){
   if(_oilaYuklanmoqda) return;
   _oilaYuklanmoqda = true;
-  oilaHolatYubor();                       /* avval o'z holatimizni yuboramiz */
-
-  _oilaRpc('guruhlarim').then(function(g){
+  /* Avval o'z holatimizni YOZAMIZ va javobini KUTAMIZ,
+     shundan keyingina o'qiymiz — aks holda eski qator kelardi. */
+  oilaHolatYubor().then(function(){
+    return _oilaRpc('guruhlarim');
+  }).then(function(g){
     _guruhlar = (g && g.data) ? g.data : [];
     if(_joriyGuruh && !_guruhlar.some(function(x){return x.id===_joriyGuruh;})) _joriyGuruh = null;
     if(!_joriyGuruh && _guruhlar.length) _joriyGuruh = _guruhlar[0].id;
@@ -2341,7 +2348,9 @@ function guruhOch(id){
   try{ renderOila(); }catch(e){}
   _oilaYuklanmoqda = true;
   _chKesh = null;
-  _oilaRpc('oila_korish', {p_id:id}).then(function(r){
+  oilaHolatYubor().then(function(){
+    return _oilaRpc('oila_korish', {p_id:id});
+  }).then(function(r){
     _oilaKesh = (r && r.data) ? r.data : {holat:'xato'};
     return _oilaRpc('challenge_royxat', {p_oila:id});
   }).then(function(c){
@@ -6190,40 +6199,69 @@ function openLeaderModal(){
 function renderLeader(){
   var list=document.getElementById('leader-list');
   if(!list)return;
+  list.innerHTML='<div style="text-align:center;padding:24px;color:var(--t2)">Yuklanmoqda...</div>';
+
   var myBall=S.g('i_ball')||0;
   var myName=(S.g('i_profil')||{}).name||'Siz';
-  var others=S.g('i_leader_others')||[
-    {name:'Ali',ball:Math.round(myBall*1.2+50),emoji:'💪'},
-    {name:'Malika',ball:Math.round(myBall*0.8+20),emoji:'🌸'},
-    {name:'Jasur',ball:Math.round(myBall*0.6+10),emoji:'🔥'},
-  ];
 
-  var allUsers=[{name:myName,ball:myBall,emoji:'⭐',isMe:true}].concat(
-    others.map(function(o){return Object.assign({},o,{isMe:false});})
-  );
-  allUsers.sort(function(a,b){return b.ball-a.ball;});
+  if(!window.BULUT || !window.BULUT.rpc){
+    list.innerHTML=_leaderBosh(myBall);
+    return;
+  }
 
-  var medals=['🥇','🥈','🥉'];
+  window.BULUT.rpc('mening_reytingim').then(function(r){
+    var g=(r && r.data && r.data.guruhlar) ? r.data.guruhlar : [];
+    if(!g.length){ list.innerHTML=_leaderBosh(myBall); return; }
 
-  list.innerHTML=
-    '<div style="font-size:12px;color:var(--t2);margin-bottom:14px;text-align:center">Ball = Odat + Namoz + Sport + Missiya</div>'+
-    allUsers.map(function(u,i){
-      return '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:'+(u.isMe?'rgba(0,212,160,.08)':'var(--card)')+';border-radius:16px;margin-bottom:8px;border:1.5px solid '+(u.isMe?'var(--g)':'var(--bd)')+';box-shadow:var(--shadow)">'+
-        '<div style="font-size:24px;width:32px;text-align:center">'+(medals[i]||('#'+(i+1)))+'</div>'+
-        '<div style="font-size:24px">'+u.emoji+'</div>'+
-        '<div style="flex:1">'+
-          '<div style="font-size:14px;font-weight:700;color:var(--text)">'+u.name+(u.isMe?' (Siz)':'')+'</div>'+
-          '<div style="background:var(--bd);border-radius:4px;height:6px;margin-top:6px;overflow:hidden">'+
-            '<div style="background:linear-gradient(90deg,#FFD700,#FF8C00);height:6px;width:'+Math.min(100,Math.round(u.ball/allUsers[0].ball*100))+'%;border-radius:4px"></div>'+
-          '</div>'+
-        '</div>'+
-        '<div style="font-size:18px;font-weight:900;color:#FFD700">'+u.ball+'</div>'+
-      '</div>';
-    }).join('');
-  var linkEl=document.getElementById('leader-link');
-  if(linkEl) linkEl.textContent='kroffams.github.io/Intizom/?join='+encodeURIComponent(myName)+'&ball='+myBall;
+    var GT={oila:'\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67',dost:'\uD83E\uDD1D',sport:'\uD83C\uDFC3',ish:'\uD83D\uDCBC'};
+    var medal=['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+
+    list.innerHTML =
+      '<div style="font-size:12px;color:var(--t2);margin-bottom:14px;text-align:center;line-height:1.6">' +
+        'Guruhlaringizdagi o\'rningiz \u00b7 oxirgi 7 kun</div>' +
+      g.map(function(x){
+        var top=(x.top||[]);
+        var eng=(top[0] && top[0].ball) || 1;
+        return '<div class="card" style="margin-bottom:12px;padding:14px">' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">' +
+            '<span style="font-size:17px">'+(GT[x.turi]||GT.oila)+'</span>' +
+            '<div style="flex:1"><div style="font-size:14px;font-weight:800">'+x.nom+'</div>' +
+            '<div style="font-size:11px;color:var(--t2)">'+x.jami+' a\'zo</div></div>' +
+            '<div style="text-align:right">' +
+              '<div style="font-size:22px;font-weight:900;color:'+(x.orin<=3?'#FFD700':'var(--g)')+'">'+x.orin+'</div>' +
+              '<div style="font-size:9px;color:var(--t2)">o\'rin</div>' +
+            '</div>' +
+          '</div>' +
+          top.map(function(t,i){
+            var w=Math.min(100,Math.round((t.ball||0)/eng*100));
+            return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0'+(t.menmi?';font-weight:700':'')+'">' +
+              '<span style="width:22px">'+(medal[i]||'')+'</span>' +
+              '<span style="flex:1;font-size:13px">'+(t.ism||'\u2014')+(t.menmi?' <span style="font-size:9px;color:var(--g)">(siz)</span>':'')+'</span>' +
+              '<div style="width:60px;background:var(--bd);height:5px;border-radius:3px;overflow:hidden">' +
+                '<div style="background:linear-gradient(90deg,#FFD700,#FF8C00);height:5px;width:'+w+'%"></div></div>' +
+              '<span style="font-size:13px;font-weight:800;width:38px;text-align:right">'+(t.ball||0)+'</span>' +
+            '</div>';
+          }).join('') +
+          (x.orin>3 ? '<div style="text-align:center;color:var(--t2);letter-spacing:3px;font-size:14px">\u00b7\u00b7\u00b7</div>' +
+            '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-weight:700">' +
+              '<span style="width:22px;color:var(--t2);font-size:12px">'+x.orin+'</span>' +
+              '<span style="flex:1;font-size:13px">'+myName+' <span style="font-size:9px;color:var(--g)">(siz)</span></span>' +
+              '<span style="font-size:13px;font-weight:800">'+x.mening_ball+'</span>' +
+            '</div>' : '') +
+        '</div>';
+      }).join('');
+  }).catch(function(){ list.innerHTML=_leaderBosh(myBall); });
 }
 
+function _leaderBosh(myBall){
+  return '<div style="text-align:center;padding:26px 18px">' +
+    '<div style="font-size:42px;margin-bottom:10px">\uD83C\uDFC6</div>' +
+    '<div style="font-size:16px;font-weight:800;margin-bottom:8px">Sizning ballingiz: '+myBall+'</div>' +
+    '<div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px">' +
+      'Reyting guruhda ishlaydi. Oila bo\'limidan guruh yarating yoki kod bilan qo\'shiling \u2014 keyin kim nechanchi o\'rinda ekani shu yerda ko\'rinadi.</div>' +
+    '<button onclick="closeM(\'leader-modal\');showPage(\'oila\');" class="btn btn-g btn-block">Oila bo\'limiga o\'tish</button>' +
+  '</div>';
+}
 function copyLeaderLink(){
   var myBall=S.g('i_ball')||0;
   var myName=(S.g('i_profil')||{}).name||'Foydalanuvchi';
