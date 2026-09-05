@@ -217,6 +217,13 @@
 
   // index.html dagi "PIN'ni unutdim" shu yerga keladi
   window.BULUT = window.BULUT || {};
+
+  // Ilova serverdagi funksiyalarni shu orqali chaqiradi (oila, obuna va h.k.)
+  window.BULUT.rpc = function (nom, args) {
+    if (!sb) return Promise.resolve({ error: { message: "Bulutga ulanmagan" } });
+    return sb.rpc(nom, args || {});
+  };
+  window.BULUT.kirganmi = function () { return !!uid; };
   window.BULUT.chiqish = function () {
     if (!sb) { location.reload(); return; }
     sb.auth.signOut().then(function () {
@@ -349,6 +356,7 @@
           '<div style="font-size:13px;opacity:.65;line-height:1.5">Botda <b>Raqamimni yuborish</b> tugmasini bosing. Tasdiqlangach bu yerga o\'zi kiradi.</div>' +
           '<div id="bg-kuterr" style="color:#FCA5A5;font-size:13px;margin-top:12px;min-height:18px"></div>' +
           '<button id="bg-qayta" style="width:100%;padding:13px;border:none;border-radius:12px;background:#229ED9;color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:14px">Botni qayta ochish</button>' +
+          '<button id="bg-tek" style="width:100%;padding:12px;border:1px solid rgba(255,255,255,.15);border-radius:12px;background:transparent;color:#fff;font-weight:600;font-size:14px;cursor:pointer;margin-top:8px">Tekshirish</button>' +
           '<button id="bg-bekor" style="width:100%;padding:11px;border:none;border-radius:12px;background:transparent;color:#93C5FD;font-size:14px;cursor:pointer;margin-top:6px">&#8592; Orqaga</button>' +
         '</div>' +
 
@@ -373,6 +381,22 @@
     var $ = function (id) { return wrap.querySelector(id); };
     var qTimer = null, qKod = null;
 
+    // iPhone da Telegram ga o'tganda Safari sahifani yopib qo'yadi va
+    // qaytganda ilova qaytadan yuklanadi. Shuning uchun kutayotgan kodni
+    // saqlaymiz — qayta ochilganda o'sha joydan davom etadi.
+    var KUT = "tg_kutish";
+    function kutSaqla(k) {
+      try { localStorage.setItem(KUT, JSON.stringify({ kod: k, vaqt: Date.now() })); } catch (e) {}
+    }
+    function kutOchir() { try { localStorage.removeItem(KUT); } catch (e) {} }
+    function kutOl() {
+      try {
+        var o = JSON.parse(localStorage.getItem(KUT) || "null");
+        if (o && o.kod && (Date.now() - o.vaqt) < 10 * 60 * 1000) return o.kod;
+      } catch (e) {}
+      return null;
+    }
+
     function korsat(qaysi) {
       $("#bg-tg").style.display  = qaysi === "tg"  ? "block" : "none";
       $("#bg-kut").style.display = qaysi === "kut" ? "block" : "none";
@@ -391,6 +415,7 @@
         btn.disabled = false;
         if (r.error || !r.data) { alert("Ulanishda xatolik. Internetni tekshiring."); return; }
         qKod = r.data;
+        kutSaqla(qKod);
         try { window.open("https://t.me/" + BOT_NOMI + "?start=" + qKod, "_blank"); }
         catch (e) { location.href = "https://t.me/" + BOT_NOMI + "?start=" + qKod; }
         korsat("kut");
@@ -412,7 +437,7 @@
           var d = r.data;
           if (!d) return;
           if (d.holat === "tayyor" && d.sessiya) {
-            kutishniToxtat();
+            kutishniToxtat(); kutOchir();
             sb.auth.setSession({
               access_token: d.sessiya.access_token,
               refresh_token: d.sessiya.refresh_token,
@@ -428,7 +453,7 @@
               afterAuth(s.data.user);
             });
           } else if (d.holat === "eskirgan" || d.holat === "yoq") {
-            kutishniToxtat();
+            kutishniToxtat(); kutOchir();
             $("#bg-kuterr").textContent = "Havola eskirdi. Qaytadan boshlang.";
           }
         });
@@ -442,7 +467,11 @@
       window.open("https://t.me/" + BOT_NOMI + "?start=" + qKod, "_blank");
       if (!qTimer) surash();
     };
-    $("#bg-bekor").onclick = function () { kutishniToxtat(); qKod = null; korsat("tg"); };
+    $("#bg-tek").onclick = function () {
+      $("#bg-kuterr").textContent = "";
+      if (qKod) surash(); else korsat("tg");
+    };
+    $("#bg-bekor").onclick = function () { kutishniToxtat(); kutOchir(); qKod = null; korsat("tg"); };
 
     // ---------- QO'LDA KIRITISH (zaxira) ----------
     $("#bg-qol").onclick = function (e) { e.preventDefault(); kutishniToxtat(); korsat("man"); setTimeout(function () { try { $("#bg-ism").focus(); } catch (x) {} }, 100); };
@@ -500,8 +529,18 @@
 
     // Telegram'dan qaytganda darhol tekshirib ko'ramiz
     document.addEventListener("visibilitychange", function () {
-      if (document.visibilityState === "visible" && qKod && qTimer) surash();
+      if (document.visibilityState === "visible" && qKod) surash();
     });
+    window.addEventListener("focus", function () { if (qKod) surash(); });
+
+    // --- Sahifa qayta yuklangan bo'lsa, kutishni davom ettiramiz ---
+    var saqlangan = kutOl();
+    if (saqlangan) {
+      qKod = saqlangan;
+      korsat("kut");
+      $("#bg-kuterr").textContent = "";
+      surash();
+    }
   }
 
   function tr(m) {
