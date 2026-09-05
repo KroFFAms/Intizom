@@ -2574,67 +2574,134 @@ function tanishtiruvKorsat(majburiy){
 
 /* ---------------- TO'LIQ QO'LLANMA ---------------- */
 
-var QOL_BOLIM = [
-  { emo:'🔥', nom:'Odat', matn:'Har kuni takrorlanadigan ishlar. Belgilaganingizda streak o\'sadi, bir kun o\'tkazsangiz nolga tushadi.' },
-  { emo:'📋', nom:'Reja', matn:'Bugungi vazifalar. Shablon qo\'ysangiz, har kuni o\'zi takrorlanadi.' },
-  { emo:'🌙', nom:'Namoz', matn:'Besh vaqt namozni belgilash va vaqtlarini ko\'rish.' },
-  { emo:'💳', nom:'Moliya', matn:'Kirim-chiqimni yozib borish. Oylik xulosa o\'zi hisoblanadi.' },
-  { emo:'📖', nom:'Kundalik', matn:'Kun haqidagi shaxsiy yozuvlaringiz. Bu bo\'lim hech kimga ko\'rinmaydi.' },
-  { emo:'😊', nom:'Kayfiyat', matn:'Kun kayfiyatini belgilaysiz. Vaqt o\'tib qaysi kunlar og\'ir kechganini ko\'rasiz.' },
-  { emo:'💧', nom:'Suv', matn:'Kuniga qancha suv ichganingiz. Bir bosish = 250 ml.' },
-  { emo:'🍎', nom:'Ratsion', matn:'Ovqat va kaloriya. Kunlik normangiz vazn, bo\'y va yoshingizdan hisoblanadi — Sport bo\'limidan kiriting.' },
-  { emo:'🏃', nom:'Sport', matn:'Mashqlar, vazn va uyqu. Vaznni muntazam kiritsangiz o\'zgarish ko\'rinadi.' },
-  { emo:'👨‍👩‍👧', nom:'Oila', matn:'Yaqinlaringiz bilan bog\'lanib natijalarni ko\'rish va umumiy topshiriqlar. Faqat sonlar ulashiladi — kundalik va kayfiyatingiz ko\'rinmaydi.' },
-  { emo:'📊', nom:'Hisobot', matn:'Haftalik va oylik o\'sishingiz, grafiklar va tahlil.' },
-  { emo:'🔒', nom:'PIN qulf', matn:'Ilovani 4 xonali kod bilan yopish. Kod telefoningizdan chiqmaydi.' },
-  { emo:'☁️', nom:'Bulut', matn:'Ma\'lumotlaringiz serverga saqlanadi. Telefon almashsa, o\'sha raqam bilan qaytarasiz.' }
+/* ---------------- FOYDALANUVCHI QO'LLANMASI ---------------- */
+
+var QOL_BOSHLASH = [
+  ['1', 'Uchta odat tanlang',
+   'Odat bo\'limiga kiring va o\'zingizga eng kerakli uch-to\'rtta odatni qo\'shing. Ko\'p qo\'shmang — boshida kam bo\'lgani yaxshi, keyin qo\'shasiz.'],
+  ['2', 'Ertalab rejangizni yozing',
+   'Reja bo\'limida bugungi vazifalarni yozing. Har kuni takrorlanadiganini shablon qilib qo\'ysangiz, o\'zi paydo bo\'ladi.'],
+  ['3', 'Kun davomida belgilab boring',
+   'Bajarganingizni bir bosishda belgilaysiz. Ketma-ket kunlar streak bo\'lib yig\'iladi.'],
+  ['4', 'Kechqurun bir daqiqa',
+   'Kundalikka ikki og\'iz yozing, kayfiyatingizni belgilang. Bir oydan keyin o\'zgarishni ko\'rasiz.'],
+  ['5', 'Yaqinlaringizni chaqiring',
+   'Oila bo\'limidan guruh yarating va kodni bering. Birga yurish yolg\'iz yurishdan oson.']
 ];
 
-/* Yordam va taklif — botga olib boradi */
-function yordamOch(){
-  var d = document.createElement('div');
-  d.style.cssText='position:fixed;inset:0;z-index:99995;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:22px';
-  d.innerHTML = '<div style="width:100%;max-width:340px;background:var(--card,#fff);color:var(--text,#111);border-radius:20px;padding:24px;text-align:center">' +
-      '<div style="font-size:42px;margin-bottom:10px">\uD83D\uDCAC</div>' +
-      '<div style="font-size:18px;font-weight:800;margin-bottom:8px">Yordam va taklif</div>' +
-      '<div style="font-size:13px;color:var(--t2,#666);line-height:1.6;margin-bottom:18px">' +
-        'Xatolik topdingizmi, taklifingiz bormi yoki savol tug\'ildimi \u2014 yozing. Telegram orqali javob beramiz.' +
-      '</div>' +
-      '<button id="yo-go" style="width:100%;padding:14px;border:none;border-radius:14px;background:#229ED9;color:#fff;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:8px">Telegramda yozish</button>' +
-      '<button id="yo-x" style="width:100%;padding:12px;border:none;border-radius:14px;background:transparent;color:var(--t2,#666);font-size:14px;cursor:pointer">Yopish</button>' +
-    '</div>';
-  document.body.appendChild(d);
-  d.querySelector('#yo-go').onclick=function(){
-    try{ window.open('https://t.me/IIntizom_bot?start=yordam','_blank'); }
-    catch(e){ location.href='https://t.me/IIntizom_bot?start=yordam'; }
-    d.remove();
-  };
-  d.querySelector('#yo-x').onclick=function(){ d.remove(); };
-  d.onclick=function(e){ if(e.target===d) d.remove(); };
-}
+var QOL_BOLIM = [
+  { emo:'\uD83D\uDD25', nom:'Odat', matn:'Har kuni takrorlanadigan ishlar: namoz, sport, kitob. Belgilaganingizda streak o\'sadi, bir kun o\'tkazsangiz nolga tushadi. Aynan shu streak odamni ushlab turadi.' },
+  { emo:'\uD83D\uDCCB', nom:'Reja', matn:'Bugungi vazifalar. Shablon qo\'ysangiz har kuni o\'zi takrorlanadi — ertalab qaytadan yozib o\'tirmaysiz.' },
+  { emo:'\uD83C\uDF19', nom:'Namoz', matn:'Besh vaqt namozni belgilash. Vaqtlari shahringizga qarab ko\'rsatiladi.' },
+  { emo:'\uD83D\uDCB3', nom:'Moliya', matn:'Kirim-chiqim. Har kuni yozib borsangiz, oy oxirida puling qayerga ketganini ko\'rasiz. Oylik xulosa o\'zi hisoblanadi.' },
+  { emo:'\uD83D\uDCD6', nom:'Kundalik', matn:'Kun haqidagi shaxsiy yozuvlaringiz. <b>Bu bo\'lim hech kimga ko\'rinmaydi</b> — oila guruhida ham, hech qayerda ham.' },
+  { emo:'\uD83D\uDE0A', nom:'Kayfiyat', matn:'Kun kayfiyatini belgilaysiz. Vaqt o\'tib qaysi kunlar og\'ir kechganini va nima sabab bo\'lganini ko\'rasiz.' },
+  { emo:'\uD83D\uDCA7', nom:'Suv', matn:'Kuniga qancha suv ichganingiz. Bir bosish = bir stakan.' },
+  { emo:'\uD83C\uDF4E', nom:'Ratsion', matn:'Ovqat va kaloriya. Kunlik normangiz vazn, bo\'y, yosh va maqsadingizdan hisoblanadi — avval Sport bo\'limidan vazningizni kiriting.' },
+  { emo:'\uD83C\uDFC3', nom:'Sport', matn:'Mashqlar, vazn va uyqu. Vaznni haftada bir marta kiritsangiz o\'zgarish grafigi chiqadi.' },
+  { emo:'\uD83D\uDC8A', nom:'Dori', matn:'Dori qabul qilish vaqtlari va eslatma.' },
+  { emo:'\uD83D\uDCCA', nom:'Hisobot', matn:'Haftalik va oylik o\'sishingiz, grafiklar. Qaysi odat mustahkam, qaysi biri qoqilyapti — shu yerda ko\'rinadi.' },
+  { emo:'\uD83D\uDD12', nom:'PIN qulf', matn:'Ilovani 4 xonali kod bilan yopish. Kod telefoningizdan chiqmaydi va serverga yuborilmaydi.' },
+  { emo:'\u2601\uFE0F', nom:'Bulut', matn:'Ma\'lumotlaringiz serverga saqlanadi. Telefon almashsa yoki yo\'qolsa, o\'sha raqam bilan hammasini qaytarasiz.' }
+];
+
+var QOL_GURUH = [
+  ['\uD83C\uDF10', 'Birga nima?',
+   'Oila \u2192 Birga tabida yaqinlaringiz bilan bog\'lanasiz. Har kim o\'z telefonida Intizom yuritadi, bu yerda esa bir-biringizning natijangizni ko\'rasiz.'],
+  ['\uD83D\uDD11', 'Qanday qo\'shiladi?',
+   'Biringiz guruh yaratadi va 6 belgili kod oladi. Qolganlar o\'z ilovasida o\'sha kodni kiritadi. Bir odam bir nechta guruhda bo\'lishi mumkin \u2014 oilasi, do\'stlari, sport guruhi.'],
+  ['\uD83C\uDFC6', 'Reyting',
+   'Haftalik ball bo\'yicha tuziladi. Bir kun kasal bo\'lsangiz reyting buzilmaydi \u2014 hisob 7 kunlik.'],
+  ['\uD83C\uDFAF', 'Challenge',
+   'Umumiy musobaqa: "kuniga 10 sahifa Qur\'on", "kuniga 3 km yugurish". Har kim o\'zi belgilaydi, hisob o\'zi yig\'iladi.'],
+  ['\u2705', 'Topshiriqlar',
+   'Guruhga umumiy vazifa qo\'yasiz yoki bittasiga biriktirasiz. Bajargan odam belgilaydi.'],
+  ['\uD83D\uDD10', 'Nima ko\'rinadi?',
+   '<b>Ko\'rinadi:</b> bajarilgan odat va reja soni, namoz soni, ball va streak.<br><b>Ko\'rinmaydi:</b> kundalik yozuvlaringiz, kayfiyatingiz, eslatma va moliyangiz. Ular guruhga umuman yuborilmaydi.']
+];
+
+var QOL_SAVOL = [
+  ['Telefonim yo\'qolsa ma\'lumotim ketadimi?',
+   'Yo\'q. Hammasi serverda saqlanadi. Yangi telefonda o\'sha raqam bilan kirsangiz qaytadi.'],
+  ['Internetsiz ishlaydimi?',
+   'Ha. Belgilaganlaringiz telefonda saqlanadi va internet paydo bo\'lganda o\'zi serverga chiqadi.'],
+  ['Hamma bo\'limni ishlatishim shartmi?',
+   'Yo\'q va shart emas. Ikki-uchtasidan boshlang. Keraksizlarini Sozlamalardan yashirib qo\'yishingiz mumkin.'],
+  ['Streak uzilib qolsa?',
+   'Nolga tushadi va qaytadan boshlanadi. Bu jazо emas \u2014 shunchaki ko\'rsatkich. Uzilgani uchun tashlab ketmang.'],
+  ['Kundalik yozuvlarimni kimdir ko\'radimi?',
+   'Yo\'q. Kundalik, kayfiyat, eslatma va moliya faqat sizniki. Oila guruhida ham ko\'rinmaydi.'],
+  ['PIN\'ni unutsam?',
+   'Qulf ekranida "PIN\'ni unutdingizmi?" havolasi bor. Hisobdan chiqasiz va Telegram orqali qayta kirasiz, ma\'lumot joyida qoladi.'],
+  ['Ob-havo boshqa shaharni ko\'rsatyapti',
+   'Bosh sahifadagi ob-havo kartasini bosing va o\'z shahringizni tanlang.']
+];
 
 function qollanmaOch(){
   if(document.getElementById('qol-ovl')) return;
   var d = document.createElement('div');
   d.id = 'qol-ovl';
   d.style.cssText = 'position:fixed;inset:0;z-index:99995;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
-  d.innerHTML = '<div style="width:100%;max-width:520px;max-height:86vh;background:var(--card,#fff);color:var(--text,#111);border-radius:22px 22px 0 0;padding:20px;overflow:auto">' +
+
+  function bolim(sar, ichi){
+    return '<div style="font-size:15px;font-weight:800;margin:20px 0 10px">'+sar+'</div>' + ichi;
+  }
+
+  var boshlash = QOL_BOSHLASH.map(function(b){
+    return '<div style="display:flex;gap:12px;margin-bottom:12px">' +
+      '<div style="width:26px;height:26px;flex-shrink:0;border-radius:9px;background:var(--g,#00D4A0);color:#04231b;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">'+b[0]+'</div>' +
+      '<div><div style="font-size:13.5px;font-weight:700;margin-bottom:2px">'+b[1]+'</div>' +
+      '<div style="font-size:12.5px;color:var(--t2,#666);line-height:1.6">'+b[2]+'</div></div>' +
+    '</div>';
+  }).join('');
+
+  var bolimlar = QOL_BOLIM.map(function(b){
+    return '<div style="display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--bd,#eee)">' +
+      '<div style="font-size:20px;width:28px;text-align:center;flex-shrink:0">'+b.emo+'</div>' +
+      '<div><div style="font-size:13.5px;font-weight:700;margin-bottom:3px">'+b.nom+'</div>' +
+      '<div style="font-size:12.5px;color:var(--t2,#666);line-height:1.6">'+b.matn+'</div></div>' +
+    '</div>';
+  }).join('');
+
+  var guruh = QOL_GURUH.map(function(g){
+    return '<div style="display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--bd,#eee)">' +
+      '<div style="font-size:19px;width:28px;text-align:center;flex-shrink:0">'+g[0]+'</div>' +
+      '<div><div style="font-size:13.5px;font-weight:700;margin-bottom:3px">'+g[1]+'</div>' +
+      '<div style="font-size:12.5px;color:var(--t2,#666);line-height:1.6">'+g[2]+'</div></div>' +
+    '</div>';
+  }).join('');
+
+  var savol = QOL_SAVOL.map(function(s){
+    return '<div style="padding:11px 0;border-bottom:1px solid var(--bd,#eee)">' +
+      '<div style="font-size:13.5px;font-weight:700;margin-bottom:3px">'+s[0]+'</div>' +
+      '<div style="font-size:12.5px;color:var(--t2,#666);line-height:1.6">'+s[1]+'</div>' +
+    '</div>';
+  }).join('');
+
+  d.innerHTML = '<div style="width:100%;max-width:520px;max-height:88vh;background:var(--card,#fff);color:var(--text,#111);border-radius:22px 22px 0 0;padding:20px;overflow:auto">' +
       '<div style="width:38px;height:4px;background:var(--bd,#ddd);border-radius:3px;margin:0 auto 14px"></div>' +
-      '<div style="font-size:19px;font-weight:800;margin-bottom:6px">📘 Qo\'llanma</div>' +
-      '<div style="font-size:13px;color:var(--t2,#666);margin-bottom:16px;line-height:1.6">Har bir bo\'lim nima uchun kerak. Hammasini birdan ishlatish shart emas — ikki-uchtasidan boshlang.</div>' +
-      QOL_BOLIM.map(function(b){
-        return '<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--bd,#eee)">' +
-          '<div style="font-size:22px;width:30px;text-align:center;flex-shrink:0">'+b.emo+'</div>' +
-          '<div><div style="font-size:14px;font-weight:700;margin-bottom:3px">'+b.nom+'</div>' +
-          '<div style="font-size:12.5px;color:var(--t2,#666);line-height:1.6">'+b.matn+'</div></div>' +
-        '</div>';
-      }).join('') +
-      '<button onclick="tanishtiruvKorsat(true)" style="width:100%;padding:13px;border:1px solid var(--bd,#e5e5e5);border-radius:14px;background:var(--bg,#f7f7f7);color:var(--text,#111);font-size:14px;font-weight:600;cursor:pointer;margin-top:16px">Tanishtiruvni qayta ko\'rish</button>' +
+      '<div style="font-size:20px;font-weight:800;margin-bottom:6px">\uD83D\uDCD8 Qo\'llanma</div>' +
+      '<div style="font-size:13px;color:var(--t2,#666);margin-bottom:4px;line-height:1.6">' +
+        'Hammasini birdan ishlatish shart emas. Ikki-uchtasidan boshlang \u2014 qolgani o\'zi keladi.</div>' +
+
+      bolim('\uD83D\uDE80 Qayerdan boshlash', boshlash) +
+      bolim('\uD83D\uDCE6 Bo\'limlar', bolimlar) +
+      bolim('\uD83D\uDC65 Oila va guruhlar', guruh) +
+      bolim('\u2753 Ko\'p so\'raladigan savollar', savol) +
+
+      '<div style="background:var(--bg,#f7f7f7);border-radius:14px;padding:14px;margin-top:20px;font-size:12.5px;color:var(--t2,#666);line-height:1.7">' +
+        '<b style="color:var(--text,#111)">Savolingiz qoldimi?</b><br>' +
+        'Sozlamalar \u2192 Yordam va taklif orqali yozing. Telegram orqali javob beramiz.' +
+      '</div>' +
+
+      '<button onclick="tanishtiruvKorsat(true)" style="width:100%;padding:13px;border:1px solid var(--bd,#e5e5e5);border-radius:14px;background:var(--bg,#f7f7f7);color:var(--text,#111);font-size:14px;font-weight:600;cursor:pointer;margin-top:14px">Tanishtiruvni qayta ko\'rish</button>' +
       '<button onclick="document.getElementById(\'qol-ovl\').remove()" style="width:100%;padding:15px;border:none;border-radius:14px;background:var(--g,#00D4A0);color:#04231b;font-weight:800;font-size:15px;cursor:pointer;margin-top:8px">Yopish</button>' +
     '</div>';
+
   document.body.appendChild(d);
   d.onclick = function(e){ if(e.target === d) d.remove(); };
 }
+
 
 function renderOila(){
   var el=document.getElementById('oila-body');
