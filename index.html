@@ -268,7 +268,7 @@
       <div data-hw="dua" onclick="openM('dua-modal');renderDuaList('kundalik')" class="htile"><div class="hticon" style="color:#7C6BE8"><span style="font-size:22px;line-height:1">&#129330;</span></div><div class="htlbl">Dua</div></div>
       <div data-hw="aireja" onclick="openM('ai-reja-modal')" class="htile"><div class="hticon" style="color:#6366F1"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1.4"/><circle cx="9.3" cy="13" r="1.1" fill="currentColor" stroke="none"/><circle cx="14.7" cy="13" r="1.1" fill="currentColor" stroke="none"/><path d="M9.5 16h5"/></svg></div><div class="htlbl">AI Reja</div></div>
       <div data-hw="missiya" onclick="openMissionModal()" class="htile"><div class="hticon" style="color:#F59E0B"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div><div class="htlbl"><span id="mission-badge">Missiya</span></div></div>
-      <div data-hw="reyting" onclick="openLeaderModal()" class="htile"><div class="hticon" style="color:#E8A200"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 01-10 0V4z"/><path d="M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3M10 18v-3M14 18v-3M8 21h8"/></svg></div><div class="htlbl">Reyting</div></div>
+      <div data-hw="reyting" onclick="reytingOch()" class="htile"><div class="hticon" style="color:#E8A200"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 01-10 0V4z"/><path d="M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3M10 18v-3M14 18v-3M8 21h8"/></svg></div><div class="htlbl">Reyting</div></div>
       <div data-hw="spin" onclick="openSpinWheel()" class="htile"><div class="hticon" style="color:#FF6B35"><span style="font-size:22px;line-height:1">&#127905;</span></div><div class="htlbl">Omad</div></div>
       <div data-hw="viktorina" onclick="openViktorina()" class="htile"><div class="hticon" style="color:#06B6D4"><span style="font-size:22px;line-height:1">&#129504;</span></div><div class="htlbl">Viktorina</div></div>
       <div data-hw="mashq60" onclick="openMiniChallenge()" class="htile"><div class="hticon" style="color:#10B981"><span style="font-size:22px;line-height:1">&#9889;</span></div><div class="htlbl">60 soniya</div></div>
@@ -2082,6 +2082,42 @@ function _azoKarta(a, i, men, medal){
     '</div>';
 }
 
+/* ---------- G'oliblar minbari (diagramma) ---------- */
+function _minbar(azolar, men){
+  if(!azolar || azolar.length < 2) return '';
+  var top = azolar.slice(0,3);
+  var eng = Math.max(1, top[0].hafta_ball || 0);
+  /* minbar balandligi: 1-o'rin baland, keyingilari past */
+  var bal = [96, 72, 54];
+  var rang = ['linear-gradient(180deg,#FFD700,#FFA000)',
+              'linear-gradient(180deg,#C0C7D0,#98A2B3)',
+              'linear-gradient(180deg,#CD7F32,#A9631F)'];
+  var medal = ['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+  /* ko'rinish tartibi: 2 - 1 - 3 */
+  var tartib = top.length >= 3 ? [1,0,2] : (top.length === 2 ? [1,0] : [0]);
+
+  var ustun = tartib.map(function(i){
+    var a = top[i]; if(!a) return '';
+    var b = a.hafta_ball || 0;
+    var h = Math.round(bal[i] * (0.45 + 0.55 * (b / eng)));
+    var meni = (a.user_id === men);
+    var ism = (a.ism || '\u2014');
+    if(ism.length > 10) ism = ism.slice(0,9) + '\u2026';
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">' +
+      '<div style="font-size:13px;font-weight:800;margin-bottom:2px">' + b + '</div>' +
+      '<div style="font-size:20px;line-height:1">' + medal[i] + '</div>' +
+      '<div style="font-size:11px;font-weight:' + (meni?'800':'600') + ';margin:3px 0 5px;text-align:center;line-height:1.2">' +
+        ism + (meni ? '<br><span style="font-size:9px;color:var(--g)">siz</span>' : '') + '</div>' +
+      '<div style="width:100%;height:' + h + 'px;border-radius:10px 10px 0 0;background:' + rang[i] + ';display:flex;align-items:flex-start;justify-content:center;padding-top:6px;color:rgba(255,255,255,.85);font-weight:900;font-size:15px">' +
+        (i+1) + '</div>' +
+    '</div>';
+  }).join('');
+
+  return '<div class="card" style="margin-bottom:12px;padding:16px 14px 0">' +
+    '<div style="display:flex;align-items:flex-end;gap:8px;min-height:150px">' + ustun + '</div>' +
+  '</div>';
+}
+
 /* ---------- Guruh challenge'lari ---------- */
 function _chBlok(men){
   var t = '<div class="sec-title" style="margin:18px 0 8px">\uD83C\uDFC6 Challenge</div>' +
@@ -2293,7 +2329,8 @@ function renderOilaBulut(){
   if(!vz) vz = '<div style="text-align:center;padding:14px;color:var(--t2);font-size:13px">Hali topshiriq yo\'q</div>';
 
   return h +
-    '<div class="sec-title" style="margin:16px 0 8px">🏆 Haftalik reyting</div>' + ro +
+    '<div class="sec-title" style="margin:16px 0 8px">🏆 Haftalik reyting</div>' +
+    _minbar(azolar, men) + ro +
     _chBlok(men) +
     '<div class="sec-title" style="margin:18px 0 8px">✅ Topshiriqlar</div>' +
     '<button class="btn btn-g btn-block" onclick="oilaVazSora()" style="margin-bottom:10px">+ Topshiriq qo\'shish</button>' +
@@ -6191,6 +6228,23 @@ function statCard(emoji,label,val,color){
     '<div style="font-size:22px;font-weight:800;color:'+color+'">'+val+'</div>'+
   '</div>';
 }
+/* Reyting tugmasi: guruh bo'lsa to'g'ridan-to'g'ri Oila -> Birga ga */
+function reytingOch(){
+  try{
+    if(_guruhlar && _guruhlar.length){
+      showPage('oila');
+      setTimeout(function(){
+        try{
+          var b=document.getElementById('oila-body');
+          if(b){ b.setAttribute('data-tab','bulut'); renderOila(); }
+        }catch(e){}
+      },80);
+      return;
+    }
+  }catch(e){}
+  openLeaderModal();
+}
+
 function openLeaderModal(){
   renderLeader();
   openM('leader-modal');
