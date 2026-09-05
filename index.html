@@ -229,7 +229,7 @@
   </div>
   <div style="padding:16px">
 
-    <div data-hw="obhavo" onclick="loadObhavo()" class="hstrip">
+    <div data-hw="obhavo" onclick="shaharTanla()" class="hstrip" style="cursor:pointer">
       <div id="ob-icon" style="font-size:26px;line-height:1">&#127780;&#65039;</div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:baseline;gap:6px">
@@ -237,6 +237,7 @@
           <span id="ob-desc" style="font-size:12px;color:var(--t2)">Yuklanmoqda</span>
         </div>
         <div id="ob-loc" style="font-size:11px;color:var(--t2)">Aniqlanmoqda...</div>
+        <div style="font-size:10px;color:var(--t2);opacity:.6">shaharni o&#39;zgartirish uchun bosing</div>
       </div>
       <div style="text-align:right;font-size:11px;color:var(--t2);line-height:1.5">
         <div>&#128167; <span id="ob-hum">--</span>%</div>
@@ -3071,6 +3072,12 @@ function loadObhavo(){
     try{setOb(cached.temp,cached.icon,cached.desc,cached.hum+'%',cached.spd+' m/s',cached.city);}catch(e){}
     if(Date.now()-cached.ts<30*60*1000)return; // 30 daqiqa yangi emas
   }
+  /* Foydalanuvchi shaharni o'zi tanlagan bo'lsa — hamma narsadan ustun */
+  try{
+    var _sh = S.g('i_shahar');
+    if(_sh && _sh.lat && _sh.lon){ fetchOb(_sh.lat,_sh.lon,_sh.nom); return; }
+  }catch(e){}
+
   try{
     if(navigator&&navigator.geolocation){
       navigator.geolocation.getCurrentPosition(
@@ -3099,6 +3106,62 @@ function loadObhavo(){
   }catch(e){
     loadObhavoByIP();
   }
+}
+
+/* ============================================================
+   SHAHAR TANLASH (05.09.2026)
+   IP bo'yicha aniqlash operator joylashuvini beradi — viloyatda
+   yashovchiga "Toshkent" ko'rsatardi. Endi o'zi tanlaydi.
+   ============================================================ */
+var SHAHARLAR = [
+  ['Toshkent',41.2995,69.2401], ['Nukus',42.4531,59.6103],
+  ['Andijon',40.7821,72.3442],  ['Buxoro',39.7747,64.4286],
+  ['Farg\'ona',40.3864,71.7864],['Guliston',40.4897,68.7842],
+  ['Jizzax',40.1158,67.8422],   ['Namangan',40.9983,71.6726],
+  ['Navoiy',40.0844,65.3792],   ['Qarshi',38.8606,65.7847],
+  ['Nurafshon',41.0167,69.3667],['Samarqand',39.6270,66.9750],
+  ['Termiz',37.2242,67.2783],   ['Urganch',41.5500,60.6333],
+  ['Xiva',41.3783,60.3639],     ['Qo\'qon',40.5286,70.9425],
+  ['Marg\'ilon',40.4711,71.7247],['Chirchiq',41.4689,69.5822],
+  ['Angren',41.0167,70.1436],   ['Zarafshon',41.5872,64.2028],
+  ['Qorovulbozor',39.5033,64.7906]
+];
+
+function shaharTanla(){
+  if(document.getElementById('sh-ovl')) return;
+  var joriy = (S.g('i_shahar')||{}).nom || '';
+  var d = document.createElement('div');
+  d.id='sh-ovl';
+  d.style.cssText='position:fixed;inset:0;z-index:99995;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
+  d.innerHTML='<div style="width:100%;max-width:520px;max-height:80vh;background:var(--card,#fff);color:var(--text,#111);border-radius:22px 22px 0 0;padding:20px;overflow:auto">' +
+    '<div style="width:38px;height:4px;background:var(--bd,#ddd);border-radius:3px;margin:0 auto 14px"></div>' +
+    '<div style="font-size:18px;font-weight:800;margin-bottom:4px">\uD83D\uDCCD Shahringiz</div>' +
+    '<div style="font-size:12.5px;color:var(--t2,#666);margin-bottom:14px;line-height:1.6">Ob-havo shu shahar bo\'yicha ko\'rsatiladi.</div>' +
+    SHAHARLAR.map(function(s,i){
+      var t = s[0]===joriy;
+      return '<div onclick="shaharSaqla('+i+')" style="padding:13px 14px;margin-bottom:6px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:'+(t?'var(--g,#00D4A0)':'var(--bg,#f7f7f7)')+';color:'+(t?'#04231b':'inherit')+';font-weight:'+(t?'700':'500')+'">' +
+        '<span>'+s[0]+'</span>'+(t?'<span>\u2713</span>':'')+'</div>';
+    }).join('') +
+    '<div onclick="shaharAvto()" style="padding:13px 14px;margin-top:8px;border-radius:12px;cursor:pointer;text-align:center;border:1px solid var(--bd,#e5e5e5);font-size:14px">\uD83D\uDCE1 Avtomatik aniqlash</div>' +
+    '<button onclick="document.getElementById(\'sh-ovl\').remove()" style="width:100%;padding:14px;border:none;border-radius:14px;background:var(--bg,#f0f0f0);color:var(--text,#111);font-weight:700;font-size:15px;cursor:pointer;margin-top:10px">Yopish</button>' +
+  '</div>';
+  document.body.appendChild(d);
+  d.onclick=function(e){ if(e.target===d) d.remove(); };
+}
+
+function shaharSaqla(i){
+  var s = SHAHARLAR[i]; if(!s) return;
+  S.s('i_shahar',{nom:s[0],lat:s[1],lon:s[2]});
+  S.s('i_ob',null);
+  var o=document.getElementById('sh-ovl'); if(o) o.remove();
+  try{ fetchOb(s[1],s[2],s[0]); }catch(e){}
+  try{ showNotif('\uD83D\uDCCD', s[0]+' tanlandi'); }catch(e){}
+}
+
+function shaharAvto(){
+  S.s('i_shahar',null); S.s('i_ob',null);
+  var o=document.getElementById('sh-ovl'); if(o) o.remove();
+  try{ loadObhavo(); }catch(e){}
 }
 
 function loadObhavoByIP(){
@@ -3138,7 +3201,7 @@ function nextMotiv(){
 function renderBosh(){
   const p=state.profil,today=bugunKun();
   const h=new Date().getHours();
-  const salom=h<6?'Xayrli kecha 🌙':h<12?'Xayrli tong ☀️':h<17?'Xayrli kun 🌤️':'Xayrli oqshom 🌆';
+  const salom=h<5?'Xayrli kecha 🌙':h<12?'Xayrli tong ☀️':h<17?'Xayrli kun 🌤️':h<22?'Xayrli oqshom 🌆':'Xayrli kecha 🌙';
   const setEl=(id,val,html)=>{const el=document.getElementById(id);if(el){if(html)el.innerHTML=val;else el.textContent=val;}};
   setEl('b-salom',salom);
   setEl('b-ism',p.name+(p.job?' · '+p.job:''));
