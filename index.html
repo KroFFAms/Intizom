@@ -177,7 +177,7 @@
     <!-- Eshitilgan matn -->
     <div id="voice-heard" style="display:none;background:var(--bg);border-radius:14px;padding:12px 16px;margin-bottom:16px;font-size:15px;color:var(--text);font-weight:600;min-height:44px"></div>
     <!-- Natija -->
-    <div id="voice-result" style="display:none;background:rgba(0,212,160,.1);border-radius:14px;padding:12px 16px;margin-bottom:20px;font-size:14px;color:#00C896;font-weight:600;border:1.5px solid rgba(0,212,160,.3)"></div>
+    <div id="voice-result" style="display:none;background:rgba(0,200,150,.1);border-radius:14px;padding:12px 16px;margin-bottom:20px;font-size:14px;color:#00C896;font-weight:600;border:1.5px solid rgba(0,200,150,.3)"></div>
     <button onclick="stopGlobalVoice()" style="background:var(--bg);border:1.5px solid var(--bd);color:var(--t2);padding:12px 32px;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer">✕ Yopish</button>
   </div>
 </div>
@@ -186,44 +186,44 @@
 
 <!-- BOSH SAHIFA -->
 <div id="page-bosh" class="page active">
-  <div style="background:linear-gradient(160deg,var(--navy),var(--nl) 60%,#1a3a5c);min-height:260px;padding:52px 20px 24px;position:relative;overflow:hidden">
-    <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(0,212,160,.1)"></div>
-    <div style="position:absolute;bottom:-20px;left:-20px;width:120px;height:120px;border-radius:50%;background:rgba(0,168,255,.08)"></div>
+  <div style="background:linear-gradient(165deg,rgba(0,200,150,.20) 0%,rgba(0,200,150,.07) 45%,var(--bg) 100%);min-height:240px;padding:52px 20px 22px;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-50px;right:-50px;width:190px;height:190px;border-radius:50%;background:rgba(0,200,150,.07)"></div>
+    <div style="position:absolute;bottom:-30px;left:-30px;width:130px;height:130px;border-radius:50%;background:rgba(0,200,150,.05)"></div>
     <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
       <div>
-        <div id="b-salom" style="font-size:14px;color:rgba(255,255,255,.6);margin-bottom:4px">Xayrli tong ☀️</div>
-        <div id="b-ism" style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px">Foydalanuvchi</div>
-        <div id="b-sana" style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px"></div>
+        <div id="b-salom" style="font-size:14px;color:var(--t2);margin-bottom:4px">Xayrli tong ☀️</div>
+        <div id="b-ism" style="font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px">Foydalanuvchi</div>
+        <div id="b-sana" style="font-size:12px;color:var(--t2);opacity:.8;margin-top:4px"></div>
       </div>
       <div style="display:flex;align-items:flex-start;gap:12px">
         <div onclick="lockApp()" style="cursor:pointer;text-align:center" title="Ilovadan chiqish">
-          <div style="width:44px;height:44px;border-radius:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px">&#128274;</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">Chiqish</div>
+          <div style="width:44px;height:44px;border-radius:16px;background:var(--card);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:20px">&#128274;</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:3px">Chiqish</div>
         </div>
         <div onclick="openM('profil-modal')" style="cursor:pointer;text-align:center">
-          <div id="b-avatar" style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--g),var(--gd));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(0,212,160,.4);overflow:hidden">
+          <div id="b-avatar" style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--g),var(--gd));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;box-shadow:0 6px 18px rgba(0,200,150,.28);overflow:hidden">
             <span id="b-av-l">F</span><img id="b-av-i" style="display:none;width:100%;height:100%;object-fit:cover">
           </div>
-          <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px">Profil</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:3px">Profil</div>
         </div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:relative;z-index:1">
-      <div style="background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:14px;padding:10px 6px;text-align:center;border:1px solid rgba(255,255,255,.15)">
-        <div id="b-st1" style="font-size:20px;font-weight:800;color:#fff">0</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:2px">Reja</div>
+      <div style="background:var(--card);border-radius:14px;padding:10px 6px;text-align:center;border:1px solid var(--bd);box-shadow:var(--shadow)">
+        <div id="b-st1" style="font-size:20px;font-weight:800;color:var(--text)">0</div>
+        <div style="font-size:9px;color:var(--t2);margin-top:2px">Reja</div>
       </div>
-      <div style="background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:14px;padding:10px 6px;text-align:center;border:1px solid rgba(255,255,255,.15)">
+      <div style="background:var(--card);border-radius:14px;padding:10px 6px;text-align:center;border:1px solid var(--bd);box-shadow:var(--shadow)">
         <div id="b-st2" style="font-size:20px;font-weight:800;color:var(--g)">0</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:2px">Odat</div>
+        <div style="font-size:9px;color:var(--t2);margin-top:2px">Odat</div>
       </div>
-      <div style="background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:14px;padding:10px 6px;text-align:center;border:1px solid rgba(255,255,255,.15)">
+      <div style="background:var(--card);border-radius:14px;padding:10px 6px;text-align:center;border:1px solid var(--bd);box-shadow:var(--shadow)">
         <div id="b-st3" style="font-size:20px;font-weight:800;color:#CFB630">0</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:2px">Namoz</div>
+        <div style="font-size:9px;color:var(--t2);margin-top:2px">Namoz</div>
       </div>
-      <div style="background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:14px;padding:10px 6px;text-align:center;border:1px solid rgba(255,255,255,.15)">
+      <div style="background:var(--card);border-radius:14px;padding:10px 6px;text-align:center;border:1px solid var(--bd);box-shadow:var(--shadow)">
         <div id="b-st4" style="font-size:20px;font-weight:800;color:#D27A3D">0</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:2px">🔥 Streak</div>
+        <div style="font-size:9px;color:var(--t2);margin-top:2px">🔥 Streak</div>
       </div>
     </div>
   </div>
@@ -310,13 +310,13 @@
     </div>
   </div>
   <div style="padding:16px">
-    <div style="background:linear-gradient(135deg,var(--navy),var(--nl));border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow-lg)">
+    <div style="background:linear-gradient(135deg,rgba(0,200,150,.12),rgba(0,200,150,.05));border:1px solid rgba(0,200,150,.22);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow-lg)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div><div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:2px">Bugungi odatlar</div>
-        <div id="odat-prog-t" style="font-size:22px;font-weight:800;color:#fff">0/0</div></div>
+        <div><div style="font-size:12px;color:var(--t2);margin-bottom:2px">Bugungi odatlar</div>
+        <div id="odat-prog-t" style="font-size:22px;font-weight:800;color:var(--text)">0/0</div></div>
         <div style="font-size:28px">🎯</div>
       </div>
-      <div style="background:rgba(255,255,255,.15);border-radius:8px;height:8px">
+      <div style="background:rgba(0,200,150,.14);border-radius:8px;height:8px">
         <div id="odat-prog-b" style="background:linear-gradient(90deg,var(--g),var(--g2));height:8px;border-radius:8px;width:0%;transition:width .5s"></div>
       </div>
     </div>
@@ -338,13 +338,13 @@
   </div>
   <div style="padding:16px">
     <div id="reja-bugun">
-      <div style="background:linear-gradient(135deg,var(--navy),var(--nl));border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow-lg)">
+      <div style="background:linear-gradient(135deg,rgba(0,200,150,.12),rgba(0,200,150,.05));border:1px solid rgba(0,200,150,.22);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow-lg)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div><div style="font-size:12px;color:rgba(255,255,255,.6)">Bugungi reja</div>
-          <div id="reja-prog-t" style="font-size:22px;font-weight:800;color:#fff">0/0</div></div>
+          <div><div style="font-size:12px;color:var(--t2)">Bugungi reja</div>
+          <div id="reja-prog-t" style="font-size:22px;font-weight:800;color:var(--text)">0/0</div></div>
           <div id="reja-clock" style="font-size:26px;font-weight:800;color:var(--g)">00:00</div>
         </div>
-        <div style="background:rgba(255,255,255,.15);border-radius:6px;height:6px">
+        <div style="background:rgba(0,200,150,.14);border-radius:6px;height:6px">
           <div id="reja-prog-b" style="background:linear-gradient(90deg,var(--g),#3099CF);height:6px;border-radius:6px;width:0%;transition:width .5s"></div>
         </div>
       </div>
@@ -367,7 +367,7 @@
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
           <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:4px 10px;font-size:11px;color:rgba(255,255,255,.7)">&#128173; <span id="maq-orzu-cnt">0</span> orzu</div>
           <div style="background:rgba(255,165,0,.2);border-radius:8px;padding:4px 10px;font-size:11px;color:#CFB630">&#128293; <span id="maq-jarayon-cnt">0</span> jarayonda</div>
-          <div style="background:rgba(0,212,160,.2);border-radius:8px;padding:4px 10px;font-size:11px;color:#00C896">&#9989; <span id="maq-bajarildi-cnt">0</span> amalga oshdi</div>
+          <div style="background:rgba(0,200,150,.2);border-radius:8px;padding:4px 10px;font-size:11px;color:#00C896">&#9989; <span id="maq-bajarildi-cnt">0</span> amalga oshdi</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
@@ -400,7 +400,7 @@
     </div>
     <div id="mol-panel">
       <div class="fcards">
-        <div class="fcard" style="background:linear-gradient(135deg,rgba(0,212,160,.08),rgba(0,212,160,.03))">
+        <div class="fcard" style="background:linear-gradient(135deg,rgba(0,200,150,.08),rgba(0,200,150,.03))">
           <div class="ficon" style="background:linear-gradient(135deg,#00C896,#00A87E)"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 15V5M5 9l5-4 5 4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
           <div style="font-size:12px;color:var(--t2)">Daromad</div>
           <div id="mol-inc" style="font-size:20px;font-weight:800;color:var(--g)">0</div>
@@ -621,7 +621,7 @@
 <div id="page-hisobot" class="page">
   <div class="topbar">
     <div class="topbar-inner">
-      <button onclick="showPage('sozlama',document.getElementById('nav-sozlama'))" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">&#8592;</button>
+      <button onclick="showPage('sozlama',document.getElementById('nav-sozlama'))" style="background:rgba(255,255,255,0.15);border:none;color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">&#8592;</button>
       <h2>&#128202; Hisobot</h2><div style="width:32px"></div>
     </div>
     <div class="topbar-tabs">
@@ -636,11 +636,11 @@
 <div id="page-jurnal" class="page">
   <div class="topbar">
     <div class="topbar-inner">
-      <button onclick="showPage('sozlama',document.getElementById('nav-sozlama'))" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">&#8592;</button>
+      <button onclick="showPage('sozlama',document.getElementById('nav-sozlama'))" style="background:rgba(255,255,255,0.15);border:none;color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px">&#8592;</button>
       <h2>&#128214; Kundalik</h2>
       <div style="display:flex;gap:6px;align-items:center">
-        <button onclick="openCloud()" title="Bulut" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:15px">&#9729;</button>
-        <button onclick="openJurnalNew()" style="background:var(--g);border:none;color:#fff;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600">+ Yoz</button>
+        <button onclick="openCloud()" title="Bulut" style="background:rgba(255,255,255,0.15);border:none;color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:15px">&#9729;</button>
+        <button onclick="openJurnalNew()" style="background:var(--g);border:none;color:var(--text);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600">+ Yoz</button>
       </div>
     </div>
   </div>
@@ -648,13 +648,13 @@
 </div>
 
 <div id="page-ratsion" class="page">
-  <div class="topbar" style="background:linear-gradient(135deg,#186552,#00A87E)">
+  <div class="topbar">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div>
-        <div style="font-size:20px;font-weight:800;color:#fff">&#129382; Chiroyli Qomat</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:2px">30 kunlik dastur</div>
+        <div style="font-size:20px;font-weight:800;color:var(--text)">&#129382; Chiroyli Qomat</div>
+        <div style="font-size:12px;color:var(--t2);margin-top:2px">30 kunlik dastur</div>
       </div>
-      <button onclick="openKaloriyaScaner()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;padding:8px 14px;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;backdrop-filter:blur(8px)">
+      <button onclick="openKaloriyaScaner()" style="background:var(--bg);border:1.5px solid rgba(255,255,255,.3);color:var(--text);padding:8px 14px;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;backdrop-filter:blur(8px)">
         📷 Skaner
       </button>
     </div>
@@ -768,7 +768,7 @@
         <div id="kal-items-list" style="background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)"></div>
 
         <!-- Maslahat -->
-        <div id="kal-advice" style="background:rgba(0,212,160,.08);border-radius:16px;padding:14px;border:1.5px solid rgba(0,212,160,.2);margin-bottom:14px;font-size:13px;color:var(--text);line-height:1.6"></div>
+        <div id="kal-advice" style="background:rgba(0,200,150,.08);border-radius:16px;padding:14px;border:1.5px solid rgba(0,200,150,.2);margin-bottom:14px;font-size:13px;color:var(--text);line-height:1.6"></div>
 
         <!-- Tarixga qo'shish -->
         <button onclick="saveKalToHistory()" style="width:100%;background:var(--card);border:1.5px solid var(--g);color:var(--g);padding:13px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer">
@@ -804,7 +804,7 @@
       <div style="font-size:12px;opacity:.55;margin-top:3px;font-style:italic;position:relative;z-index:1" id="s-motto"></div>
     </div>
     <div class="card">
-      <div class="sitem" onclick="openM('profil-modal')"><div class="sicon" style="background:rgba(0,212,160,.12)">👤</div><div style="flex:1"><div class="sec-title" style="margin-bottom:0;font-size:15px">Profil</div><div style="font-size:12px;color:var(--t2)">Ism, kasb, rasm</div></div><span style="color:var(--t2)">›</span></div>
+      <div class="sitem" onclick="openM('profil-modal')"><div class="sicon" style="background:rgba(0,200,150,.12)">👤</div><div style="flex:1"><div class="sec-title" style="margin-bottom:0;font-size:15px">Profil</div><div style="font-size:12px;color:var(--t2)">Ism, kasb, rasm</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="openHomeConfig()"><div class="sicon" style="background:rgba(139,92,246,.12)">🏠</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Asosiy oynani sozlash</div><div style="font-size:12px;color:var(--t2)">Qaysi bo'limlar ko'rinsin — tanlang</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="qollanmaOch()"><div class="sicon" style="background:rgba(59,130,246,.12)">📘</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Qo'llanma</div><div style="font-size:12px;color:var(--t2)">Har bo'lim nima uchun kerak</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="openM('maxfiy-modal')"><div class="sicon" style="background:rgba(148,163,184,.15)">🔒</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Maxfiylik siyosati</div><div style="font-size:12px;color:var(--t2)">Ma'lumotingiz qanday saqlanadi</div></div><span style="color:var(--t2)">›</span></div>
@@ -876,7 +876,7 @@
         </div>
         <span style="color:var(--t2)">›</span>
       </div>
-      <div class="sitem" onclick="exportData()"><div class="sicon" style="background:rgba(0,212,160,.12)">📤</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Eksport</div><div style="font-size:12px;color:var(--t2)">JSON formatda</div></div><span style="color:var(--t2)">›</span></div>
+      <div class="sitem" onclick="exportData()"><div class="sicon" style="background:rgba(0,200,150,.12)">📤</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Eksport</div><div style="font-size:12px;color:var(--t2)">JSON formatda</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="document.getElementById('imp-file').click()"><div class="sicon" style="background:rgba(59,130,246,.12)">📥</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Import / tiklash</div><div style="font-size:12px;color:var(--t2)">Zaxira fayldan qayta yuklash</div></div><span style="color:var(--t2)">›</span></div>
       <input type="file" id="imp-file" accept="application/json,.json" style="display:none" onchange="importData(this)">
       <div class="sitem" onclick="clearAll()"><div class="sicon" style="background:rgba(244,63,94,.12)">🗑️</div><div style="flex:1"><div style="font-size:15px;font-weight:600;color:var(--red)">Tozalash</div><div style="font-size:12px;color:var(--t2)">Barcha ma&#39;lumotlar</div></div><span style="color:var(--red)">›</span></div>
@@ -1001,7 +1001,7 @@
   <!-- Buning o'rniga qil -->
   <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:14px;letter-spacing:1px">BUNING O'RNIGA:</div>
   <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:28px">
-    <button onclick="gotoPage('odat',null);closeStBloker()" style="background:rgba(0,212,160,.2);border:1px solid rgba(0,212,160,.4);color:#00C896;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;cursor:pointer">✅ Odat bajar</button>
+    <button onclick="gotoPage('odat',null);closeStBloker()" style="background:rgba(0,200,150,.2);border:1px solid rgba(0,200,150,.4);color:#00C896;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;cursor:pointer">✅ Odat bajar</button>
     <button onclick="gotoPage('din',null);closeStBloker()" style="background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.3);color:#FFD700;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;cursor:pointer">🤲 Namoz/Zikr</button>
     <button onclick="gotoPage('sport',null);closeStBloker()" style="background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);color:#F87171;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;cursor:pointer">💪 Sport qil</button>
     <button onclick="gotoPage('reja',null);closeStBloker()" style="background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.4);color:#60A5FA;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;cursor:pointer">📋 Reja ko'r</button>
@@ -1592,7 +1592,7 @@
     <div class="mhandle"></div>
     <div class="mtitle">Profilni tahrirlash</div>
     <div style="text-align:center;margin-bottom:20px">
-      <div id="m-avatar" onclick="document.getElementById('av-inp').click()" style="width:90px;height:90px;border-radius:26px;background:linear-gradient(135deg,var(--g),var(--gd));display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;color:#fff;margin:0 auto;cursor:pointer;overflow:hidden;box-shadow:0 8px 24px rgba(0,212,160,.35)">
+      <div id="m-avatar" onclick="document.getElementById('av-inp').click()" style="width:90px;height:90px;border-radius:26px;background:linear-gradient(135deg,var(--g),var(--gd));display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;color:#fff;margin:0 auto;cursor:pointer;overflow:hidden;box-shadow:0 8px 24px rgba(0,200,150,.35)">
         <span id="m-av-l">F</span><img id="m-av-i" style="display:none;width:100%;height:100%;object-fit:cover">
       </div>
       <div style="font-size:12px;color:var(--t2);margin-top:8px">📷 Rasm yuklash</div>
@@ -1689,7 +1689,7 @@
     <div class="igroup">
       <label class="ilabel">Signal</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button onclick="setRS(-1,this)" id="rs-0" style="padding:8px 12px;border-radius:10px;border:2px solid var(--g);background:rgba(0,212,160,.1);color:var(--g);font-size:12px;font-weight:600;cursor:pointer">🔕 Yo&#39;q</button>
+        <button onclick="setRS(-1,this)" id="rs-0" style="padding:8px 12px;border-radius:10px;border:2px solid var(--g);background:rgba(0,200,150,.1);color:var(--g);font-size:12px;font-weight:600;cursor:pointer">🔕 Yo&#39;q</button>
         <button onclick="setRS(0,this)" id="rs-exact" style="padding:8px 12px;border-radius:10px;border:2px solid var(--bd);background:var(--bg);color:var(--t2);font-size:12px;cursor:pointer">🔔 Aniq</button>
         <button onclick="setRS(5,this)" id="rs-5" style="padding:8px 12px;border-radius:10px;border:2px solid var(--bd);background:var(--bg);color:var(--t2);font-size:12px;cursor:pointer">⏰ 5 min</button>
         <button onclick="setRS(10,this)" id="rs-10" style="padding:8px 12px;border-radius:10px;border:2px solid var(--bd);background:var(--bg);color:var(--t2);font-size:12px;cursor:pointer">⏰ 10 min</button>
@@ -2455,7 +2455,7 @@ function guruhYangiSora(){
       '<div style="font-size:12px;color:var(--t2,#666);margin-bottom:8px">Turi</div>' +
       '<div id="gy-tur" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">' +
         Object.keys(GTUR).map(function(k,i){
-          return '<div data-t="'+k+'" style="padding:12px;border-radius:12px;text-align:center;cursor:pointer;font-size:13px;border:1px solid '+(i===0?'var(--g)':'var(--bd,#e5e5e5)')+';background:'+(i===0?'rgba(0,212,160,.1)':'transparent')+'">'+GTUR[k]+'</div>';
+          return '<div data-t="'+k+'" style="padding:12px;border-radius:12px;text-align:center;cursor:pointer;font-size:13px;border:1px solid '+(i===0?'var(--g)':'var(--bd,#e5e5e5)')+';background:'+(i===0?'rgba(0,200,150,.1)':'transparent')+'">'+GTUR[k]+'</div>';
         }).join('') +
       '</div>' +
       '<input id="gy-nom" class="inp" placeholder="Guruh nomi" style="width:100%;box-sizing:border-box;margin-bottom:14px">' +
@@ -2471,7 +2471,7 @@ function guruhYangiSora(){
       d.querySelectorAll('#gy-tur div').forEach(function(x){
         var a=(x===el);
         x.style.border='1px solid '+(a?'var(--g)':'var(--bd,#e5e5e5)');
-        x.style.background=a?'rgba(0,212,160,.1)':'transparent';
+        x.style.background=a?'rgba(0,200,150,.1)':'transparent';
       });
     };
   });
@@ -2843,7 +2843,7 @@ function renderOilaTaqvim(){
     var badge = days===0?'Bugun!':(days===1?'Ertaga':days+' kun');
     var col = days<=1?'var(--red)':(days<=7?'var(--ora)':'var(--g)');
     return `<div class="card" style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-      <div style="width:48px;height:48px;border-radius:14px;background:rgba(0,212,160,.12);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${ev.yearly?'🎂':'📌'}</div>
+      <div style="width:48px;height:48px;border-radius:14px;background:rgba(0,200,150,.12);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${ev.yearly?'🎂':'📌'}</div>
       <div style="flex:1"><div style="font-size:14px;font-weight:700">${ev.title}</div><div style="font-size:12px;color:var(--t2)">${nx.toLocaleDateString('uz-UZ')}${ev.yearly?' · har yili':''}</div></div>
       <div style="text-align:right;margin-right:4px"><div style="font-size:13px;font-weight:800;color:${col}">${badge}</div></div>
       <button onclick="delOilaEvent(${ev.id})" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--t2);padding:4px">🗑</button>
@@ -2860,7 +2860,7 @@ function oilaEmojiUI(sel, cur){
   document.querySelectorAll(sel).forEach(function(b){
     var on=(b.getAttribute('data-e')===cur);
     b.style.borderColor = on?'var(--g)':'var(--bd)';
-    b.style.background = on?'rgba(0,212,160,.12)':'var(--bg)';
+    b.style.background = on?'rgba(0,200,150,.12)':'var(--bg)';
   });
 }
 function openOilaMember(id){
@@ -3150,7 +3150,7 @@ function renderUyqu(){
       const isToday=d===bugunKun();
       return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">'+
         '<div style="font-size:9px;color:var(--t2)">'+h+'</div>'+
-        '<div style="width:100%;border-radius:4px 4px 0 0;background:'+(u?(isToday?'var(--g)':'rgba(0,212,160,0.4)'):'var(--bd)')+';height:'+Math.max(pct*0.5,4)+'px;transition:height 0.5s"></div>'+
+        '<div style="width:100%;border-radius:4px 4px 0 0;background:'+(u?(isToday?'var(--g)':'rgba(0,200,150,0.4)'):'var(--bd)')+';height:'+Math.max(pct*0.5,4)+'px;transition:height 0.5s"></div>'+
         '<div style="font-size:9px;color:var(--t2)">'+new Date(d).toLocaleDateString('uz-UZ',{weekday:'short'}).slice(0,2)+'</div>'+
       '</div>';
     }).join('')+
@@ -3745,7 +3745,7 @@ function setRC(c){
 function setRS(val,btn){
   document.getElementById('rj-signal').value=val;
   document.querySelectorAll('[id^="rs-"]').forEach(el=>{el.style.borderColor='var(--bd)';el.style.background='var(--bg)';el.style.color='var(--t2)';});
-  if(btn){btn.style.borderColor='var(--g)';btn.style.background='rgba(0,212,160,.1)';btn.style.color='var(--g)';}
+  if(btn){btn.style.borderColor='var(--g)';btn.style.background='rgba(0,200,150,.1)';btn.style.color='var(--g)';}
 }
 function openRejaModal(){
   _rejaColor='#00C896';
@@ -3757,7 +3757,7 @@ function openRejaModal(){
   document.getElementById('rj-signal').value='-1';
   document.getElementById('rj-shablon').checked=true;
   document.querySelectorAll('[id^="rs-"]').forEach(el=>{el.style.borderColor='var(--bd)';el.style.background='var(--bg)';el.style.color='var(--t2)';});
-  const rs0=document.getElementById('rs-0');if(rs0){rs0.style.borderColor='var(--g)';rs0.style.background='rgba(0,212,160,.1)';rs0.style.color='var(--g)';}
+  const rs0=document.getElementById('rs-0');if(rs0){rs0.style.borderColor='var(--g)';rs0.style.background='rgba(0,200,150,.1)';rs0.style.color='var(--g)';}
   openM('reja-modal');
 }
 function addReja(){
@@ -3949,7 +3949,7 @@ function playMuz(type){
   const n=createNoise(type);if(n)_muzNodes.push(n);
   ['rain','forest','waves','white'].forEach(t=>{const el=document.getElementById('muz-'+t);if(el){el.style.borderColor='var(--bd)';el.style.background='var(--bg)';el.style.color='var(--text)';}});
   const sel=document.getElementById('muz-'+type);
-  if(sel){sel.style.borderColor='var(--g)';sel.style.background='rgba(0,212,160,.1)';sel.style.color='var(--g)';}
+  if(sel){sel.style.borderColor='var(--g)';sel.style.background='rgba(0,200,150,.1)';sel.style.color='var(--g)';}
   const names={rain:'🌧️ Yomg\'ir',forest:'🌲 O\'rmon',waves:'🌊 To\'lqin',white:'📻 Shovqin'};
   document.getElementById('muz-st').textContent='▶ '+names[type];
 }
@@ -4108,7 +4108,7 @@ function renderNamoz(){
   document.getElementById('namoz-list').innerHTML=NAMOZLAR_LIST.map(n=>{
     const isDone=!!state.din.namoz[today][n.id];
     const isNext=n.id===nextId;
-    return '<div class="nitem'+(isNext?' ':'')+'" style="'+(isNext?'background:rgba(0,212,160,.06);border-radius:16px;padding:10px 8px;margin:-4px':'')+'">'+
+    return '<div class="nitem'+(isNext?' ':'')+'" style="'+(isNext?'background:rgba(0,200,150,.06);border-radius:16px;padding:10px 8px;margin:-4px':'')+'">'+
       '<div class="nicon" style="background:'+n.bg+'"><span style="font-size:22px">'+n.icon+'</span></div>'+
       '<div style="flex:1">'+
         '<div style="font-size:15px;font-weight:700">'+n.nom+
@@ -4294,7 +4294,7 @@ function renderQuron(){
   document.getElementById('quron-prog-b').style.width=(done/30*100)+'%';
   document.getElementById('quron-grid').innerHTML=JUZ_INFO.map(j=>{
     const num=j[0],isDone=state.din.quron.done.includes(num),isSel=_selJuz===num;
-    return '<div onclick="selJuz('+num+')" style="background:'+(isDone?'linear-gradient(135deg,#00A87E,#00C896)':isSel?'linear-gradient(135deg,var(--navy),var(--nl))':'var(--card)')+';border:1.5px solid '+(isDone?'transparent':isSel?'var(--g)':'var(--bd)')+';color:'+(isDone||isSel?'#fff':'var(--text)')+';border-radius:14px;padding:10px 4px;text-align:center;cursor:pointer;transition:all .25s;box-shadow:'+(isDone?'0 3px 10px rgba(0,200,150,.3)':isSel?'0 3px 10px rgba(26,35,64,.3)':'none')+'"><div style="font-size:16px;font-weight:800">'+num+'</div><div style="font-size:8px;opacity:.7;margin-top:2px">'+(isDone?'&#10003;':'juz')+'</div></div>';
+    return '<div onclick="selJuz('+num+')" style="background:'+(isDone?'linear-gradient(135deg,#00A87E,#00C896)':isSel?'linear-gradient(135deg,rgba(0,200,150,.12),rgba(0,200,150,.05))':'var(--card)')+';border:1.5px solid '+(isDone?'transparent':isSel?'var(--g)':'var(--bd)')+';color:'+(isDone||isSel?'#fff':'var(--text)')+';border-radius:14px;padding:10px 4px;text-align:center;cursor:pointer;transition:all .25s;box-shadow:'+(isDone?'0 3px 10px rgba(0,200,150,.3)':isSel?'0 3px 10px rgba(26,35,64,.3)':'none')+'"><div style="font-size:16px;font-weight:800">'+num+'</div><div style="font-size:8px;opacity:.7;margin-top:2px">'+(isDone?'&#10003;':'juz')+'</div></div>';
   }).join('');
   renderJuzDetail();
 }
@@ -4309,8 +4309,8 @@ function renderJuzDetail(){
     return;
   }
   const j=JUZ_INFO[_selJuz-1],isDone=state.din.quron.done.includes(_selJuz);
-  el.innerHTML='<div style="background:linear-gradient(135deg,'+(isDone?'#00A87E,#00C896':'var(--navy),var(--nl)')+';border-radius:16px;padding:16px;margin-bottom:12px;color:#fff"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:28px;font-weight:800">'+_selJuz+'-juz</div><div style="font-size:12px;opacity:.75;margin-top:4px">'+j[1]+'</div></div><div style="text-align:center"><div style="font-size:10px;opacity:.7">Sahifalar</div><div style="font-size:18px;font-weight:700">'+j[2]+'-'+j[3]+'</div><div style="font-size:10px;opacity:.6">'+(j[3]-j[2])+' bet</div></div></div></div>'+
-  '<div style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid var(--bd)"><div style="font-size:13px;font-weight:600;margin-bottom:10px">&#127911; Online tinglash</div><div style="display:flex;gap:8px"><a href="https://quran.com/juz/'+_selJuz+'" target="_blank" style="flex:1;padding:10px;border-radius:12px;background:linear-gradient(135deg,#00A87E,#00C896);color:#fff;text-decoration:none;text-align:center;font-size:13px;font-weight:600">&#127760; Quran.com</a><a href="https://quranwbw.com" target="_blank" style="flex:1;padding:10px;border-radius:12px;background:linear-gradient(135deg,var(--navy),var(--nl));color:#fff;text-decoration:none;text-align:center;font-size:13px;font-weight:600">&#127925; QuranWBW</a></div></div>'+
+  el.innerHTML='<div style="background:'+(isDone?'linear-gradient(135deg,#00A87E,#00C896);color:#fff':'linear-gradient(135deg,rgba(0,200,150,.12),rgba(0,200,150,.05));color:var(--text)')+';border:1px solid rgba(0,200,150,.22);border-radius:16px;padding:16px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:28px;font-weight:800">'+_selJuz+'-juz</div><div style="font-size:12px;opacity:.75;margin-top:4px">'+j[1]+'</div></div><div style="text-align:center"><div style="font-size:10px;opacity:.7">Sahifalar</div><div style="font-size:18px;font-weight:700">'+j[2]+'-'+j[3]+'</div><div style="font-size:10px;opacity:.6">'+(j[3]-j[2])+' bet</div></div></div></div>'+
+  '<div style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid var(--bd)"><div style="font-size:13px;font-weight:600;margin-bottom:10px">&#127911; Online tinglash</div><div style="display:flex;gap:8px"><a href="https://quran.com/juz/'+_selJuz+'" target="_blank" style="flex:1;padding:10px;border-radius:12px;background:linear-gradient(135deg,#00A87E,#00C896);color:#fff;text-decoration:none;text-align:center;font-size:13px;font-weight:600">&#127760; Quran.com</a><a href="https://quranwbw.com" target="_blank" style="flex:1;padding:10px;border-radius:12px;background:linear-gradient(135deg,rgba(0,200,150,.12),rgba(0,200,150,.05));color:var(--text);text-decoration:none;text-align:center;font-size:13px;font-weight:600">&#127925; QuranWBW</a></div></div>'+
   '<button onclick="toggleJuz('+_selJuz+')" style="width:100%;padding:14px;border-radius:14px;border:none;cursor:pointer;font-size:15px;font-weight:700;background:'+(isDone?'rgba(244,63,94,.1)':'linear-gradient(135deg,#00A87E,#00C896)')+';color:'+(isDone?'var(--red)':'#fff')+';">'+(isDone?'&#10007; O\'qilmagan':'&#10003; O\'qildim')+'</button>';
 }
 function toggleJuz(num){
@@ -4728,7 +4728,7 @@ function renderHisobot(period){
   const ballColor=ball>=80?'var(--g)':ball>=50?'var(--ora)':'var(--red)';
 
   el.innerHTML=
-  '<div style="background:linear-gradient(135deg,var(--navy),var(--nl));border-radius:20px;padding:20px;margin-bottom:14px;color:#fff;box-shadow:var(--shadow-lg)">'+
+  '<div style="background:linear-gradient(135deg,rgba(0,200,150,.12),rgba(0,200,150,.05));border:1px solid rgba(0,200,150,.22);border-radius:20px;padding:20px;margin-bottom:14px;color:var(--text);box-shadow:var(--shadow-lg)">'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'+
       '<div>'+
         '<div style="font-size:12px;opacity:0.6">'+(period==='hafta'?'So\'nggi 7 kun':'So\'nggi 30 kun')+'</div>'+
@@ -4748,7 +4748,7 @@ function renderHisobot(period){
   '<div class="card">'+
     '<div class="sec-title">&#128179; '+(MONTHS[now.getMonth()]||'')+' moliya</div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+
-      '<div style="text-align:center;padding:10px;background:rgba(0,212,160,0.08);border-radius:12px"><div style="font-size:14px;font-weight:800;color:var(--g)">'+Math.round(totInc/1000)+'K</div><div style="font-size:10px;color:var(--t2);margin-top:3px">Daromad</div></div>'+
+      '<div style="text-align:center;padding:10px;background:rgba(0,200,150,0.08);border-radius:12px"><div style="font-size:14px;font-weight:800;color:var(--g)">'+Math.round(totInc/1000)+'K</div><div style="font-size:10px;color:var(--t2);margin-top:3px">Daromad</div></div>'+
       '<div style="text-align:center;padding:10px;background:rgba(244,63,94,0.08);border-radius:12px"><div style="font-size:14px;font-weight:800;color:var(--red)">'+Math.round(totExp/1000)+'K</div><div style="font-size:10px;color:var(--t2);margin-top:3px">Xarajat</div></div>'+
       '<div style="text-align:center;padding:10px;background:rgba(139,92,246,0.08);border-radius:12px"><div style="font-size:14px;font-weight:800;color:var(--pur)">'+Math.round(totSav/1000)+'K</div><div style="font-size:10px;color:var(--t2);margin-top:3px">Jamg\'arma</div></div>'+
     '</div>'+
@@ -5419,7 +5419,7 @@ function renderChallenge(){
       '</div>'+
       '<div style="background:var(--card);padding:14px 16px;display:flex;align-items:center;gap:10px">'+
         (isDoneBugun
-          ? '<div style="flex:1;text-align:center;padding:14px;background:linear-gradient(135deg,rgba(0,212,160,.15),rgba(0,168,126,.1));border-radius:14px;color:#00C896;font-weight:800;font-size:15px;border:1.5px solid rgba(0,212,160,.3)">✅ Bajarildi! Zo\'r!</div>'
+          ? '<div style="flex:1;text-align:center;padding:14px;background:linear-gradient(135deg,rgba(0,200,150,.15),rgba(0,168,126,.1));border-radius:14px;color:#00C896;font-weight:800;font-size:15px;border:1.5px solid rgba(0,200,150,.3)">✅ Bajarildi! Zo\'r!</div>'
           : '<button onclick="doneChallenge('+todayKun+')" style="flex:1;background:linear-gradient(135deg,'+bugunMashq.rang+',#D95B99);color:#fff;border:none;padding:15px;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(139,92,246,.45);letter-spacing:.3px">✅ Bajardim!</button>'
         )+
         '<a href="https://www.youtube.com/results?search_query='+encodeURIComponent(bugunMashq.nom+' exercise how to')+'" target="_blank" style="background:rgba(255,0,0,.9);color:#fff;padding:15px 16px;border-radius:14px;font-size:13px;font-weight:800;text-decoration:none;white-space:nowrap;box-shadow:0 6px 20px rgba(255,0,0,.3)">▶ YouTube</a>'+
@@ -5436,7 +5436,7 @@ function renderChallenge(){
       return '<div onclick="showChallengeDay('+m.kun+')" style="border-radius:16px;overflow:hidden;cursor:pointer;opacity:'+(isFuture?.45:1)+';border:2px solid '+(isToday?m.rang:isDone?'#00C896':'var(--bd)')+';box-shadow:'+(isToday?'0 4px 16px '+m.rang+'66':'var(--shadow)')+';transition:all .2s;position:relative">'+
         '<div style="height:90px;overflow:hidden;position:relative;background:'+m.rang+'22">'+
           getChallengeImgHtml(m,'90px')+
-          '<div style="position:absolute;inset:0;background:'+(isDone?'rgba(0,212,160,.35)':isToday?'rgba(0,0,0,.08)':'rgba(0,0,0,.15)')+'"></div>'+
+          '<div style="position:absolute;inset:0;background:'+(isDone?'rgba(0,200,150,.35)':isToday?'rgba(0,0,0,.08)':'rgba(0,0,0,.15)')+'"></div>'+
           (isDone?'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px">✅</div>':'')+ 
           (isToday&&!isDone?'<div style="position:absolute;top:5px;right:5px;background:'+m.rang+';color:#fff;border-radius:8px;font-size:8px;font-weight:800;padding:2px 6px;box-shadow:0 2px 8px rgba(0,0,0,.3)">BUGUN</div>':'')+
           (!isDone&&!isToday?'<div style="position:absolute;top:5px;left:5px;background:rgba(0,0,0,.5);color:#fff;border-radius:6px;font-size:9px;font-weight:700;padding:2px 6px">'+m.kun+'-kun</div>':'')+
@@ -5495,7 +5495,7 @@ function showChallengeDay(kun){
     '</div>'+
     '<a href="https://www.youtube.com/results?search_query='+encodeURIComponent(m.nom+' exercise how to')+'" target="_blank" style="display:block;text-align:center;background:rgba(255,0,0,.92);color:#fff;padding:14px;border-radius:14px;font-size:14px;font-weight:800;text-decoration:none;margin-bottom:14px;box-shadow:0 6px 20px rgba(255,0,0,.28)">▶ YouTube\'da ko\'rish</a>'+
     (isDone
-      ? '<div style="text-align:center;padding:16px;background:linear-gradient(135deg,rgba(0,212,160,.15),rgba(0,168,126,.1));border-radius:14px;color:#00C896;font-size:16px;font-weight:800;border:1.5px solid rgba(0,212,160,.3)">✅ Bajarilgan! Zo\'r!</div>'
+      ? '<div style="text-align:center;padding:16px;background:linear-gradient(135deg,rgba(0,200,150,.15),rgba(0,168,126,.1));border-radius:14px;color:#00C896;font-size:16px;font-weight:800;border:1.5px solid rgba(0,200,150,.3)">✅ Bajarilgan! Zo\'r!</div>'
       : isFuture
         ? '<div style="text-align:center;padding:16px;background:var(--bg);border-radius:14px;color:var(--t2);font-size:14px">🔒 Bu kun hali kelmadi</div>'
         : '<button onclick="doneChallenge('+kun+');closeM(\'challenge-day-modal\')" style="width:100%;background:linear-gradient(135deg,'+m.rang+',#D95B99);color:#fff;border:none;padding:16px;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(139,92,246,.4)">✅ Bajardim!</button>'
@@ -5797,14 +5797,14 @@ function checkVikt(chosen){
   var q=SAVOLLAR[_viktIdx%SAVOLLAR.length];
   document.querySelectorAll('#vikt-options button').forEach(function(b,i){
     b.style.cursor='default';
-    if(i===q.t){b.style.background='rgba(0,212,160,.2)';b.style.borderColor='var(--g)';b.style.color='var(--g)';}
+    if(i===q.t){b.style.background='rgba(0,200,150,.2)';b.style.borderColor='var(--g)';b.style.color='var(--g)';}
     else if(i===chosen){b.style.background='rgba(239,68,68,.1)';b.style.borderColor='#D85B5B';b.style.color='#D85B5B';}
   });
   var ok=chosen===q.t;
   if(ok){_viktScore+=10;addBall(10,'Viktorina');}
   var el=document.getElementById('vikt-content');
   if(el)el.innerHTML+=(ok
-    ?'<div style="background:rgba(0,212,160,.1);border-radius:12px;padding:12px;margin-top:14px;text-align:center;border:1px solid var(--g)">✅ <strong style="color:var(--g)">To\'g\'ri! +10 ball</strong></div>'
+    ?'<div style="background:rgba(0,200,150,.1);border-radius:12px;padding:12px;margin-top:14px;text-align:center;border:1px solid var(--g)">✅ <strong style="color:var(--g)">To\'g\'ri! +10 ball</strong></div>'
     :'<div style="background:rgba(239,68,68,.08);border-radius:12px;padding:12px;margin-top:14px;text-align:center;border:1px solid #D85B5B">❌ Noto\'g\'ri. To\'g\'ri: <strong style="color:#D85B5B">'+q.j[q.t]+'</strong></div>')+
     '<button onclick="nextVikt()" style="width:100%;margin-top:14px;padding:13px;border-radius:14px;background:linear-gradient(135deg,#299DB1,#2678A3);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer">Keyingi ➡️</button>';
   var sl=document.getElementById('vikt-score-lbl');
@@ -6124,10 +6124,10 @@ function showAiReja(res){
         '<div style="font-size:20px">'+v.emoji+'</div>'+
         '<div style="flex:1;font-size:13px;color:var(--text)">'+v.vazifa+'</div>'+
         '<button onclick="addAiTask(\''+v.soat+'\',\''+v.emoji+'\',\''+v.vazifa.replace(/'/g,"\\'")+'\')" '+
-          'style="background:rgba(0,212,160,.1);border:1px solid var(--g);color:var(--g);padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer;white-space:nowrap">+ Reja</button>'+
+          'style="background:rgba(0,200,150,.1);border:1px solid var(--g);color:var(--g);padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer;white-space:nowrap">+ Reja</button>'+
       '</div>';
     }).join('')+
-    (res.maslahat?'<div style="background:rgba(0,212,160,.08);border-radius:14px;padding:14px;margin-top:14px;border:1px solid rgba(0,212,160,.2)">'+
+    (res.maslahat?'<div style="background:rgba(0,200,150,.08);border-radius:14px;padding:14px;margin-top:14px;border:1px solid rgba(0,200,150,.2)">'+
       '<div style="font-size:11px;font-weight:700;color:var(--g);margin-bottom:6px">💡 MASLAHAT</div>'+
       '<div style="font-size:13px;color:var(--text);line-height:1.6">'+res.maslahat+'</div>'+
     '</div>':'');
@@ -6174,12 +6174,12 @@ function renderMissions(){
   var pct=Math.round(done/total*100);
 
   list.innerHTML=
-    '<div style="background:linear-gradient(135deg,var(--navy),var(--nl));border-radius:16px;padding:16px;margin-bottom:14px">'+
+    '<div style="background:linear-gradient(135deg,rgba(0,200,150,.12),rgba(0,200,150,.05));border:1px solid rgba(0,200,150,.22);border-radius:16px;padding:16px;margin-bottom:14px">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
-        '<div style="font-size:14px;font-weight:700;color:#fff">'+done+'/'+total+' missiya</div>'+
+        '<div style="font-size:14px;font-weight:700;color:var(--text)">'+done+'/'+total+' missiya</div>'+
         '<div style="font-size:14px;font-weight:800;color:#CFB630">+'+todayM.items.reduce(function(s,m){return s+(m.done?m.ball:0);},0)+' ball</div>'+
       '</div>'+
-      '<div style="background:rgba(255,255,255,.15);border-radius:6px;height:6px">'+
+      '<div style="background:rgba(0,200,150,.14);border-radius:6px;height:6px">'+
         '<div style="background:linear-gradient(90deg,#CFB630,#CF9431);height:6px;border-radius:6px;width:'+pct+'%;transition:width .5s"></div>'+
       '</div>'+
     '</div>'+
@@ -6543,7 +6543,7 @@ function renderKunMashq(){
     return '<div style="padding:10px 0;border-bottom:1px solid var(--bd)">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
         '<div style="font-size:13px;font-weight:700;color:var(--text)">'+x.nom+'</div>'+
-        '<div style="font-size:13px;font-weight:800;color:var(--g);background:rgba(0,212,160,.1);padding:4px 10px;border-radius:10px">'+x.son+'</div>'+
+        '<div style="font-size:13px;font-weight:800;color:var(--g);background:rgba(0,200,150,.1);padding:4px 10px;border-radius:10px">'+x.son+'</div>'+
       '</div>'+
       mediaSection+
     '</div>';
@@ -6559,7 +6559,7 @@ function renderKunMashq(){
     return '<div style="padding:10px 0;border-bottom:1px solid var(--bd)">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
         '<div style="font-size:13px;font-weight:700;color:var(--text)">'+v.nom+'</div>'+
-        '<div style="font-size:12px;font-weight:800;color:var(--g);background:rgba(0,212,160,.1);padding:4px 10px;border-radius:10px">'+v.daq+'</div>'+
+        '<div style="font-size:12px;font-weight:800;color:var(--g);background:rgba(0,200,150,.1);padding:4px 10px;border-radius:10px">'+v.daq+'</div>'+
       '</div>'+
       '<div id="'+cid+'" style="border-radius:14px;overflow:hidden">'+
         '<div onclick="playZumba(\''+v.id+'\',\''+cid+'\')" style="position:relative;height:190px;border-radius:14px;cursor:pointer;background:#000 url(https://img.youtube.com/vi/'+v.id+'/hqdefault.jpg) center/cover">'+
@@ -6767,7 +6767,7 @@ function toggleNamozEsl(){
   showNotif(next?'&#128276; Namoz eslatmasi yoqildi':'&#128277; Namoz eslatmasi o\'chirildi','');
 }
 var TEMALAR = {
-  yashil:  {g:'#00C896',gd:'#00A87E',g2:'#2FC6A6',shadow:'rgba(0,212,160,.35)'},
+  yashil:  {g:'#00C896',gd:'#00A87E',g2:'#2FC6A6',shadow:'rgba(0,200,150,.35)'},
   kuk:     {g:'#5989D8',gd:'#3E6CD2',g2:'#6EA0DD',shadow:'rgba(59,130,246,.35)'},
   binafsha:{g:'#8B67DB',gd:'#8251D6',g2:'#A691E5',shadow:'rgba(139,92,246,.35)'},
   sariq:   {g:'#CF9431',gd:'#D27A3D',g2:'#DABD60',shadow:'rgba(245,158,11,.35)'},
@@ -8968,7 +8968,7 @@ function openKokteyllar(){
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
         '<div style="font-size:26px">'+k.emoji+'</div>'+
         '<div style="font-size:15px;font-weight:800;color:var(--text)">'+k.nom+'</div>'+
-        (k.kcal?'<div style="margin-left:auto;font-size:11px;font-weight:700;color:var(--g);background:rgba(0,212,160,.1);padding:3px 9px;border-radius:10px">'+k.kcal+' kcal</div>':'')+
+        (k.kcal?'<div style="margin-left:auto;font-size:11px;font-weight:700;color:var(--g);background:rgba(0,200,150,.1);padding:3px 9px;border-radius:10px">'+k.kcal+' kcal</div>':'')+
       '</div>'+
       '<div style="font-size:12px;color:var(--t2);margin-bottom:6px;line-height:1.5"><b style="color:var(--text)">Tarkibi:</b> '+k.mahsulotlar+'</div>'+
       '<div style="font-size:12px;color:var(--t2);margin-bottom:6px;line-height:1.5"><b style="color:var(--text)">Tayyorlash:</b> '+k.tayyorlash+'</div>'+
@@ -9073,7 +9073,7 @@ function renderRatsion(){
       getMealCard('🌙','KECHKI OVQAT','#8B67DB',kun.kechki) +
     '</div>' +
     '<button onclick="openKokteyllar()" style="width:100%;background:linear-gradient(135deg,#186552,#00A87E);color:#fff;border:none;padding:14px;border-radius:16px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:12px;box-shadow:0 6px 18px rgba(15,110,86,.3)">🍹 Foydali kokteyllar (retseptlar)</button>' +
-    '<div class="card" style="background:linear-gradient(135deg,rgba(0,212,160,.1),rgba(0,168,126,.05));border:1.5px solid rgba(0,212,160,.3)">' +
+    '<div class="card" style="background:linear-gradient(135deg,rgba(0,200,150,.1),rgba(0,168,126,.05));border:1.5px solid rgba(0,200,150,.3)">' +
       '<div style="display:flex;gap:10px;align-items:flex-start">' +
         '<div style="font-size:24px">💡</div>' +
         '<div><div style="font-size:11px;font-weight:700;color:var(--g);margin-bottom:4px">BUGUNGI MASLAHAT</div>' +
@@ -9447,7 +9447,7 @@ function renderKitobList(){
         '<a href="'+libUrl+'" target="_blank" style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;background:rgba(139,92,246,.1);border:1.5px solid #8B5CF6;color:#8B5CF6;text-decoration:none;font-size:12px;font-weight:700">'+
           '🎙️ LibriVox'+
         '</a>'+
-        '<button onclick="aiKitobTavsiya(\''+k.nom.replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;background:rgba(0,212,160,.1);border:1.5px solid var(--g);color:var(--g);font-size:12px;font-weight:700;cursor:pointer">'+
+        '<button onclick="aiKitobTavsiya(\''+k.nom.replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;background:rgba(0,200,150,.1);border:1.5px solid var(--g);color:var(--g);font-size:12px;font-weight:700;cursor:pointer">'+
           '🤖 AI xulosa'+
         '</button>'+
       '</div>'+
@@ -10535,7 +10535,7 @@ window.addEventListener('appinstalled', function(){
     <div class="mtitle" style="margin-bottom:4px">Intizom PRO</div>
     <div id="pro-sabab" style="font-size:13px;color:var(--t2);margin-bottom:14px"></div>
   </div>
-  <div id="pro-holat" style="display:none;background:rgba(0,212,160,.1);border:1px solid rgba(0,212,160,.3);border-radius:14px;padding:10px 14px;font-size:13px;font-weight:600;color:var(--g);text-align:center;margin-bottom:14px"></div>
+  <div id="pro-holat" style="display:none;background:rgba(0,200,150,.1);border:1px solid rgba(0,200,150,.3);border-radius:14px;padding:10px 14px;font-size:13px;font-weight:600;color:var(--g);text-align:center;margin-bottom:14px"></div>
   <div style="background:var(--bg);border-radius:16px;padding:14px 16px;margin-bottom:14px">
     <div style="font-size:12px;font-weight:700;color:var(--t2);letter-spacing:.5px;margin-bottom:10px">PRO ICHIDA</div>
     <div style="font-size:13.5px;line-height:2;color:var(--text)">
