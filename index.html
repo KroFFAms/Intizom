@@ -830,7 +830,8 @@
           </div>
         </div>
       </div>
-      <div class="sitem" onclick="toggleDark()"><div class="sicon" style="background:rgba(59,130,246,.12)">🌙</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Tungi rejim</div><div id="dark-desc" style="font-size:12px;color:var(--t2)">Hozir: Kunduzgi</div></div><span style="color:var(--t2)">›</span></div><div style="flex:1"><div style="font-size:15px;font-weight:600">Taymer</div><div style="font-size:12px;color:var(--t2)">Pomodoro vaqti</div></div><span style="color:var(--t2)">›</span></div>
+      <div class="sitem" onclick="toggleDark()"><div class="sicon" style="background:rgba(59,130,246,.12)">🌙</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Tungi rejim</div><div id="dark-desc" style="font-size:12px;color:var(--t2)">Hozir: Kunduzgi</div></div><span style="color:var(--t2)">›</span></div>
+      <div class="sitem" onclick="openM('tsett-modal')"><div class="sicon" style="background:rgba(249,115,22,.12)">⏱️</div><div style="flex:1"><div style="font-size:15px;font-weight:600">Taymer</div><div style="font-size:12px;color:var(--t2)">Pomodoro vaqti</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="openOylikModal()">
         <div class="sicon" style="background:rgba(99,102,241,.12)">📊</div>
         <div style="flex:1"><div style="font-size:15px;font-weight:600">Oylik hisobot</div><div style="font-size:12px;color:var(--t2)">Grafik va trend tahlili</div></div>
@@ -1874,7 +1875,47 @@ window.addEventListener('unhandledrejection',function(e){
   e.preventDefault();
   console.warn('Promise rejection:',e.reason);
 });
-const S={g:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+/* ============================================================
+   XOTIRA (localStorage) — xato endi jimgina yutilmaydi.
+   Ilgari catch{} bo'sh edi: xotira to'lsa ma'lumot saqlanmay
+   qolar, foydalanuvchi buni bilmasdi.
+   ============================================================ */
+var _xotiraOgohVaqt = 0;
+const S={
+  g:function(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
+  s:function(k,v){
+    try{ localStorage.setItem(k, JSON.stringify(v)); return true; }
+    catch(e){
+      var toldi = e && (e.name==='QuotaExceededError' || e.name==='NS_ERROR_DOM_QUOTA_REACHED' || e.code===22 || e.code===1014);
+      if(toldi){
+        /* 1-urinish: eski ma'lumotni siqib bo'sh joy ochamiz */
+        try{ if(typeof tozalash==='function') tozalash(true); }catch(e2){}
+        try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e3){}
+        /* 2-urinish ham bo'lmadi — foydalanuvchini ogohlantiramiz (daqiqada 1 marta) */
+        var hz = Date.now();
+        if(hz - _xotiraOgohVaqt > 60000){
+          _xotiraOgohVaqt = hz;
+          setTimeout(function(){
+            try{ showNotif('\u26a0\ufe0f Xotira to\'ldi','Ma\'lumot saqlanmadi. Sozlama \u2192 Zaxira orqali nusxa oling.'); }
+            catch(e4){ console.error('localStorage to\'ldi \u2014 saqlanmadi:', k); }
+          },400);
+        }
+      } else { console.error('Saqlashda xato:', k, e); }
+      return false;
+    }
+  }
+};
+/* ============================================================
+   esc() — HTML ekranlash. Foydalanuvchi yozgan matn innerHTML
+   ichiga qo'yilganda shu funksiyadan o'tkaziladi. Oilaviy bo'limda
+   matn BOSHQA odamdan keladi, shuning uchun bu majburiy.
+   ============================================================ */
+function esc(s){
+  if(s===null || s===undefined) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 /* ============================================================
    SANA KALITI — MAHALLIY vaqt bo'yicha (02.09.2026)
    Ilgari toISOString() ishlatilardi, u UTC beradi. O'zbekiston UTC+5,
@@ -1890,34 +1931,7 @@ function kunKal(d){
 function bugunKun(){ return kunKal(new Date()); }
 function kechaKun(){ var d=new Date(); d.setDate(d.getDate()-1); return kunKal(d); }
 /* ===== AI SOZLAMA: backend-proxy URL shu yerda. Proxy tayyor bo'lgach faqat shu qatorni o'zgartiring ===== */
-var AI_ENDPOINT='https://kqtonpusgorwfqktbeto.supabase.co/functions/v1/ai';
-/* AI so'rovi: sessiya tokeni qo'shiladi va bo'lim turi yuboriladi.
-   Obuna hamda kunlik limitni SERVER tekshiradi. */
-function _aiToken(){
-  try{
-    for(var i=0;i<localStorage.length;i++){
-      var k=localStorage.key(i);
-      if(k && k.indexOf('sb-')===0 && k.indexOf('-auth-token')>0){
-        var v=JSON.parse(localStorage.getItem(k)||'null');
-        if(v && v.access_token) return v.access_token;
-        if(v && v.currentSession && v.currentSession.access_token) return v.currentSession.access_token;
-      }
-    }
-  }catch(e){}
-  return null;
-}
-function aiFetch(tur, url, opts){
-  opts = opts || {};
-  opts.headers = opts.headers || {'Content-Type':'application/json'};
-  var t = _aiToken();
-  if(t) opts.headers['Authorization'] = 'Bearer ' + t;
-  try{
-    var b = JSON.parse(opts.body || '{}');
-    b.tur = tur;
-    opts.body = JSON.stringify(b);
-  }catch(e){}
-  return fetch(url, opts);
-}
+var AI_ENDPOINT='https://wfmwxwdawiectcusjnkz.supabase.co/functions/v1/ai';
 var AI_READY=(AI_ENDPOINT.indexOf('api.anthropic.com')===-1); /* proxy qo'yilgandagina true bo'ladi */
 /* AI javobidan JSON ni bardoshli ajratib oladi (kod-belgi, qo'shimcha matn, egri qo'shtirnoq) */
 function _extractJson(text){
@@ -2088,7 +2102,7 @@ function _azoKarta(a, i, men, medal){
       '<div style="display:flex;align-items:center;gap:10px">' +
         '<div style="font-size:20px;width:26px;text-align:center">' + (medal[i]||(i+1)) + '</div>' +
         '<div style="flex:1">' +
-          '<div style="font-size:14px;font-weight:700">' + (a.ism||'—') +
+          '<div style="font-size:14px;font-weight:700">' + esc(a.ism||'—') +
             (meni?' <span style="font-size:10px;color:var(--g)">(siz)</span>':'') +
             (a.rol==='ota'?' <span style="font-size:10px;color:var(--t2)">ota-ona</span>':'') + vaqt + '</div>' +
           '<div style="font-size:11px;color:var(--t2);margin-top:2px">' +
@@ -2128,7 +2142,7 @@ function _minbar(azolar, men){
     var b = a.hafta_ball || 0;
     var h = Math.round(bal[i] * (0.45 + 0.55 * (b / eng)));
     var meni = (a.user_id === men);
-    var ism = (a.ism || '\u2014');
+    var ism = esc(a.ism || '\u2014');
     if(ism.length > 10) ism = ism.slice(0,9) + '\u2026';
     return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">' +
       '<div style="font-size:13px;font-weight:800;margin-bottom:2px">' + b + '</div>' +
@@ -2167,7 +2181,7 @@ function _chBlok(men){
       var yetdi = c.maqsad && son >= c.maqsad;
       return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px">' +
         '<span style="width:18px;color:var(--t2)">'+(i+1)+'</span>' +
-        '<span style="flex:1' + (a.user_id===men?';font-weight:700':'') + '">' + (a.ism||'—') +
+        '<span style="flex:1' + (a.user_id===men?';font-weight:700':'') + '">' + esc(a.ism||'—') +
           (a.user_id===men?' <span style="font-size:9px;color:var(--g)">(siz)</span>':'') + '</span>' +
         '<span style="font-weight:700;color:'+(yetdi?'var(--g)':'var(--text)')+'">' + son + '</span>' +
         '<span style="color:var(--t2);font-size:10px">' + (c.birlik||'') + '</span>' +
@@ -2346,7 +2360,7 @@ function renderOilaBulut(){
         ';background:' + (v.bajarildi?'var(--g)':'transparent') + ';color:#fff;font-size:14px;cursor:pointer;flex-shrink:0">' +
         (v.bajarildi?'✓':'') + '</button>' +
       '<div style="flex:1">' +
-        '<div style="font-size:14px;font-weight:600' + (v.bajarildi?';text-decoration:line-through':'') + '">' + v.matn + '</div>' +
+        '<div style="font-size:14px;font-weight:600' + (v.bajarildi?';text-decoration:line-through':'') + '">' + esc(v.matn) + '</div>' +
         '<div style="font-size:11px;color:var(--t2)">' + kim + mud + '</div>' +
       '</div>' +
       (v.yaratuvchi === men ? '<button onclick="oilaVazOchir(' + v.id + ')" style="background:none;border:none;font-size:15px;cursor:pointer;color:var(--t2)">🗑</button>' : '') +
@@ -2400,7 +2414,7 @@ function _guruhTasma(){
     var a = (g.id === _joriyGuruh);
     return '<div onclick="guruhOch(\''+g.id+'\')" style="flex:0 0 auto;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:'+(a?'700':'500')+
       ';background:'+(a?'var(--g)':'var(--bg)')+';color:'+(a?'#04231b':'var(--t2)')+';border:1px solid '+(a?'var(--g)':'var(--bd)')+';white-space:nowrap">'+
-      (g.nom||'Guruh')+' <span style="opacity:.7">'+g.azolar+'</span></div>';
+      esc(g.nom||'Guruh')+' <span style="opacity:.7">'+g.azolar+'</span></div>';
   }).join('');
   t += '<div onclick="guruhYangiSora()" style="flex:0 0 auto;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;background:transparent;color:var(--g);border:1px dashed var(--g);white-space:nowrap">+ Yangi</div>';
   t += '</div>';
@@ -2479,6 +2493,7 @@ function oilaYaratBulut(){
   _oilaRpc('oila_yarat', {p_nom: (nom||'Oilam').trim()}).then(function(r){
     if(r.error){ showNotif('⚠️','Xatolik: '+r.error.message); return; }
     _oilaKesh = null; oilaBulutYukla();
+    try{ oilaHolatQayta(); }catch(e){}
     showNotif('🌐','Oila yaratildi! Kodni yaqinlaringizga bering.');
   });
 }
@@ -2492,6 +2507,7 @@ function oilaQoshilSora(){
     if(d.holat === 'yoq'){ showNotif('⚠️','Bunday kod topilmadi'); return; }
     if(d.holat === 'allaqachon'){ showNotif('ℹ️','Siz allaqachon oiladasiz'); return; }
     _joriyGuruh = d.oila_id || null; _oilaKesh = null; _guruhlar = null; oilaBulutYukla();
+    try{ oilaHolatQayta(); }catch(e){}
     showNotif('🌐','Qo\'shildingiz: ' + (d.nom||''));
   });
 }
@@ -3301,8 +3317,36 @@ setTimeout(()=>{try{checkParolOnLoad();}catch(e){console.error(e);}},600);
 setTimeout(function(){try{tozalash();}catch(e){console.error(e);}},2500);
 /* Oila xulosasi: kirgandan 6 soniya keyin va har 5 daqiqada */
 setTimeout(function(){try{tanishtiruvKorsat();}catch(e){}},1200);
-setTimeout(function(){try{oilaHolatYubor();}catch(e){}},6000);
-setInterval(function(){try{oilaHolatYubor();}catch(e){}},5*60*1000);
+/* Oila xulosasi: server jadvallari hali yaratilmagan bo'lsa (yoki
+   foydalanuvchi hech qaysi oilada bo'lmasa) har 5 daqiqada bekorga
+   xato qaytarardi. Endi ketma-ket 3 marta muvaffaqiyatsiz bo'lsa
+   to'xtaydi, oilaga qo'shilganda oilaHolatQayta() bilan tiklanadi. */
+var _oilaXato = 0, _oilaTimer = null;
+function _oilaUrin(){
+  var pr;
+  try{ pr = oilaHolatYubor(); }catch(e){ pr = null; }
+  if(!pr || typeof pr.then!=='function') return;
+  pr.then(function(r){
+    var xato = r && r.error;
+    if(xato){
+      _oilaXato++;
+      var m = (xato.message||'')+'';
+      /* jadval/funksiya umuman yo'q — qayta urinishning ma'nosi yo'q */
+      if(/does not exist|not find|404|schema cache/i.test(m)) _oilaXato = 99;
+    } else { _oilaXato = 0; }
+    if(_oilaXato >= 3 && _oilaTimer){
+      clearInterval(_oilaTimer); _oilaTimer = null;
+      console.warn('Oila xulosasi to\'xtatildi (server tayyor emas).');
+    }
+  }).catch(function(){ _oilaXato++; });
+}
+function oilaHolatQayta(){
+  _oilaXato = 0;
+  if(!_oilaTimer) _oilaTimer = setInterval(_oilaUrin, 5*60*1000);
+  _oilaUrin();
+}
+setTimeout(function(){ try{ _oilaUrin(); }catch(e){} }, 6000);
+_oilaTimer = setInterval(_oilaUrin, 5*60*1000);
 setTimeout(function(){try{renderKunMashq();}catch(e){}},800);
 
 function showHisobotTab(tab,el){
@@ -3604,8 +3648,8 @@ function renderBosh(){
       var sp=r.start.split(':');var sh=Number(sp[0]),sm=Number(sp[1]),startM=sh*60+sm;
       const isNow=!r.done&&nowM>=startM&&nowM<startM+60;
       return '<div class="item"><div style="width:36px;height:36px;border-radius:12px;background:'+r.color+';display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">'+r.icon+'</div>'+
-        '<div style="flex:1"><div style="font-size:13px;font-weight:600;'+(r.done?'text-decoration:line-through;color:var(--t2)':'')+'">'+r.name+'</div>'+
-        '<div style="font-size:11px;color:'+(isNow?'var(--g)':'var(--t2)')+'">'+r.start+(r.end?' - '+r.end:'')+'</div></div>'+
+        '<div style="flex:1"><div style="font-size:13px;font-weight:600;'+(r.done?'text-decoration:line-through;color:var(--t2)':'')+'">'+esc(r.name)+'</div>'+
+        '<div style="font-size:11px;color:'+(isNow?'var(--g)':'var(--t2)')+'">'+esc(r.start)+(r.end?' - '+esc(r.end):'')+'</div></div>'+
         '<div class="check '+(r.done?'done':'')+'">'+
         (r.done?'<svg width="10" height="10"><path d="M2 5l2.5 2.5 4-4" stroke="white" stroke-width="1.8" fill="none"/></svg>':'')+
         '</div></div>';
@@ -3656,7 +3700,7 @@ function renderOdat(){
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">'+
         '<div class="hicon" style="background:'+o.color+'"><span style="font-size:24px">'+o.icon+'</span></div>'+
         '<div style="flex:1;min-width:0">'+
-          '<div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+o.name+'</div>'+
+          '<div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(o.name)+'</div>'+
           '<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">'+
             '<span style="font-size:12px;color:#FF6B35;font-weight:600;background:rgba(255,107,53,.1);padding:2px 8px;border-radius:8px">🔥 '+(o.streak||0)+' kun</span>'+
             (o.time?'<span style="font-size:11px;color:var(--t2);background:var(--bd);padding:2px 8px;border-radius:8px">⏰ '+o.time+'</span>':'')+
@@ -3680,7 +3724,7 @@ function renderOdatStat(){
   el.innerHTML=state.odatlar.map(o=>{
     const done=last7.filter(d=>o.hist&&o.hist[d]).length;
     const pct=Math.round(done/7*100);
-    return '<div class="sbar-wrap"><div class="sbar-label"><span>'+o.icon+' '+o.name+'</span><span style="color:var(--g);font-weight:600">'+pct+'%</span></div><div class="sbar"><div class="sbar-fill" style="width:'+pct+'%;background:var(--g)"></div></div></div>';
+    return '<div class="sbar-wrap"><div class="sbar-label"><span>'+esc(o.icon+' '+o.name)+'</span><span style="color:var(--g);font-weight:600">'+pct+'%</span></div><div class="sbar"><div class="sbar-fill" style="width:'+pct+'%;background:var(--g)"></div></div></div>';
   }).join('');
 }
 let _rejaColor='#00C896';
@@ -3762,7 +3806,7 @@ function renderShablon(){
   if(!state.reja.shablon.length){el.innerHTML='<div class="empty">Shablon yo\'q</div>';return;}
   el.innerHTML=state.reja.shablon.sort((a,b)=>a.start.localeCompare(b.start)).map(s=>
     '<div class="item"><div style="width:36px;height:36px;border-radius:10px;background:'+s.color+';display:flex;align-items:center;justify-content:center;font-size:18px">'+s.icon+'</div>'+
-    '<div style="flex:1"><div style="font-size:14px;font-weight:600">'+s.name+'</div><div style="font-size:12px;color:var(--t2)">'+s.start+(s.end?' - '+s.end:'')+'</div></div>'+
+    '<div style="flex:1"><div style="font-size:14px;font-weight:600">'+esc(s.name)+'</div><div style="font-size:12px;color:var(--t2)">'+esc(s.start)+(s.end?' - '+s.end:'')+'</div></div>'+
     '<button onclick="delShablon('+s.id+')" style="width:28px;height:28px;border-radius:8px;border:none;background:rgba(244,63,94,.1);color:var(--red);cursor:pointer;font-size:13px">🗑</button></div>'
   ).join('');
 }
@@ -3797,7 +3841,7 @@ function renderReja(){
     return '<div class="ritem'+(r.done?' rdone':isNow?' now':isPast?' past':'')+'">'+
       '<div style="display:flex;align-items:center;gap:12px">'+
         '<div style="width:44px;height:44px;border-radius:14px;background:'+r.color+';display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;opacity:'+(r.done?.5:1)+'">'+r.icon+'</div>'+
-        '<div style="flex:1"><div style="font-size:14px;font-weight:700;'+(r.done?'text-decoration:line-through;color:var(--t2)':'')+'">'+r.name+'</div>'+
+        '<div style="flex:1"><div style="font-size:14px;font-weight:700;'+(r.done?'text-decoration:line-through;color:var(--t2)':'')+'">'+esc(r.name)+'</div>'+
           '<div style="font-size:12px;font-weight:600;color:'+(isNow?'var(--g)':isPast?'var(--red)':'var(--t2)')+'">'+
             (isNow?'🟢 Hozir · ':isPast?'🔴 O\'tdi · ':'⏰ ')+r.start+(r.end?' - '+r.end:'')+
             (r.signal&&r.signal!==-1?' 🔔':'')+
@@ -3970,7 +4014,7 @@ function renderMoliya(){
     :t.type==='xarajat'?'<path d="M8 4v8M4 9l4 3 4-3" stroke="white" stroke-width="1.8" stroke-linecap="round"/>'
     :'<ellipse cx="8" cy="10" rx="5" ry="2.5" stroke="white" stroke-width="1.5"/><path d="M3 8c0-1.4 2.2-2.5 5-2.5s5 1.1 5 2.5M3 6c0-1.4 2.2-2.5 5-2.5s5 1.1 5 2.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>')+
     '</svg></div>'+
-    '<div style="flex:1"><div style="font-size:14px;font-weight:600">'+t.name+'</div><div style="font-size:11px;color:var(--t2)">'+new Date(t.date).toLocaleDateString('uz-UZ')+'</div></div>'+
+    '<div style="flex:1"><div style="font-size:14px;font-weight:600">'+esc(t.name)+'</div><div style="font-size:11px;color:var(--t2)">'+new Date(t.date).toLocaleDateString('uz-UZ')+'</div></div>'+
     '<div style="text-align:right"><div style="font-size:15px;font-weight:700;color:'+FA[t.type]+'">'+(t.type==='xarajat'?'- ':'+  ')+fmt(t.amt)+'</div>'+
     '<button onclick="delTrans('+t.id+')" style="font-size:11px;color:var(--t2);background:none;border:none;cursor:pointer">o\'chirish</button></div>'+
   '</div>').join('');
@@ -4609,11 +4653,8 @@ function renderSport(){
     }
   }
 }
-function toggleDark(){
-  state.dark=!state.dark;S.s('i_dark',state.dark);
-  document.body.classList.toggle('dark',state.dark);
-  renderSozlama();
-}
+/* Eski toggleDark olib tashlandi (04.09.2026) — pastdagi tema tizimidagi
+   toggleDark() ishlaydi, bu esa uni bekor qilib turgan edi. */
 function renderSozlama(){
   try{
     var p=state.profil||{name:'Foydalanuvchi',job:'',motto:'',avatar:''};
@@ -4711,7 +4752,7 @@ function renderHisobot(period){
   '<div class="card"><div class="sec-title">&#128293; Odatlar</div>'+
   habitStats.map(h=>
     '<div class="stat-bar-wrap">'+
-    '<div class="stat-bar-label"><span>'+h.icon+' '+h.name+'</span>'+
+    '<div class="stat-bar-label"><span>'+esc(h.icon+' '+h.name)+'</span>'+
     '<span style="font-weight:700;color:'+(h.pct>=70?'var(--g)':h.pct>=40?'var(--ora)':'var(--red)')+'">'+h.pct+'%</span></div>'+
     '<div class="stat-bar"><div class="stat-bar-fill" style="width:'+h.pct+'%;background:'+(h.pct>=70?'var(--g)':h.pct>=40?'var(--ora)':'var(--red)')+'"></div></div>'+
     '</div>'
@@ -4960,7 +5001,7 @@ function renderJurnal(){
             '<button onclick="delJurnal('+j.id+')" style="background:rgba(244,63,94,.1);border:none;color:var(--red);border-radius:10px;padding:5px 10px;cursor:pointer;font-size:13px">&#128465;</button>'+
           '</div>'+
           (j.img?'<img src="'+j.img+'" style="width:100%;border-radius:12px;margin-bottom:10px;max-height:220px;object-fit:cover">':'')+
-          '<div style="font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap">'+j.text+'</div>'+
+          '<div style="font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap">'+esc(j.text)+'</div>'+
         '</div>';
       }).join('')+
     '</div>';
@@ -6002,73 +6043,7 @@ function setAiMood(btn, val){
   btn.style.background = 'var(--g)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--g)';
 }
 
-/* ============================================================
-   AI QULF VA KUNLIK LIMIT (05.09.2026)
-   AI qismlari pulli. Sinov davrida ham ishlaydi.
-   Hisob SERVERDA yuritiladi — telefonda o'zgartirib bo'lmaydi.
-   ============================================================ */
-var AI_LIMIT = { reja:1, missiya:1, kitob:3, kaloriya:5 };
-
-function aiRuxsat(tur){
-  var lim = AI_LIMIT[tur] || 1;
-  if(!window.BULUT || !window.BULUT.rpc) return Promise.resolve({ruxsat:true});
-  /* MUHIM: ilova faqat TEKSHIRADI, hisoblamaydi.
-     Hisoblashni server (ai funksiyasi) qiladi — aks holda
-     bitta bosishda ikki marta hisoblanardi. */
-  return window.BULUT.rpc('ai_tekshir', {p_tur:tur, p_limit:lim})
-    .then(function(r){
-      if(r && r.error) return {ruxsat:true};      /* server javob bermasa to'sib qo'ymaymiz */
-      return (r && r.data) || {ruxsat:true};
-    })
-    .catch(function(){ return {ruxsat:true}; });
-}
-
-/* Rad etilganda ko'rsatiladigan oyna */
-function aiQulfOyna(natija, tur){
-  var nom = {reja:'AI Reja', missiya:'Missiyalar', kitob:'Kitob tavsiyasi', kaloriya:'Kaloriya skaneri'}[tur] || 'Bu bo\'lim';
-  var d = document.createElement('div');
-  d.style.cssText='position:fixed;inset:0;z-index:99996;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:22px';
-
-  var ichi;
-  if(natija.sabab === 'limit'){
-    ichi = '<div style="font-size:44px;margin-bottom:10px">\u23F3</div>' +
-      '<div style="font-size:18px;font-weight:800;margin-bottom:8px">Bugunga yetdi</div>' +
-      '<div style="font-size:13px;color:var(--t2,#666);line-height:1.7;margin-bottom:18px">' +
-        nom + ' kuniga ' + (natija.limit||1) + ' marta ishlaydi. Ertaga yana ochiladi.</div>' +
-      '<button id="aq-x" style="width:100%;padding:14px;border:none;border-radius:14px;background:var(--g,#00D4A0);color:#04231b;font-weight:800;font-size:15px;cursor:pointer">Tushunarli</button>';
-  } else {
-    ichi = '<div style="font-size:44px;margin-bottom:10px">\uD83D\uDD12</div>' +
-      '<div style="font-size:18px;font-weight:800;margin-bottom:8px">Sinov muddati tugadi</div>' +
-      '<div style="font-size:13px;color:var(--t2,#666);line-height:1.7;margin-bottom:16px">' +
-        nom + ' va boshqa AI qismlari to\'liq versiyada ishlaydi.<br><br>' +
-        'Odat, reja, namoz, kundalik, moliya va suv \u2014 bularning hammasi bepul qolaveradi.</div>' +
-      '<div style="background:var(--bg,#f7f7f7);border-radius:14px;padding:14px;margin-bottom:16px">' +
-        '<div style="font-size:22px;font-weight:900;color:var(--g,#00D4A0)">149 000 so\'m</div>' +
-        '<div style="font-size:11.5px;color:var(--t2,#666);margin-top:2px">bir marta \u00b7 umrbod</div>' +
-      '</div>' +
-      '<button id="aq-tolov" style="width:100%;padding:14px;border:none;border-radius:14px;background:var(--g,#00D4A0);color:#04231b;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:8px">To\'liq ochish</button>' +
-      '<button id="aq-x" style="width:100%;padding:12px;border:none;border-radius:14px;background:transparent;color:var(--t2,#666);font-size:14px;cursor:pointer">Keyinroq</button>';
-  }
-
-  d.innerHTML = '<div style="width:100%;max-width:330px;background:var(--card,#fff);color:var(--text,#111);border-radius:20px;padding:24px 20px;text-align:center">' + ichi + '</div>';
-  document.body.appendChild(d);
-  var x=d.querySelector('#aq-x'); if(x) x.onclick=function(){ d.remove(); };
-  var t=d.querySelector('#aq-tolov');
-  if(t) t.onclick=function(){
-    d.remove();
-    try{ window.open('https://t.me/IIntizom_bot?start=yordam','_blank'); }
-    catch(e){ location.href='https://t.me/IIntizom_bot?start=yordam'; }
-  };
-  d.onclick=function(e){ if(e.target===d) d.remove(); };
-}
-
 function genAiReja(){
-  aiRuxsat('reja').then(function(rz){
-    if(!rz.ruxsat){ aiQulfOyna(rz,'reja'); return; }
-    _genAiReja();
-  });
-}
-function _genAiReja(){
   var input = (document.getElementById('ai-reja-input').value||'').trim();
   var mood = _aiMoodTag || 'Oddiy';
   var today = new Date();
@@ -6095,7 +6070,7 @@ function _genAiReja(){
     'JSON formatda: {"jadval":[{"soat":"05:30","vazifa":"Bomdod namoz","emoji":"🕌","tur":"din"},...], "maslahat":"..."}'+
     ' Faqat JSON, boshqa hech narsa yozma. O\'zbek tilida.';
 
-  aiFetch('reja', AI_ENDPOINT,{
+  fetch(AI_ENDPOINT,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -6241,12 +6216,6 @@ function toggleMission(i){
 }
 
 function genMissions(){
-  aiRuxsat('missiya').then(function(rz){
-    if(!rz.ruxsat){ aiQulfOyna(rz,'missiya'); return; }
-    _genMissions();
-  });
-}
-function _genMissions(){
   var btn=document.getElementById('mission-gen-btn');
   if(btn){btn.disabled=true;btn.textContent='⏳ Yuklanmoqda...';}
 
@@ -6261,7 +6230,7 @@ function _genMissions(){
     return;
   }
 
-  aiFetch('missiya', AI_ENDPOINT,{
+  fetch(AI_ENDPOINT,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -8275,12 +8244,6 @@ function openKalMicro(){
 }
 
 function runKaloriyaAnaliz(){
-  aiRuxsat('kaloriya').then(function(rz){
-    if(!rz.ruxsat){ aiQulfOyna(rz,'kaloriya'); return; }
-    _runKaloriyaAnaliz();
-  });
-}
-function _runKaloriyaAnaliz(){
   var textVal = (document.getElementById('kal-text-inp').value||'').trim();
   if(!_kalImgB64 && !textVal){
     showNotif('⚠️','Rasm yuklang yoki ovqat nomini yozing');
@@ -8341,7 +8304,7 @@ function _runKaloriyaAnaliz(){
     });
   }
 
-  aiFetch('kaloriya', AI_ENDPOINT,{
+  fetch(AI_ENDPOINT,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -8504,7 +8467,7 @@ function showKalResult(r){
     items.map(function(it){
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)">'+
         '<div>'+
-          '<div style="font-size:13px;font-weight:600;color:var(--text)">'+it.nom+'</div>'+
+          '<div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(it.nom)+'</div>'+
           '<div style="font-size:11px;color:var(--t2)">'+(it.gramm||'?')+'g · oqsil: '+(it.oqsil||0)+'g · yog: '+(it.yog||0)+'g</div>'+
         '</div>'+
         '<div style="font-size:15px;font-weight:800;color:var(--g)">'+(it.kcal||0)+' kcal</div>'+
@@ -8572,8 +8535,8 @@ function renderKalHistory(){
     list.slice().reverse().map(function(it){
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)">'+
         '<div>'+
-          '<div style="font-size:13px;font-weight:600;color:var(--text)">'+it.nom+'</div>'+
-          '<div style="font-size:11px;color:var(--t2)">'+it.time+'</div>'+
+          '<div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(it.nom)+'</div>'+
+          '<div style="font-size:11px;color:var(--t2)">'+esc(it.time)+'</div>'+
         '</div>'+
         '<div style="font-size:14px;font-weight:800;color:var(--g)">'+it.kcal+' kcal</div>'+
       '</div>';
@@ -8622,7 +8585,7 @@ function renderStApps(){
     return '<button onclick="stToggleApp('+i+')" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:16px;border:2px solid '+(app.active?'#EF4444':'var(--bd)')+';background:'+(app.active?'rgba(239,68,68,.06)':'var(--card)')+';cursor:pointer;transition:all .25s;text-align:left;width:100%">'+
       logo+
       '<div style="flex:1;min-width:0">'+
-        '<div style="font-size:13px;font-weight:700;color:var(--text)">'+app.nom+'</div>'+
+        '<div style="font-size:13px;font-weight:700;color:var(--text)">'+esc(app.nom)+'</div>'+
         '<div style="font-size:11px;font-weight:600;color:'+(app.active?'#EF4444':'var(--t2)')+'">'+( app.active?'🚫 Taqiqlangan':'✓ Ruxsat')+'</div>'+
       '</div>'+
       '<div style="width:24px;height:24px;border-radius:50%;border:2px solid '+(app.active?'#EF4444':'var(--bd)')+';background:'+(app.active?'#EF4444':'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
@@ -9319,7 +9282,7 @@ function renderDoriList(){
       return '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:16px;margin-bottom:8px;border:1.5px solid '+(isDone?'var(--g)':'var(--bd)')+';box-shadow:var(--shadow)">'+
         '<div style="font-size:28px">'+(isDone?'✅':'💊')+'</div>'+
         '<div style="flex:1">'+
-          '<div style="font-size:14px;font-weight:700;color:var(--text);'+(isDone?'text-decoration:line-through;opacity:.5':'')+'">'+d.nom+'</div>'+
+          '<div style="font-size:14px;font-weight:700;color:var(--text);'+(isDone?'text-decoration:line-through;opacity:.5':'')+'">'+esc(d.nom)+'</div>'+
           '<div style="font-size:11px;color:var(--t2)">'+d.miq+' · '+d.vaqt+' · '+
             (d.kun==='har'?'Har kun':d.kun==='juft'?'Juft kunlar':'Toq kunlar')+
           '</div>'+
@@ -9450,7 +9413,7 @@ function renderKitobList(){
     return '<div style="background:var(--card);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);border-left:4px solid '+holatRang[k.holat]+'">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'+
         '<div style="flex:1">'+
-          '<div style="font-size:14px;font-weight:700;color:var(--text)">'+holatEmoji[k.holat]+' '+k.nom+'</div>'+
+          '<div style="font-size:14px;font-weight:700;color:var(--text)">'+holatEmoji[k.holat]+' '+esc(k.nom)+'</div>'+
           (k.muallif?'<div style="font-size:11px;color:var(--t2);margin-top:2px">✍️ '+k.muallif+'</div>':'')+
         '</div>'+
         '<button onclick="deleteKitob('+k.id+')" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:16px;padding:4px">🗑</button>'+
@@ -9512,12 +9475,6 @@ function kitobPDF(){
 }
 
 function aiKitobTavsiya(nom){
-  aiRuxsat('kitob').then(function(rz){
-    if(!rz.ruxsat){ aiQulfOyna(rz,'kitob'); return; }
-    _aiKitobTavsiya(nom);
-  });
-}
-function _aiKitobTavsiya(nom){
   // Modal yaratamiz
   var modal=document.getElementById('kitob-ai-modal');
   if(!modal){
@@ -9560,7 +9517,7 @@ function _aiKitobTavsiya(nom){
     return;
   }
 
-  aiFetch('kitob', AI_ENDPOINT,{
+  fetch(AI_ENDPOINT,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -9775,7 +9732,7 @@ function renderXaridList(){
     return '<div style="display:flex;align-items:center;gap:12px;padding:13px;background:var(--card);border-radius:14px;margin-bottom:8px;border:1.5px solid '+(x.done?'var(--g)':'var(--bd)')+';box-shadow:var(--shadow)">'+
       '<button onclick="toggleXarid('+x.id+')" style="width:26px;height:26px;border-radius:50%;border:2px solid '+(x.done?'var(--g)':'var(--bd)')+';background:'+(x.done?'var(--g)':'transparent')+';color:#fff;cursor:pointer;font-size:13px;flex-shrink:0">'+(x.done?'✓':'')+'</button>'+
       '<div style="font-size:13px;color:var(--text);flex:1;'+(x.done?'text-decoration:line-through;opacity:.5':'')+'">'+
-        (katEmoji[x.kat]||'📦')+' '+x.nom+
+        (katEmoji[x.kat]||'📦')+' '+esc(x.nom)+
       '</div>'+
       '<button onclick="deleteXarid('+x.id+')" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:16px">✕</button>'+
     '</div>';
@@ -9837,7 +9794,7 @@ function renderOilaList(){
       yaqin.map(function(a){
         var diff=getDaysDiff(a.tug);
         return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.15)">'+
-          '<div style="font-size:14px;font-weight:700;color:#fff">'+a.ism+'</div>'+
+          '<div style="font-size:14px;font-weight:700;color:#fff">'+esc(a.ism)+'</div>'+
           '<div style="font-size:12px;color:rgba(255,255,255,.8)">'+(diff===0?'🎉 Bugun!':diff+' kunda')+'</div>'+
         '</div>';
       }).join('')+
@@ -9852,7 +9809,7 @@ function renderOilaList(){
     return '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:16px;margin-bottom:8px;box-shadow:var(--shadow);border:1.5px solid var(--bd)">'+
       '<div style="font-size:32px">'+(munosabatEmoji[a.munosabat]||'👤')+'</div>'+
       '<div style="flex:1">'+
-        '<div style="font-size:14px;font-weight:700;color:var(--text)">'+a.ism+'</div>'+
+        '<div style="font-size:14px;font-weight:700;color:var(--text)">'+esc(a.ism)+'</div>'+
         '<div style="font-size:12px;color:var(--t2)">'+a.munosabat+(a.tug?' · 🎂 '+a.tug.slice(5).replace('-','/')+(diff>=0&&diff<=30?' ('+diff+' kun)':''):'')+'</div>'+
       '</div>'+
       '<button onclick="deleteOila('+a.id+')" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:18px">🗑</button>'+
@@ -9902,7 +9859,7 @@ function renderEslatmalar(){
   if(!eslatmalar.length){el.innerHTML='<div style="text-align:center;color:var(--t2);font-size:13px;padding:12px">Eslatmalar yo\'q</div>';return;}
   el.innerHTML=eslatmalar.map(function(e){
     return '<div style="background:'+e.rang+'15;border-left:4px solid '+e.rang+';border-radius:12px;padding:12px;margin-bottom:8px;position:relative">'+
-      '<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:4px">'+e.text+'</div>'+
+      '<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:4px">'+esc(e.text)+'</div>'+
       '<div style="font-size:10px;color:var(--t2)">'+e.date+'</div>'+
       '<button onclick="deleteEslatma('+e.id+')" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--t2);cursor:pointer;font-size:14px">✕</button>'+
     '</div>';
@@ -10191,7 +10148,259 @@ try{
     setTimeout(_ob, 1600);
   }
 }catch(e){}
+
+/* ==================================================================
+   PRO / PAYWALL  —  04.09.2026
+   Bepul: odat, reja, namoz, kundalik, suv, kayfiyat, dua, dori,
+          eslatma, oila, tug'ilgan kun, xarid, moliya, sport
+   PRO:   AI reja, kaloriya skaneri, ratsion, hisobot, missiya,
+          viktorina, kitoblar, inglizcha, 60 soniya, omad, reyting,
+          avatarim, kun siri
+   ================================================================== */
+var PRO_SAHIFA = { ratsion:'Ratsion dasturi', hisobot:'Hisobot va tahlil' };
+var PRO_MODAL  = { 'ai-reja-modal':'AI kunlik reja', 'kitob-modal':'Kitoblar', 'til-modal':'Inglizcha' };
+var PRO_FUNKS  = {
+  openMissionModal:'Missiyalar', openViktorina:'Viktorina', openMiniChallenge:'60 soniya',
+  openSpinWheel:'Omad g\u2018ildiragi', reytingOch:'Reyting', openAvatar:'Avatarim',
+  openKunSir:'Kun siri', openKaloriyaScaner:'Kaloriya skaneri'
+};
+var PRO_TILE = ['aireja','kitoblar','inglizcha','missiya','reyting','spin','viktorina','mashq60','avatar','kunsir'];
+
+/* isPro() bulut.js dan keladi. Bulut hali yuklanmagan bo'lsa PRO deb
+   hisoblaymiz \u2014 tarmoq nosozligi to'lagan odamni qulflab qo'ymasin. */
+function proHolat(){
+  try{
+    if(window.BULUT && typeof window.BULUT.isPro==='function') return window.BULUT.isPro()!==false;
+    if(typeof isPro==='function') return isPro()!==false;
+  }catch(e){}
+  return true;
+}
+/* Sinov/obuna matnini keshdan yumshoq o'qiydi (format o'zgarsa ham yiqilmaydi) */
+function _proMatn(){
+  try{
+    if(window.BULUT && typeof window.BULUT.obunaMatn==='function'){
+      var m=window.BULUT.obunaMatn(); if(m) return m;
+    }
+    var c=JSON.parse(localStorage.getItem('obuna_cache_v1')||'null');
+    if(!c) return '';
+    if(c.pro===true || c.holat==='pro') return '\u2705 PRO faollashtirilgan';
+    var kun = c.qolgan!=null?c.qolgan : (c.kun!=null?c.kun : (c.qolgan_kun!=null?c.qolgan_kun:null));
+    if(kun!=null) return kun>0 ? ('Sinov muddati \u2014 yana '+kun+' kun') : 'Sinov muddati tugadi';
+  }catch(e){}
+  return '';
+}
+function paywallOch(nomi){
+  try{
+    var s=document.getElementById('pro-sabab');
+    if(s) s.textContent = nomi ? ('\u201c'+nomi+'\u201d PRO bo\u2018limida') : 'Bu bo\u2018lim PRO ichida';
+    var hEl=document.getElementById('pro-holat'), t=_proMatn();
+    if(hEl){ if(t){ hEl.textContent=t; hEl.style.display='block'; } else hEl.style.display='none'; }
+    /* Narx bazadan (sozlama jadvali) \u2014 kodda emas */
+    if(window.BULUT && window.BULUT.rpc){
+      window.BULUT.rpc('tolov_malumot',{}).then(function(r){
+        try{
+          var d=(r&&r.data)?r.data:r; if(Array.isArray(d)) d=d[0];
+          var n=d&&(d.narx||d.summa); if(n){
+            var el=document.getElementById('pro-narx');
+            if(el) el.textContent=String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' so\u2018m';
+          }
+          if(d&&d.tolov_link) _proLink=d.tolov_link;
+        }catch(e){}
+      }).catch(function(){});
+    }
+    openM('pro-modal');
+  }catch(e){ console.error('paywall:',e); }
+}
+var _proLink='';
+function proTolov(){
+  var u=_proLink || 'https://t.me/IIntizom_bot?start=tolov';
+  try{ window.open(u,'_blank'); }catch(e){ location.href=u; }
+  closeM('pro-modal');
+  showNotif('\uD83D\uDCB3 To\u2018lov','Bot orqali davom eting. To\u2018lov tasdiqlangach PRO darhol ochiladi.');
+}
+/* Bitta joyda tekshirish: PRO bo'lmasa paywall ochiladi va false qaytadi */
+function proKerak(nomi){
+  if(proHolat()) return true;
+  paywallOch(nomi);
+  return false;
+}
+/* --- Kirish nuqtalarini o'rash (13 ta joyni alohida tahrirlamaymiz) --- */
+(function(){
+  try{
+    var _gotoPage=window.gotoPage;
+    window.gotoPage=function(page,btn){
+      if(PRO_SAHIFA[page] && !proKerak(PRO_SAHIFA[page])) return;
+      return _gotoPage.apply(this,arguments);
+    };
+    var _openM=window.openM;
+    window.openM=function(id){
+      if(PRO_MODAL[id] && !proKerak(PRO_MODAL[id])) return;
+      return _openM.apply(this,arguments);
+    };
+    Object.keys(PRO_FUNKS).forEach(function(fn){
+      if(typeof window[fn]!=='function') return;
+      var asl=window[fn], nom=PRO_FUNKS[fn];
+      window[fn]=function(){ if(!proKerak(nom)) return; return asl.apply(this,arguments); };
+    });
+  }catch(e){ console.error('pro wrap:',e); }
+})();
+/* Bosh sahifadagi PRO kartachalarga qulf belgisi */
+function proQulflarniChiz(){
+  try{
+    var pro=proHolat();
+    PRO_TILE.forEach(function(k){
+      var el=document.querySelector('.htile[data-hw="'+k+'"]');
+      if(!el) return;
+      var b=el.querySelector('.pro-lock');
+      if(pro){ if(b) b.remove(); el.style.opacity=''; return; }
+      el.style.position='relative'; el.style.opacity='.72';
+      if(!b){
+        b=document.createElement('span');
+        b.className='pro-lock';
+        b.textContent='\uD83D\uDD12';
+        b.style.cssText='position:absolute;top:4px;right:6px;font-size:11px;line-height:1;opacity:.85';
+        el.appendChild(b);
+      }
+    });
+  }catch(e){}
+}
+(function(){
+  try{
+    if(typeof window.renderBosh==='function'){
+      var _rb=window.renderBosh;
+      window.renderBosh=function(){ var r=_rb.apply(this,arguments); try{proQulflarniChiz();}catch(e){} return r; };
+    }
+  }catch(e){}
+  setTimeout(proQulflarniChiz,3000);
+  setTimeout(proQulflarniChiz,9000);
+})();
+
+/* ==================================================================
+   YORDAM VA TAKLIF  —  sozlamadagi tugma shu funksiyani chaqirardi,
+   lekin funksiya yozilmagan edi (bosilganda hech nima bo'lmasdi).
+   Xabar i_yordam kalitiga yoziladi \u2014 demak bulut orqali bazaga
+   ham tushadi \u2014 va Telegram bot ochiladi.
+   ================================================================== */
+function yordamOch(){
+  try{
+    var m=document.getElementById('yr-matn'); if(m) m.value='';
+    var t=document.getElementById('yr-tur'); if(t) t.value='xato';
+    var eski=S.g('i_yordam')||[];
+    var r=document.getElementById('yr-royxat');
+    if(r) r.textContent = eski.length ? ('Ilgari yuborilgan: '+eski.length+' ta') : '';
+    openM('yordam-modal');
+  }catch(e){ console.error('yordamOch:',e); }
+}
+function yordamYubor(){
+  var matn=(document.getElementById('yr-matn').value||'').trim();
+  if(matn.length<5){ showNotif('\u270D\uFE0F','Kamida bir necha so\u2018z yozing'); return; }
+  var tur=document.getElementById('yr-tur').value;
+  var royxat=S.g('i_yordam')||[];
+  royxat.push({tur:tur, matn:matn.slice(0,1000), sana:bugunKun(), vaqt:new Date().toISOString()});
+  if(royxat.length>30) royxat=royxat.slice(-30);
+  S.s('i_yordam',royxat);
+  closeM('yordam-modal');
+  var xabar='['+tur+'] '+matn;
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(xabar);
+  }catch(e){}
+  try{ window.open('https://t.me/IIntizom_bot','_blank'); }catch(e){}
+  showNotif('\u2705 Rahmat!','Xabaringiz saqlandi va nusxalandi \u2014 botga qo\u2018yib yuborishingiz mumkin.');
+}
+
+/* Yangi modallar body oxirida turgani uchun fon bosilganda yopilishini
+   qo'lda ulaymiz (yuqoridagi umumiy tinglovchi ular tug'ilgunga qadar ishlagan). */
+(function(){
+  try{
+    ['pro-modal','yordam-modal'].forEach(function(id){
+      var m=document.getElementById(id);
+      if(m) m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('open'); });
+    });
+  }catch(e){}
+})();
+
+/* ==================================================================
+   SERVICE WORKER \u2014 oflayn ishlashi uchun. Ilgari manifest bor edi-yu
+   sw yo'q edi: internet uzilsa ilova umuman ochilmasdi.
+   ================================================================== */
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js')
+      .then(function(reg){
+        reg.addEventListener('updatefound',function(){
+          var w=reg.installing; if(!w) return;
+          w.addEventListener('statechange',function(){
+            if(w.state==='installed' && navigator.serviceWorker.controller){
+              try{ showNotif('\uD83D\uDD04 Yangilandi','Ilovaning yangi versiyasi tayyor \u2014 qayta oching.'); }catch(e){}
+            }
+          });
+        });
+      })
+      .catch(function(e){ console.warn('sw:',e); });
+  });
+})();
 </script>
+<!-- ============ PRO (PAYWALL) MODALI — 04.09.2026 ============ -->
+<div class="moverlay" id="pro-modal"><div class="modal"><div class="mhandle"></div>
+  <div style="text-align:center;padding:4px 0 6px">
+    <div style="font-size:44px;line-height:1">&#128142;</div>
+    <div class="mtitle" style="margin-bottom:4px">Intizom PRO</div>
+    <div id="pro-sabab" style="font-size:13px;color:var(--t2);margin-bottom:14px"></div>
+  </div>
+  <div id="pro-holat" style="display:none;background:rgba(0,212,160,.1);border:1px solid rgba(0,212,160,.3);border-radius:14px;padding:10px 14px;font-size:13px;font-weight:600;color:var(--g);text-align:center;margin-bottom:14px"></div>
+  <div style="background:var(--bg);border-radius:16px;padding:14px 16px;margin-bottom:14px">
+    <div style="font-size:12px;font-weight:700;color:var(--t2);letter-spacing:.5px;margin-bottom:10px">PRO ICHIDA</div>
+    <div style="font-size:13.5px;line-height:2;color:var(--text)">
+      &#129302; AI kunlik reja<br>
+      &#128247; Kaloriya skaneri (rasmdan)<br>
+      &#127859; Ratsion dasturi<br>
+      &#128202; Hisobot va chuqur tahlil<br>
+      &#127919; Missiyalar &middot; &#129504; Viktorina<br>
+      &#128218; Kitoblar &middot; &#128172; Inglizcha<br>
+      &#9889; 60 soniya &middot; &#127905; Omad &middot; &#127942; Reyting<br>
+      &#129489; Avatarim &middot; &#11088; Kun siri
+    </div>
+  </div>
+  <div style="text-align:center;margin-bottom:6px">
+    <div id="pro-narx" style="font-size:30px;font-weight:900;color:var(--text);letter-spacing:-.5px">149 000 so'm</div>
+    <div style="font-size:12px;color:var(--t2);margin-top:2px">Bir marta to'lanadi &mdash; umrbod ochiq</div>
+  </div>
+  <div style="font-size:12px;color:var(--t2);text-align:center;line-height:1.6;margin:10px 0 4px">
+    Odat, reja, namoz, kundalik, suv, kayfiyat, dua, dori,<br>eslatma, oila, xarid va moliya <b>doim bepul</b>.
+  </div>
+  <div class="mactions">
+    <button class="btn btn-out" onclick="closeM('pro-modal')">Keyinroq</button>
+    <button class="btn btn-g" onclick="proTolov()">To'lash</button>
+  </div>
+</div></div>
+
+<!-- ============ YORDAM VA TAKLIF MODALI ============ -->
+<div class="moverlay" id="yordam-modal"><div class="modal"><div class="mhandle"></div>
+  <div class="mtitle">Yordam va taklif</div>
+  <div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:14px">
+    Xatolik topdingizmi yoki taklifingiz bormi? Yozing &mdash; xabar bevosita bizga yetadi.
+  </div>
+  <div class="igroup">
+    <label class="ilabel">Turi</label>
+    <select id="yr-tur" class="inp">
+      <option value="xato">&#128030; Xatolik</option>
+      <option value="taklif">&#128161; Taklif</option>
+      <option value="savol">&#10067; Savol</option>
+      <option value="tolov">&#128179; To'lov masalasi</option>
+    </select>
+  </div>
+  <div class="igroup">
+    <label class="ilabel">Xabaringiz</label>
+    <textarea id="yr-matn" class="inp" rows="5" style="resize:vertical" placeholder="Masalan: Namoz vaqti 5 daqiqa oldinda ko'rinyapti..."></textarea>
+  </div>
+  <div id="yr-royxat" style="font-size:12px;color:var(--t2);margin-bottom:10px"></div>
+  <div class="mactions">
+    <button class="btn btn-out" onclick="closeM('yordam-modal')">Yopish</button>
+    <button class="btn btn-g" onclick="yordamYubor()">Yuborish</button>
+  </div>
+</div></div>
+
 <script src="bulut.js"></script>
 </body>
 </html>
