@@ -6012,7 +6012,10 @@ var AI_LIMIT = { reja:1, missiya:1, kitob:3, kaloriya:5 };
 function aiRuxsat(tur){
   var lim = AI_LIMIT[tur] || 1;
   if(!window.BULUT || !window.BULUT.rpc) return Promise.resolve({ruxsat:true});
-  return window.BULUT.rpc('ai_ruxsat', {p_tur:tur, p_limit:lim})
+  /* MUHIM: ilova faqat TEKSHIRADI, hisoblamaydi.
+     Hisoblashni server (ai funksiyasi) qiladi — aks holda
+     bitta bosishda ikki marta hisoblanardi. */
+  return window.BULUT.rpc('ai_tekshir', {p_tur:tur, p_limit:lim})
     .then(function(r){
       if(r && r.error) return {ruxsat:true};      /* server javob bermasa to'sib qo'ymaymiz */
       return (r && r.data) || {ruxsat:true};
