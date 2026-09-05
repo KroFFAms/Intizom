@@ -1890,7 +1890,34 @@ function kunKal(d){
 function bugunKun(){ return kunKal(new Date()); }
 function kechaKun(){ var d=new Date(); d.setDate(d.getDate()-1); return kunKal(d); }
 /* ===== AI SOZLAMA: backend-proxy URL shu yerda. Proxy tayyor bo'lgach faqat shu qatorni o'zgartiring ===== */
-var AI_ENDPOINT='https://wfmwxwdawiectcusjnkz.supabase.co/functions/v1/ai';
+var AI_ENDPOINT='https://kqtonpusgorwfqktbeto.supabase.co/functions/v1/ai';
+/* AI so'rovi: sessiya tokeni qo'shiladi va bo'lim turi yuboriladi.
+   Obuna hamda kunlik limitni SERVER tekshiradi. */
+function _aiToken(){
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k && k.indexOf('sb-')===0 && k.indexOf('-auth-token')>0){
+        var v=JSON.parse(localStorage.getItem(k)||'null');
+        if(v && v.access_token) return v.access_token;
+        if(v && v.currentSession && v.currentSession.access_token) return v.currentSession.access_token;
+      }
+    }
+  }catch(e){}
+  return null;
+}
+function aiFetch(tur, url, opts){
+  opts = opts || {};
+  opts.headers = opts.headers || {'Content-Type':'application/json'};
+  var t = _aiToken();
+  if(t) opts.headers['Authorization'] = 'Bearer ' + t;
+  try{
+    var b = JSON.parse(opts.body || '{}');
+    b.tur = tur;
+    opts.body = JSON.stringify(b);
+  }catch(e){}
+  return fetch(url, opts);
+}
 var AI_READY=(AI_ENDPOINT.indexOf('api.anthropic.com')===-1); /* proxy qo'yilgandagina true bo'ladi */
 /* AI javobidan JSON ni bardoshli ajratib oladi (kod-belgi, qo'shimcha matn, egri qo'shtirnoq) */
 function _extractJson(text){
@@ -5975,7 +6002,70 @@ function setAiMood(btn, val){
   btn.style.background = 'var(--g)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--g)';
 }
 
+/* ============================================================
+   AI QULF VA KUNLIK LIMIT (05.09.2026)
+   AI qismlari pulli. Sinov davrida ham ishlaydi.
+   Hisob SERVERDA yuritiladi — telefonda o'zgartirib bo'lmaydi.
+   ============================================================ */
+var AI_LIMIT = { reja:1, missiya:1, kitob:3, kaloriya:5 };
+
+function aiRuxsat(tur){
+  var lim = AI_LIMIT[tur] || 1;
+  if(!window.BULUT || !window.BULUT.rpc) return Promise.resolve({ruxsat:true});
+  return window.BULUT.rpc('ai_ruxsat', {p_tur:tur, p_limit:lim})
+    .then(function(r){
+      if(r && r.error) return {ruxsat:true};      /* server javob bermasa to'sib qo'ymaymiz */
+      return (r && r.data) || {ruxsat:true};
+    })
+    .catch(function(){ return {ruxsat:true}; });
+}
+
+/* Rad etilganda ko'rsatiladigan oyna */
+function aiQulfOyna(natija, tur){
+  var nom = {reja:'AI Reja', missiya:'Missiyalar', kitob:'Kitob tavsiyasi', kaloriya:'Kaloriya skaneri'}[tur] || 'Bu bo\'lim';
+  var d = document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;z-index:99996;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:22px';
+
+  var ichi;
+  if(natija.sabab === 'limit'){
+    ichi = '<div style="font-size:44px;margin-bottom:10px">\u23F3</div>' +
+      '<div style="font-size:18px;font-weight:800;margin-bottom:8px">Bugunga yetdi</div>' +
+      '<div style="font-size:13px;color:var(--t2,#666);line-height:1.7;margin-bottom:18px">' +
+        nom + ' kuniga ' + (natija.limit||1) + ' marta ishlaydi. Ertaga yana ochiladi.</div>' +
+      '<button id="aq-x" style="width:100%;padding:14px;border:none;border-radius:14px;background:var(--g,#00D4A0);color:#04231b;font-weight:800;font-size:15px;cursor:pointer">Tushunarli</button>';
+  } else {
+    ichi = '<div style="font-size:44px;margin-bottom:10px">\uD83D\uDD12</div>' +
+      '<div style="font-size:18px;font-weight:800;margin-bottom:8px">Sinov muddati tugadi</div>' +
+      '<div style="font-size:13px;color:var(--t2,#666);line-height:1.7;margin-bottom:16px">' +
+        nom + ' va boshqa AI qismlari to\'liq versiyada ishlaydi.<br><br>' +
+        'Odat, reja, namoz, kundalik, moliya va suv \u2014 bularning hammasi bepul qolaveradi.</div>' +
+      '<div style="background:var(--bg,#f7f7f7);border-radius:14px;padding:14px;margin-bottom:16px">' +
+        '<div style="font-size:22px;font-weight:900;color:var(--g,#00D4A0)">149 000 so\'m</div>' +
+        '<div style="font-size:11.5px;color:var(--t2,#666);margin-top:2px">bir marta \u00b7 umrbod</div>' +
+      '</div>' +
+      '<button id="aq-tolov" style="width:100%;padding:14px;border:none;border-radius:14px;background:var(--g,#00D4A0);color:#04231b;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:8px">To\'liq ochish</button>' +
+      '<button id="aq-x" style="width:100%;padding:12px;border:none;border-radius:14px;background:transparent;color:var(--t2,#666);font-size:14px;cursor:pointer">Keyinroq</button>';
+  }
+
+  d.innerHTML = '<div style="width:100%;max-width:330px;background:var(--card,#fff);color:var(--text,#111);border-radius:20px;padding:24px 20px;text-align:center">' + ichi + '</div>';
+  document.body.appendChild(d);
+  var x=d.querySelector('#aq-x'); if(x) x.onclick=function(){ d.remove(); };
+  var t=d.querySelector('#aq-tolov');
+  if(t) t.onclick=function(){
+    d.remove();
+    try{ window.open('https://t.me/IIntizom_bot?start=yordam','_blank'); }
+    catch(e){ location.href='https://t.me/IIntizom_bot?start=yordam'; }
+  };
+  d.onclick=function(e){ if(e.target===d) d.remove(); };
+}
+
 function genAiReja(){
+  aiRuxsat('reja').then(function(rz){
+    if(!rz.ruxsat){ aiQulfOyna(rz,'reja'); return; }
+    _genAiReja();
+  });
+}
+function _genAiReja(){
   var input = (document.getElementById('ai-reja-input').value||'').trim();
   var mood = _aiMoodTag || 'Oddiy';
   var today = new Date();
@@ -6002,7 +6092,7 @@ function genAiReja(){
     'JSON formatda: {"jadval":[{"soat":"05:30","vazifa":"Bomdod namoz","emoji":"🕌","tur":"din"},...], "maslahat":"..."}'+
     ' Faqat JSON, boshqa hech narsa yozma. O\'zbek tilida.';
 
-  fetch(AI_ENDPOINT,{
+  aiFetch('reja', AI_ENDPOINT,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -6148,6 +6238,12 @@ function toggleMission(i){
 }
 
 function genMissions(){
+  aiRuxsat('missiya').then(function(rz){
+    if(!rz.ruxsat){ aiQulfOyna(rz,'missiya'); return; }
+    _genMissions();
+  });
+}
+function _genMissions(){
   var btn=document.getElementById('mission-gen-btn');
   if(btn){btn.disabled=true;btn.textContent='⏳ Yuklanmoqda...';}
 
@@ -6162,7 +6258,7 @@ function genMissions(){
     return;
   }
 
-  fetch(AI_ENDPOINT,{
+  aiFetch('missiya', AI_ENDPOINT,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -8176,6 +8272,12 @@ function openKalMicro(){
 }
 
 function runKaloriyaAnaliz(){
+  aiRuxsat('kaloriya').then(function(rz){
+    if(!rz.ruxsat){ aiQulfOyna(rz,'kaloriya'); return; }
+    _runKaloriyaAnaliz();
+  });
+}
+function _runKaloriyaAnaliz(){
   var textVal = (document.getElementById('kal-text-inp').value||'').trim();
   if(!_kalImgB64 && !textVal){
     showNotif('⚠️','Rasm yuklang yoki ovqat nomini yozing');
@@ -8236,7 +8338,7 @@ function runKaloriyaAnaliz(){
     });
   }
 
-  fetch(AI_ENDPOINT,{
+  aiFetch('kaloriya', AI_ENDPOINT,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -9407,6 +9509,12 @@ function kitobPDF(){
 }
 
 function aiKitobTavsiya(nom){
+  aiRuxsat('kitob').then(function(rz){
+    if(!rz.ruxsat){ aiQulfOyna(rz,'kitob'); return; }
+    _aiKitobTavsiya(nom);
+  });
+}
+function _aiKitobTavsiya(nom){
   // Modal yaratamiz
   var modal=document.getElementById('kitob-ai-modal');
   if(!modal){
@@ -9449,7 +9557,7 @@ function aiKitobTavsiya(nom){
     return;
   }
 
-  fetch(AI_ENDPOINT,{
+  aiFetch('kitob', AI_ENDPOINT,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
