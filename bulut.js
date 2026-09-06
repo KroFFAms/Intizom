@@ -15,7 +15,7 @@
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
-    var skip = { i_pin_session: 1, i_parol_ok: 1, i_parol: 1 };
+    var skip = { i_pin_session: 1, i_parol_ok: 1, i_parol: 1, i_vaqt_versiya: 1, i_soat_farqi: 1 };
     var data = {};
     for (var i = 0; i < localStorage.length; i++) {
       var k = localStorage.key(i);
@@ -41,7 +41,7 @@
     });
   }
 
-  var SKIP_SYNC = { i_pin_session: 1, i_parol_ok: 1, i_parol: 1 };
+  var SKIP_SYNC = { i_pin_session: 1, i_parol_ok: 1, i_parol: 1, i_vaqt_versiya: 1, i_soat_farqi: 1 };
 
   /* ============================================================
      VAQT TAMG'ALARI (06.09.2026)
@@ -53,6 +53,32 @@
      ============================================================ */
   var VAQT_KEY = "i_kalit_vaqt";
   var _rawSet = localStorage.setItem.bind(localStorage);
+
+  /* Ilova yuklanayotganda o'nlab kalitni qaytadan yozadi — qiymat
+     mazmunan o'sha, lekin matn sifatida biroz farq qiladi (JSON
+     tartibi, standart qiymatlar). Ilgari bular ham "o'zgardi" deb
+     belgilanardi va ilovani ochgan qurilma hamma narsani "eng yangi"
+     qilib olardi. Endi tamg'a FAQAT foydalanuvchi ekranga tekkanidan
+     keyin qo'yiladi — haqiqiy tahrir doim bosish yoki yozishdan
+     keyin bo'ladi, yuklanish esa bo'lmaydi. */
+  var tegildi = false;
+  ["pointerdown", "keydown", "touchstart"].forEach(function (e) {
+    window.addEventListener(e, function () { tegildi = true; }, { once: true, capture: true });
+  });
+
+  /* Birinchi versiyada tamg'alar ilova yuklanganda ham qo'yilardi,
+     natijada bir qurilmadagi butun ma'lumot bir zumda "eng yangi"
+     bo'lib qolgan edi. Bunday yolg'on tamg'alarni bir marta tozalaymiz,
+     aks holda ular haqiqiy tahrirlarni bosib ketaveradi. */
+  var VAQT_VERSIYA = "i_vaqt_versiya";
+  function vaqtTozala() {
+    try {
+      if (localStorage.getItem(VAQT_VERSIYA) === "2") return;
+      localStorage.removeItem(VAQT_KEY);
+      _rawSet(VAQT_VERSIYA, "2");
+    } catch (e) {}
+  }
+  vaqtTozala();
 
   function vaqtlarOl() {
     try { return JSON.parse(localStorage.getItem(VAQT_KEY) || "{}") || {}; }
@@ -77,6 +103,7 @@
   }
 
   var oxirgiImzo = null;   // oxirgi muvaffaqiyatli yuborilgan ma'lumot imzosi
+  var oxirgiHajm = 0;      // uning hajmi — keskin kamayishni sezish uchun
 
   // Arzon imzo: uzunlik + belgilar yig'indisi. Kriptografik emas,
   // maqsad — "o'zgardimi yo'qmi" degan savolga tez javob berish.
@@ -99,9 +126,20 @@
     // ilova ichida ko'p joyda localStorage qayta yoziladi, lekin qiymat o'sha.
     if (yangiImzo === oxirgiImzo) { badgeHolat("ok"); return; }
 
-    var row = { user_id: uid, data: d, updated_at: new Date().toISOString() };
+    /* HIMOYA: yuborilayotgan ma'lumot oldingisidan keskin kichik
+       bo'lsa — bu ehtimol xato. Bulutdagi to'liq nusxani
+       yo'qotmaslik uchun to'xtaymiz va zaxira olamiz. */
+    if (oxirgiHajm && JSON.stringify(d).length < oxirgiHajm * 0.5) {
+      console.warn("Sinxron to'xtatildi: ma'lumot keskin kamaydi.",
+                   "oldin:", oxirgiHajm, "hozir:", JSON.stringify(d).length);
+      zaxiraOl("keskin kamayish");
+      badgeHolat("xato");
+      return;
+    }
+
+    var row = { user_id: uid, data: d, updated_at: new Date(hozir()).toISOString() };
     sb.from(TABLE).upsert(row, { onConflict: "user_id" }).then(function (r) {
-      if (!r.error) oxirgiImzo = yangiImzo;
+      if (!r.error) { oxirgiImzo = yangiImzo; oxirgiHajm = JSON.stringify(d).length; }
       badgeHolat(r.error ? "xato" : "ok");
     });
   }
@@ -120,7 +158,7 @@
         /* Qiymat haqiqatan o'zgargandagina vaqt yangilanadi. Ilova
            ko'p joyda bir xil qiymatni qayta yozadi — ular hisobga
            olinsa, tegilmagan kalit ham "yangi" bo'lib ko'rinardi. */
-        if (eski !== v) vaqtBelgila(k);
+        if (eski !== v && tegildi) vaqtBelgila(k);
         scheduleSave();
       }
     };
@@ -147,6 +185,70 @@
      Har kalit uchun qaysi tomon yangiroq bo'lsa, o'shanisi qoladi.
      Qaytaradi: {data, ozgardi} — ozgardi=true bo'lsa mahalliy
      nusxada haqiqatan o'zgarish bo'ldi, sahifani yangilash kerak. */
+  /* ============================================================
+     YOZUV DARAJASIDA BIRLASHTIRISH
+     Ilgari to'qnashuvda BUTUN bo'lim tanlanardi: bir tomon yutib,
+     ikkinchisining yozuvlari butunlay yo'qolardi. Kundalik uchun bu
+     qabul qilib bo'lmaydigan holat — belgilangan odatni qayta
+     belgilash mumkin, yozilgan kundalikni esa yo'q.
+     Endi ro'yxatlar yozuvma-yozuv qo'shiladi: bir tomonda bor
+     yozuv hech qachon yo'qolmaydi.
+     ============================================================ */
+
+  /* Yozuvni nimasi bilan tanish: id, bo'lmasa sana, bo'lmasa o'zi */
+  function _belgi(x) {
+    if (x && typeof x === "object") {
+      if (x.id !== undefined && x.id !== null) return "id:" + x.id;
+      if (x.date) return "d:" + x.date;
+      if (x.sana) return "s:" + x.sana;
+    }
+    try { return "j:" + JSON.stringify(x); } catch (e) { return "x:" + String(x); }
+  }
+
+  /* Ikki ro'yxatni qo'shadi. Avval yangi tomon, keyin eski tomonda
+     bor-u yangisida yo'q yozuvlar. Hech biri tushib qolmaydi. */
+  function _royxatQosh(yangi, eski) {
+    var chiq = [], korilgan = {};
+    (yangi || []).forEach(function (x) {
+      var b = _belgi(x);
+      if (!korilgan[b]) { korilgan[b] = 1; chiq.push(x); }
+    });
+    (eski || []).forEach(function (x) {
+      var b = _belgi(x);
+      if (!korilgan[b]) { korilgan[b] = 1; chiq.push(x); }
+    });
+    return chiq;
+  }
+
+  /* Sana bo'yicha yozuvlar (kayfiyat, suv, namoz): kalitlar qo'shiladi,
+     ikkalasida ham bor kalitda yangi tomon ustun turadi. */
+  function _obyektQosh(yangi, eski) {
+    var chiq = {};
+    Object.keys(eski || {}).forEach(function (k) { chiq[k] = eski[k]; });
+    Object.keys(yangi || {}).forEach(function (k) { chiq[k] = yangi[k]; });
+    return chiq;
+  }
+
+  /* Ikki matnni mazmuniga qarab qo'shishga urinadi.
+     Uddasidan chiqmasa null qaytaradi — shunda eski usul ishlaydi. */
+  function _aqlliQosh(yangiMatn, eskiMatn) {
+    var a, b;
+    try { a = JSON.parse(yangiMatn); b = JSON.parse(eskiMatn); }
+    catch (e) { return null; }
+
+    if (Array.isArray(a) && Array.isArray(b)) {
+      var r = _royxatQosh(a, b);
+      /* Natija ikkalasidan ham qisqa bo'lib qolmasligi kerak */
+      if (r.length < Math.max(a.length, b.length)) return null;
+      try { return JSON.stringify(r); } catch (e) { return null; }
+    }
+    if (a && b && typeof a === "object" && typeof b === "object" &&
+        !Array.isArray(a) && !Array.isArray(b)) {
+      try { return JSON.stringify(_obyektQosh(a, b)); } catch (e) { return null; }
+    }
+    return null;
+  }
+
   function birlashtir(bulutData, bulutVaqt) {
     var mahalliy = collect();
     var mVaqt = vaqtlarOl();
@@ -171,8 +273,22 @@
       if (mQiymat === bQiymat) { tanlangan = mQiymat; tanlanganVaqt = Math.max(mt, bt); }
       else if (bQiymat === undefined) { tanlangan = mQiymat; tanlanganVaqt = mt; }
       else if (mQiymat === undefined) { tanlangan = bQiymat; tanlanganVaqt = bt; }
-      else if (mt > bt) { tanlangan = mQiymat; tanlanganVaqt = mt; }
-      else { tanlangan = bQiymat; tanlanganVaqt = bt; }
+      else {
+        /* Ikkala tomonda ham bor va farq qiladi — avval yozuvma-yozuv
+           qo'shishga urinamiz, shunda hech narsa yo'qolmaydi. */
+        var yangiTomon = (mt >= bt) ? mQiymat : bQiymat;
+        var eskiTomon  = (mt >= bt) ? bQiymat : mQiymat;
+        var qoshilgan = _aqlliQosh(yangiTomon, eskiTomon);
+        if (qoshilgan !== null) {
+          tanlangan = qoshilgan;
+          tanlanganVaqt = Math.max(mt, bt);
+        } else {
+          /* Qo'shib bo'lmadi (oddiy son yoki matn) — yangirog'i qoladi,
+             teng bo'lsa mahalliy nusxa ustun. */
+          tanlangan = yangiTomon;
+          tanlanganVaqt = Math.max(mt, bt);
+        }
+      }
 
       if (tanlangan !== undefined) {
         natija[k] = tanlangan;
@@ -207,6 +323,7 @@
         var bVaqt = 0;
         try { bVaqt = new Date(r.data.updated_at).getTime() || 0; } catch (e) {}
 
+        try { oxirgiHajm = JSON.stringify(r.data.data).length; } catch (e) {}
         var b = birlashtir(r.data.data, bVaqt);
         apply(b.data);
         sinxronTayyor = true;
@@ -236,24 +353,94 @@
     });
   }
 
-  // Ustiga yozishdan oldin mahalliy nusxani saqlab qo'yamiz (bir kunlik zaxira)
-  function zaxiraOl() {
+  /* MAHALLIY ZAXIRA — uchta aylanma nusxa.
+     Ilgari bitta nusxa saqlanardi va u har safar ustiga yozilardi:
+     ikki marta noto'g'ri sinxronlash bo'lsa, qaytaradigan narsa
+     qolmasdi. Endi oxirgi uchtasi turadi. */
+  var ZAX_SONI = 3;
+  function zaxiraOl(sabab) {
     try {
       var d = collect();
-      if (!Object.keys(d).length) return;
-      localStorage.setItem("zaxira_oxirgi", JSON.stringify({ vaqt: Date.now(), data: d }));
+      var kalitlar = Object.keys(d);
+      if (!kalitlar.length) return;
+
+      var matn = JSON.stringify({ vaqt: hozir(), sabab: sabab || "", data: d });
+      /* Juda katta bo'lsa xotirani to'ldirmaymiz */
+      if (matn.length > 1500000) return;
+
+      /* Eskilarini suramiz: 2 -> 3, 1 -> 2 */
+      for (var i = ZAX_SONI - 1; i >= 1; i--) {
+        var eski = localStorage.getItem("zaxira_" + i);
+        if (eski) { try { localStorage.setItem("zaxira_" + (i + 1), eski); } catch (e) {} }
+      }
+      localStorage.setItem("zaxira_1", matn);
+      localStorage.setItem("zaxira_oxirgi", matn);   // eski nom bilan moslik
     } catch (e) {}
   }
 
+  /* Ro'yxat: qaysi nusxalar bor */
+  window.intizomZaxiralar = function () {
+    var ro = [];
+    for (var i = 1; i <= ZAX_SONI; i++) {
+      try {
+        var z = JSON.parse(localStorage.getItem("zaxira_" + i) || "null");
+        if (z && z.data) ro.push({
+          nomer: i,
+          sana: new Date(z.vaqt).toLocaleString(),
+          kalit: Object.keys(z.data).length,
+          sabab: z.sabab || ""
+        });
+      } catch (e) {}
+    }
+    return ro;
+  };
+
   // Zaxirani qaytarish — konsoldan: intizomZaxiraQaytar()
-  window.intizomZaxiraQaytar = function () {
+  window.intizomZaxiraQaytar = function (nomer) {
     try {
-      var z = JSON.parse(localStorage.getItem("zaxira_oxirgi") || "null");
+      var kalit = "zaxira_" + (nomer || 1);
+      var z = JSON.parse(localStorage.getItem(kalit) || "null");
+      if (!z || !z.data) z = JSON.parse(localStorage.getItem("zaxira_oxirgi") || "null");
       if (!z || !z.data) { alert("Zaxira topilmadi."); return; }
-      if (!confirm("Zaxira " + new Date(z.vaqt).toLocaleString() + " holatiga qaytarilsinmi?")) return;
+      if (!confirm("Zaxira " + new Date(z.vaqt).toLocaleString() +
+                   " holatiga qaytarilsinmi?\n" + Object.keys(z.data).length + " ta bo'lim.")) return;
+      /* Qaytarishdan oldin hozirgi holatni ham saqlab qo'yamiz */
+      zaxiraOl("qaytarishdan oldin");
       apply(z.data);
+      /* Qaytarilgan ma'lumot eng yangi hisoblansin, aks holda bulut
+         uni yana bosib ketadi */
+      try {
+        var v = {};
+        Object.keys(z.data).forEach(function (k) { v[k] = hozir(); });
+        _rawSet(VAQT_KEY, JSON.stringify(v));
+      } catch (e) {}
       location.reload();
     } catch (e) { alert("Zaxira o'qilmadi."); }
+  };
+
+  /* Bulutdagi eski nusxalar (server tarixi) */
+  window.intizomBulutZaxiralar = function () {
+    if (!sb) { alert("Bulutga ulanmagan"); return; }
+    return sb.rpc("zaxira_royxat").then(function (r) {
+      if (r.error) { console.warn(r.error.message); return []; }
+      console.table(r.data || []);
+      return r.data || [];
+    });
+  };
+  window.intizomBulutdanQaytar = function (id) {
+    if (!sb) { alert("Bulutga ulanmagan"); return; }
+    return sb.rpc("zaxira_ol", { p_id: id }).then(function (r) {
+      if (r.error || !r.data) { alert("Nusxa topilmadi"); return; }
+      if (!confirm(Object.keys(r.data).length + " ta bo'lim qaytarilsinmi?")) return;
+      zaxiraOl("bulut nusxasidan oldin");
+      apply(r.data);
+      try {
+        var v = {};
+        Object.keys(r.data).forEach(function (k) { v[k] = hozir(); });
+        _rawSet(VAQT_KEY, JSON.stringify(v));
+      } catch (e) {}
+      location.reload();
+    });
   };
 
   // ============================================================

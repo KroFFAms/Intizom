@@ -1418,8 +1418,11 @@
         <button onclick="showDuaKat('kundalik',this)" class="dua-kat active" style="padding:7px 16px;border-radius:20px;border:none;background:var(--g);color:#fff;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">Kundalik</button>
         <button onclick="showDuaKat('ibodatdan',this)" class="dua-kat" style="padding:7px 16px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">Ibodatdan</button>
         <button onclick="showDuaKat('ozliq',this)" class="dua-kat" style="padding:7px 16px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">O'zliq</button>
-        <button onclick="showDuaKat('shifо',this)" class="dua-kat" style="padding:7px 16px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">Shifo</button>
+        <button onclick="showDuaKat('shifo',this)" class="dua-kat" style="padding:7px 16px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">Shifo</button>
         <button onclick="showDuaKat('rizq',this)" class="dua-kat" style="padding:7px 16px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">Rizq</button>
+        <button onclick="showDuaKat('himoya',this)" class="dua-kat" style="padding:7px 16px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">🛡️ Himoya</button>
+        <button onclick="showDuaKat('safar',this)" class="dua-kat" style="padding:7px 16px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">✈️ Safar</button>
+        <button onclick="showDuaKat('oila',this)" class="dua-kat" style="padding:7px 16px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">👪 Oila</button>
       </div>
       <div id="dua-list"></div>
     </div>
@@ -2173,6 +2176,20 @@ function _oilaHolatIchki(){
       p_reja_b: rejaB, p_reja_j: rejaJ,
       p_namoz_b: namozB, p_streak: streak, p_ball: ball,
       p_ofset: ofset, p_hifz: hifzSoni
+    }).then(function(r){
+      /* Bazada eski funksiya turgan bo'lsa (hifz SQL hali
+         yurgizilmagan) p_hifz ni tanimay 404 qaytaradi.
+         Shunda hifzsiz qayta yuboramiz \u2014 qolgan xulosa
+         baribir borib tursin. */
+      if(r && r.error && /p_hifz|404|does not exist|schema cache/i.test(r.error.message||'')){
+        return _oilaRpc('oila_holat_yoz', {
+          p_odat_b: odatB, p_odat_j: odatJ,
+          p_reja_b: rejaB, p_reja_j: rejaJ,
+          p_namoz_b: namozB, p_streak: streak, p_ball: ball,
+          p_ofset: ofset
+        });
+      }
+      return r;
     });
   }catch(e){ return Promise.resolve(); }
 }
@@ -3563,10 +3580,10 @@ function fetchOb(lat,lon,city){
     const c=d.current,code=c.weather_code;
     const data={temp:Math.round(c.temperature_2m),icon:wIcons[code]||'🌤️',desc:wDesc[code]||'',hum:c.relative_humidity_2m,spd:Math.round(c.wind_speed_10m),city,ts:Date.now()};
     S.s('i_ob',data);
-    setOb(data.temp,data.icon,data.desc,data.hum+'%',data.spd+' m/s',city);
+    setOb(data.temp,data.icon,data.desc,data.hum,data.spd,city);
   }).catch(()=>{
     const c=S.g('i_ob');
-    if(c)setOb(c.temp,c.icon,c.desc,c.hum+'%',c.spd+' m/s',c.city);
+    if(c)setOb(c.temp,c.icon,c.desc,c.hum,c.spd,c.city);
     else setOb('--','🌤️','Internet kerak','--','--','?');
   });
 }
@@ -3579,7 +3596,7 @@ function loadObhavo(){
   }catch(e){}
   var cached=S.g('i_ob');
   if(cached&&cached.temp){
-    try{setOb(cached.temp,cached.icon,cached.desc,cached.hum+'%',cached.spd+' m/s',cached.city);}catch(e){}
+    try{setOb(cached.temp,cached.icon,cached.desc,cached.hum,cached.spd,cached.city);}catch(e){}
     if(Date.now()-cached.ts<30*60*1000)return; // 30 daqiqa yangi emas
   }
   /* Foydalanuvchi shaharni o'zi tanlagan bo'lsa — hamma narsadan ustun */
@@ -3686,13 +3703,13 @@ function loadObhavoByIP(){
       fetchOb(lat,lon,city);
     }else{
       var cached=S.g('i_ob');
-      if(cached&&cached.temp)setOb(cached.temp,cached.icon,cached.desc,cached.hum+'%',cached.spd+' m/s',cached.city);
+      if(cached&&cached.temp)setOb(cached.temp,cached.icon,cached.desc,cached.hum,cached.spd,cached.city);
       else setOb('--','🌤️','Internet kerak','--','--','?');
     }
   })
   .catch(function(){
     var cached=S.g('i_ob');
-    if(cached&&cached.temp)setOb(cached.temp,cached.icon,cached.desc,cached.hum+'%',cached.spd+' m/s',cached.city);
+    if(cached&&cached.temp)setOb(cached.temp,cached.icon,cached.desc,cached.hum,cached.spd,cached.city);
     else setOb('--','🌤️','Internet kerak','--','--','?');
   });
 }
@@ -3729,7 +3746,7 @@ function renderBosh(){
   setEl('b-st4',maxS);
   showMotiv();
   const ob=S.g('i_ob');
-  if(ob)setOb(ob.temp,ob.icon,ob.desc,ob.hum+'%',ob.spd+' m/s',ob.city);
+  if(ob)setOb(ob.temp,ob.icon,ob.desc,ob.hum,ob.spd,ob.city);
   const brl=document.getElementById('b-reja-list');
   if(brl){
     const items=todayR.sort((a,b)=>a.start.localeCompare(b.start)).slice(0,4);
@@ -5124,7 +5141,7 @@ function renderJurnal(){
       setInterval(function(){try{loadObhavo();}catch(e){}},30*60*1000);
     }else{
       var cached=S.g('i_ob');
-      if(cached){try{setOb(cached.temp,cached.icon,cached.desc,cached.hum+'%',cached.spd+' m/s',cached.city);}catch(e){}}
+      if(cached){try{setOb(cached.temp,cached.icon,cached.desc,cached.hum,cached.spd,cached.city);}catch(e){}}
       else{try{setOb('--','🌤️','GitHub Pages da ko\'rish','--','--','—');}catch(e){}}
     }
   }catch(e){}
@@ -9978,30 +9995,454 @@ function deleteEslatma(id){
 // 🤲 DUA KITOBCHASI
 // ════════════════════════════════════════════
 var DUOLAR = {
-  kundalik:[
-    {nom:'Uyqudan turganда',arab:'الحَمدُ لِلَّهِ الَّذِي أَحيَانَا بَعدَ مَا أَمَاتَنَا',uz:'Bizni o\'ldirganidan (uyquga berganidan) keyin tiriltirgan Allohga hamd bo\'lsin',translat:'Alhamdu lillahilladzi ahyana ba\'da ma amatana'},
-    {nom:'Ovqat oldin',arab:'بِسْمِ اللَّهِ',uz:'Alloh nomi bilan',translat:'Bismillah'},
-    {nom:'Ovqatdan keyin',arab:'الحَمدُ لِلَّهِ الَّذِي أَطعَمَنَا وَسَقَانَا',uz:'Bizni taomlatgan va suv bergan Allohga hamd bo\'lsin',translat:'Alhamdu lillahilladzi at\'amana wa saqana'},
-    {nom:'Uyga kirganда',arab:'اللَّهُمَّ إِنِّي أَسأَلُكَ خَيرَ المَولَجِ وَخَيرَ المَخرَجِ',uz:'Ey Alloh, kirish va chiqishning xayrini so\'rayman',translat:'Allahumma inni as\'aluka xayral mavlaji va xayral maxraji'},
-    {nom:'Uyquga yotishdan oldin',arab:'بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحيَا',uz:'Ey Alloh, Sening isming bilan o\'laman va yashaman',translat:'Bismikallahuma amutu va ahya'},
-  ],
-  ibodatdan:[
-    {nom:'Namozdan keyin',arab:'أَسْتَغْفِرُ اللَّه · سُبْحَانَ اللَّهِ · الحَمدُ لِلَّه · اللَّهُ أَكبَر',uz:'Astag\'firulloh (3x) · Subhonalloh (33x) · Alhamdulilloh (33x) · Allohu Akbar (33x)',translat:''},
-    {nom:'Fotiha',arab:'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ · الحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ',uz:'Mehribon va rahmli Alloh nomi bilan · Barcha olamlarning Rabbisi Allohga hamd',translat:'Bismillahir rahmanir rahim · Alhamdu lillahi rabbil alamiin'},
-    {nom:'Ayatul Kursi',arab:'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ',uz:'Alloh — Undan boshqa iloh yo\'q. U tirikdir, doim barqarordir',translat:'Allahu la ilaha illa hul hayyul qayyum'},
-  ],
-  ozliq:[
-    {nom:'Yaxshi so\'z uchun',arab:'اللَّهُمَّ أَعِنِّي عَلَى ذِكرِكَ وَشُكرِكَ وَحُسنِ عِبَادَتِكَ',uz:'Ey Alloh, Seni zikr qilish, shukr qilish va yaxshi ibodat qilishga yordam ber',translat:'Allahumma a\'inni ala dzikrika va shukrika va husni ibadatik'},
-    {nom:'Qiyin paytda',arab:'حَسبُنَا اللَّهُ وَنِعمَ الوَكِيلُ',uz:'Alloh bizga yetarli, U qanday go\'zal vakil!',translat:'Hasbunallahu va ni\'mal vakil'},
-  ],
-  shifo:[
-    {nom:'Kasal uchun',arab:'اللَّهُمَّ رَبَّ النَّاسِ أَذهِبِ البَاسَ',uz:'Ey insonlarning Rabbisi, baloni olib ket, shifo ber',translat:'Allahumma rabban nasi adzhib il-ba\'s'},
-    {nom:'O\'zingizga',arab:'بِسمِ اللَّهِ أَرقِيكَ مِن كُلِّ شَيءٍ يُؤذِيكَ',uz:'Alloh nomi bilan, sizga ozor beruvchi har narsadan himoya qilaman',translat:'Bismillahi arqiyka min kulli shay\'in yu\'dziik'},
-  ],
-  rizq:[
-    {nom:'Rizq uchun',arab:'اللَّهُمَّ اكفِنِي بِحَلَالِكَ عَن حَرَامِكَ',uz:'Ey Alloh, haromingdan saqlab halolingdan kifoyalab qo\'y',translat:'Allahumakfini bihalalikaан haramik'},
-    {nom:'Qarz uchun',arab:'اللَّهُمَّ اكفِنِي بِحَلَالِكَ عَن حَرَامِكَ وَأَغنِنِي بِفَضلِكَ',uz:'Ey Alloh, fazling bilan meni boyit',translat:'Allahumakfini bihalalikaан haramika va ag\'nini bifadlik'},
-  ]
+ "kundalik": [
+  {
+   "nom": "Uyqudan turganda",
+   "arab": "الحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ",
+   "translat": "Alhamdu lillahilladzi ahyana ba'da ma amatana va ilayhin nushur",
+   "uz": "Bizni o'ldirganidan keyin tiriltirgan Allohga hamd bo'lsin, qaytish ham Ungadir"
+  },
+  {
+   "nom": "Uyquga yotishda",
+   "arab": "بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا",
+   "translat": "Bismikallahumma amutu va ahya",
+   "uz": "Ey Alloh, Sening isming bilan o'laman va yashayman"
+  },
+  {
+   "nom": "Ovqatdan oldin",
+   "arab": "بِسْمِ اللَّهِ",
+   "translat": "Bismillah",
+   "uz": "Alloh nomi bilan"
+  },
+  {
+   "nom": "Ovqatni unutib boshlasa",
+   "arab": "بِسْمِ اللَّهِ أَوَّلَهُ وَآخِرَهُ",
+   "translat": "Bismillahi avvalahu va oxirahu",
+   "uz": "Boshida ham, oxirida ham Alloh nomi bilan"
+  },
+  {
+   "nom": "Ovqatdan keyin",
+   "arab": "الحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مُسْلِمِينَ",
+   "translat": "Alhamdu lillahilladzi at'amana va saqana va ja'alana muslimin",
+   "uz": "Bizni taomlantirgan, suv bergan va musulmon qilgan Allohga hamd"
+  },
+  {
+   "nom": "Suv ichgandan keyin",
+   "arab": "الحَمْدُ لِلَّهِ الَّذِي سَقَانَا عَذْبًا فُرَاتًا",
+   "translat": "Alhamdu lillahilladzi saqana 'adzban furatan",
+   "uz": "Bizga shirin, chuchuk suv bergan Allohga hamd"
+  },
+  {
+   "nom": "Uydan chiqishda",
+   "arab": "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
+   "translat": "Bismillahi tavakkaltu alallahi va la havla va la quvvata illa billah",
+   "uz": "Alloh nomi bilan, Allohga tavakkal qildim. Kuch-quvvat faqat Allohdandir"
+  },
+  {
+   "nom": "Uyga kirganda",
+   "arab": "اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَ المَوْلَجِ وَخَيْرَ المَخْرَجِ",
+   "translat": "Allahumma inni as'aluka xayral mavlaji va xayral maxraj",
+   "uz": "Ey Alloh, kirish va chiqishning xayrini so'rayman"
+  },
+  {
+   "nom": "Hojatxonaga kirishda",
+   "arab": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الخُبُثِ وَالخَبَائِثِ",
+   "translat": "Allahumma inni a'udzu bika minal xubusi val xabais",
+   "uz": "Ey Alloh, yomon jinlardan Senga panoh so'rayman"
+  },
+  {
+   "nom": "Hojatxonadan chiqishda",
+   "arab": "غُفْرَانَكَ",
+   "translat": "G'ufranaka",
+   "uz": "(Ey Alloh) mag'firatingni so'rayman"
+  },
+  {
+   "nom": "Tahoratdan keyin",
+   "arab": "أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا اللَّهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ",
+   "translat": "Ashhadu an la ilaha illallah va ashhadu anna Muhammadan abduhu va rasuluh",
+   "uz": "Guvohlik beramanki, Allohdan o'zga iloh yo'q va Muhammad Uning bandasi va elchisidir"
+  },
+  {
+   "nom": "Yangi kiyim kiyganda",
+   "arab": "الحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَٰذَا وَرَزَقَنِيهِ",
+   "translat": "Alhamdu lillahilladzi kasani haza va razaqanihi",
+   "uz": "Menga bu kiyimni kiydirgan va rizq qilgan Allohga hamd"
+  },
+  {
+   "nom": "Ko'zguga qaraganda",
+   "arab": "اللَّهُمَّ أَحْسَنْتَ خَلْقِي فَأَحْسِنْ خُلُقِي",
+   "translat": "Allahumma ahsanta xalqi fa ahsin xuluqi",
+   "uz": "Ey Alloh, ko'rinishimni chiroyli qilding, axloqimni ham chiroyli qil"
+  },
+  {
+   "nom": "Aksa urganda",
+   "arab": "الحَمْدُ لِلَّهِ",
+   "translat": "Alhamdulillah",
+   "uz": "Allohga hamd bo'lsin"
+  },
+  {
+   "nom": "Aksa urganga javob",
+   "arab": "يَرْحَمُكَ اللَّهُ",
+   "translat": "Yarhamukallah",
+   "uz": "Alloh senga rahm qilsin"
+  },
+  {
+   "nom": "Bozorga kirganda",
+   "arab": "لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ المُلْكُ وَلَهُ الحَمْدُ",
+   "translat": "La ilaha illallahu vahdahu la sharika lah, lahul mulku va lahul hamd",
+   "uz": "Allohdan o'zga iloh yo'q, Yagona, sherigi yo'q. Mulk Uniki, hamd Unikidir"
+  },
+  {
+   "nom": "Kechqurun",
+   "arab": "أَمْسَيْنَا وَأَمْسَى المُلْكُ لِلَّهِ وَالحَمْدُ لِلَّهِ",
+   "translat": "Amsayna va amsal mulku lillahi val hamdu lillah",
+   "uz": "Kechga kirdik, mulk ham Allohnikidir, hamd Allohgadir"
+  },
+  {
+   "nom": "Ertalab",
+   "arab": "أَصْبَحْنَا وَأَصْبَحَ المُلْكُ لِلَّهِ وَالحَمْدُ لِلَّهِ",
+   "translat": "Asbahna va asbahal mulku lillahi val hamdu lillah",
+   "uz": "Tongga kirdik, mulk ham Allohnikidir, hamd Allohgadir"
+  }
+ ],
+ "ibodatdan": [
+  {
+   "nom": "Namozdan keyin (tasbeh)",
+   "arab": "سُبْحَانَ اللَّهِ · الحَمْدُ لِلَّهِ · اللَّهُ أَكْبَرُ",
+   "translat": "Subhanallah (33) · Alhamdulillah (33) · Allahu Akbar (34)",
+   "uz": "Subhonalloh 33, Alhamdulilloh 33, Allohu Akbar 34 marta"
+  },
+  {
+   "nom": "Namozdan keyin istig'for",
+   "arab": "أَسْتَغْفِرُ اللَّهَ",
+   "translat": "Astag'firullah (3x)",
+   "uz": "Allohdan mag'firat so'rayman (3 marta)"
+  },
+  {
+   "nom": "Salomdan keyin",
+   "arab": "اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الجَلَالِ وَالإِكْرَامِ",
+   "translat": "Allahumma antas salam va minkas salam, tabarakta ya zal jalali val ikram",
+   "uz": "Ey Alloh, Sen Salomsan, salomatlik Sendandir. Barakotlisan, ey Jalol va Ikrom Egasi"
+  },
+  {
+   "nom": "Ayatul Kursi",
+   "arab": "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الحَيُّ القَيُّومُ، لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ",
+   "translat": "Allahu la ilaha illa huval hayyul qayyum, la ta'xuzuhu sinatun va la navm",
+   "uz": "Alloh — Undan o'zga iloh yo'q. U tirik va barqarordir. Uni na mudroq, na uyqu tutmaydi"
+  },
+  {
+   "nom": "Fotiha boshlanishi",
+   "arab": "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ، الحَمْدُ لِلَّهِ رَبِّ العَالَمِينَ",
+   "translat": "Bismillahir rahmanir rahim, alhamdu lillahi rabbil alamin",
+   "uz": "Mehribon va rahmli Alloh nomi bilan. Olamlar Rabbi Allohga hamd"
+  },
+  {
+   "nom": "Ikki sajda orasida",
+   "arab": "رَبِّ اغْفِرْ لِي",
+   "translat": "Rabbig'fir li",
+   "uz": "Ey Rabbim, meni kechir"
+  },
+  {
+   "nom": "Ruku'da",
+   "arab": "سُبْحَانَ رَبِّيَ العَظِيمِ",
+   "translat": "Subhana rabbiyal azim",
+   "uz": "Ulug' Rabbimni poklab yod etaman"
+  },
+  {
+   "nom": "Sajdada",
+   "arab": "سُبْحَانَ رَبِّيَ الأَعْلَى",
+   "translat": "Subhana rabbiyal a'la",
+   "uz": "Eng oliy Rabbimni poklab yod etaman"
+  },
+  {
+   "nom": "Salavot",
+   "arab": "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ",
+   "translat": "Allahumma salli ala Muhammadin va ala ali Muhammad",
+   "uz": "Ey Alloh, Muhammadga va uning oilasiga salovat ayla"
+  },
+  {
+   "nom": "Azon eshitgandan keyin",
+   "arab": "اللَّهُمَّ رَبَّ هَٰذِهِ الدَّعْوَةِ التَّامَّةِ آتِ مُحَمَّدًا الوَسِيلَةَ وَالفَضِيلَةَ",
+   "translat": "Allahumma rabba hazihid da'vatit tammah, ati Muhammadanil vasilata val fazilah",
+   "uz": "Ey bu mukammal da'vatning Rabbi, Muhammadga vasila va fazilat ato et"
+  },
+  {
+   "nom": "Ro'za ochganda",
+   "arab": "ذَهَبَ الظَّمَأُ وَابْتَلَّتِ العُرُوقُ وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللَّهُ",
+   "translat": "Zahabaz zama'u vabtallatil uruqu va sabatal ajru inshaAllah",
+   "uz": "Tashnalik ketdi, tomirlar namlandi va Alloh xohlasa ajr sobit bo'ldi"
+  },
+  {
+   "nom": "Laylatul Qadr duosi",
+   "arab": "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ العَفْوَ فَاعْفُ عَنِّي",
+   "translat": "Allahumma innaka afuvvun tuhibbul afva fa'fu anni",
+   "uz": "Ey Alloh, Sen afv etuvchisan, afvni yaxshi ko'rasan, meni afv et"
+  }
+ ],
+ "ozliq": [
+  {
+   "nom": "Zikr va shukr uchun",
+   "arab": "اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ",
+   "translat": "Allahumma a'inni ala zikrika va shukrika va husni ibadatik",
+   "uz": "Ey Alloh, Seni zikr qilish, shukr qilish va chiroyli ibodat qilishga yordam ber"
+  },
+  {
+   "nom": "Qiyin paytda",
+   "arab": "حَسْبُنَا اللَّهُ وَنِعْمَ الوَكِيلُ",
+   "translat": "Hasbunallahu va ni'mal vakil",
+   "uz": "Alloh bizga yetarli, U naqadar go'zal vakil"
+  },
+  {
+   "nom": "G'am va tashvishda",
+   "arab": "لَا إِلَٰهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ",
+   "translat": "La ilaha illa anta subhanaka inni kuntu minaz zolimin",
+   "uz": "Sendan o'zga iloh yo'q, Sen poksan. Men zolimlardan bo'ldim"
+  },
+  {
+   "nom": "Qayg'u bosganda",
+   "arab": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الهَمِّ وَالحَزَنِ وَالعَجْزِ وَالكَسَلِ",
+   "translat": "Allahumma inni a'udzu bika minal hammi val hazani val ajzi val kasal",
+   "uz": "Ey Alloh, g'am, qayg'u, ojizlik va dangasalikdan Senga panoh so'rayman"
+  },
+  {
+   "nom": "Sabr so'rab",
+   "arab": "رَبَّنَا أَفْرِغْ عَلَيْنَا صَبْرًا وَثَبِّتْ أَقْدَامَنَا",
+   "translat": "Rabbana afrig' alayna sabran va sabbit aqdamana",
+   "uz": "Ey Rabbimiz, bizga sabr to'k va qadamlarimizni sobit qil"
+  },
+  {
+   "nom": "G'azab kelganda",
+   "arab": "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ",
+   "translat": "A'udzu billahi minash shaytanir rajim",
+   "uz": "Quvilgan shaytondan Allohga panoh so'rayman"
+  },
+  {
+   "nom": "To'g'ri yo'l so'rab",
+   "arab": "اللَّهُمَّ اهْدِنِي وَسَدِّدْنِي",
+   "translat": "Allahummahdini va saddidni",
+   "uz": "Ey Alloh, meni hidoyat qil va to'g'ri yo'lga sol"
+  },
+  {
+   "nom": "Ilm so'rab",
+   "arab": "رَبِّ زِدْنِي عِلْمًا",
+   "translat": "Rabbi zidni ilma",
+   "uz": "Ey Rabbim, ilmimni ziyoda qil"
+  },
+  {
+   "nom": "Foydali ilm uchun",
+   "arab": "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا وَرِزْقًا طَيِّبًا وَعَمَلًا مُتَقَبَّلًا",
+   "translat": "Allahumma inni as'aluka ilman nafi'an va rizqan tayyiban va amalan mutaqabbala",
+   "uz": "Ey Alloh, foydali ilm, pok rizq va qabul bo'ladigan amal so'rayman"
+  },
+  {
+   "nom": "Tavba",
+   "arab": "أَسْتَغْفِرُ اللَّهَ العَظِيمَ وَأَتُوبُ إِلَيْهِ",
+   "translat": "Astag'firullahal azima va atubu ilayh",
+   "uz": "Ulug' Allohdan mag'firat so'rayman va Unga tavba qilaman"
+  },
+  {
+   "nom": "Yaxshi axloq uchun",
+   "arab": "اللَّهُمَّ اهْدِنِي لِأَحْسَنِ الأَخْلَاقِ لَا يَهْدِي لِأَحْسَنِهَا إِلَّا أَنْتَ",
+   "translat": "Allahummahdini li ahsanil axlaq, la yahdi li ahsaniha illa ant",
+   "uz": "Ey Alloh, meni eng go'zal axloqqa yo'llagin, unga Sendan o'zga hech kim yo'llay olmaydi"
+  },
+  {
+   "nom": "Qalb sobitligi uchun",
+   "arab": "يَا مُقَلِّبَ القُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ",
+   "translat": "Ya muqallibal qulub, sabbit qalbi ala dinik",
+   "uz": "Ey qalblarni o'zgartiruvchi, qalbimni diningda sobit qil"
+  },
+  {
+   "nom": "Vaqt barakasi uchun",
+   "arab": "اللَّهُمَّ بَارِكْ لِي فِي وَقْتِي",
+   "translat": "Allahumma barik li fi vaqti",
+   "uz": "Ey Alloh, vaqtimga barakot ber"
+  }
+ ],
+ "shifo": [
+  {
+   "nom": "Kasal uchun",
+   "arab": "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ البَاسَ، اشْفِ أَنْتَ الشَّافِي",
+   "translat": "Allahumma rabban nasi azhibil ba's, ishfi antash shafi",
+   "uz": "Ey insonlar Rabbi, kasallikni ket qil, shifo ber. Shifo beruvchi faqat Sensan"
+  },
+  {
+   "nom": "O'ziga o'qish",
+   "arab": "بِسْمِ اللَّهِ أَرْقِيكَ مِنْ كُلِّ شَيْءٍ يُؤْذِيكَ",
+   "translat": "Bismillahi arqiyka min kulli shay'in yu'ziik",
+   "uz": "Alloh nomi bilan, senga ozor beruvchi har narsadan himoya qilaman"
+  },
+  {
+   "nom": "Og'riq joyiga qo'l qo'yib",
+   "arab": "أَعُوذُ بِاللَّهِ وَقُدْرَتِهِ مِنْ شَرِّ مَا أَجِدُ وَأُحَاذِرُ",
+   "translat": "A'udzu billahi va qudratihi min sharri ma ajidu va uhazir",
+   "uz": "Sezayotgan va qo'rqayotgan yomonlikdan Allohning qudratiga panoh so'rayman"
+  },
+  {
+   "nom": "Bemorni ko'rganda",
+   "arab": "لَا بَأْسَ طَهُورٌ إِنْ شَاءَ اللَّهُ",
+   "translat": "La ba'sa tahurun inshaAllah",
+   "uz": "Zarari yo'q, Alloh xohlasa poklovchi bo'ladi"
+  },
+  {
+   "nom": "Sog'lik so'rab",
+   "arab": "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي",
+   "translat": "Allahumma afini fi badani, Allahumma afini fi sam'i, Allahumma afini fi basari",
+   "uz": "Ey Alloh, tanimga, quloqlarimga va ko'zlarimgaofiyat ber"
+  },
+  {
+   "nom": "Uyqusizlikda",
+   "arab": "اللَّهُمَّ غَارَتِ النُّجُومُ وَهَدَأَتِ العُيُونُ وَأَنْتَ حَيٌّ قَيُّومٌ، أَنِمْ عَيْنِي",
+   "translat": "Allahumma g'aratin nujum va hada'atil uyun va anta hayyun qayyum, anim ayni",
+   "uz": "Ey Alloh, yulduzlar botdi, ko'zlar tinchidi, Sen tirik va barqarorsan. Ko'zimni uxlat"
+  }
+ ],
+ "rizq": [
+  {
+   "nom": "Halol rizq so'rab",
+   "arab": "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ",
+   "translat": "Allahummakfini bihalalika an haramika va ag'nini bifadlika amman sivak",
+   "uz": "Ey Alloh, halolingni haromingdan kifoya qil va fazling bilan meni O'zingdan o'zgaga muhtoj qilma"
+  },
+  {
+   "nom": "Qarzdan qutulish",
+   "arab": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ المَأْثَمِ وَالمَغْرَمِ",
+   "translat": "Allahumma inni a'udzu bika minal ma'sami val mag'ram",
+   "uz": "Ey Alloh, gunoh va qarz botqog'idan Senga panoh so'rayman"
+  },
+  {
+   "nom": "Barakot so'rab",
+   "arab": "اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا",
+   "translat": "Allahumma barik lana fima razaqtana",
+   "uz": "Ey Alloh, bizga bergan rizqingga barakot ber"
+  },
+  {
+   "nom": "Ish boshlashda",
+   "arab": "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي",
+   "translat": "Rabbishrah li sadri va yassir li amri",
+   "uz": "Ey Rabbim, ko'ksimni keng qil va ishimni oson qil"
+  },
+  {
+   "nom": "Kambag'allikdan panoh",
+   "arab": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الفَقْرِ وَالقِلَّةِ وَالذِّلَّةِ",
+   "translat": "Allahumma inni a'udzu bika minal faqri val qillati vaz zillah",
+   "uz": "Ey Alloh, kambag'allik, ozlik va xorlikdan Senga panoh so'rayman"
+  },
+  {
+   "nom": "Rizq kengligi uchun",
+   "arab": "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ وَرَحْمَتِكَ",
+   "translat": "Allahumma inni as'aluka min fadlika va rahmatik",
+   "uz": "Ey Alloh, fazling va rahmatingdan so'rayman"
+  }
+ ],
+ "himoya": [
+  {
+   "nom": "Har yomonlikdan",
+   "arab": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+   "translat": "A'udzu bikalimatillahit tammati min sharri ma xalaq",
+   "uz": "Allohning mukammal kalimalari bilan yaratganlarining yomonligidan panoh so'rayman"
+  },
+  {
+   "nom": "Ertalab va kechqurun (3x)",
+   "arab": "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الأَرْضِ وَلَا فِي السَّمَاءِ",
+   "translat": "Bismillahilladzi la yadurru ma'asmihi shay'un fil ardi va la fis sama'",
+   "uz": "Ismi bilan yerda ham, osmonda ham hech narsa zarar bera olmaydigan Alloh nomi bilan"
+  },
+  {
+   "nom": "Ko'z tegishidan",
+   "arab": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّةِ مِنْ كُلِّ شَيْطَانٍ وَهَامَّةٍ وَمِنْ كُلِّ عَيْنٍ لَامَّةٍ",
+   "translat": "A'udzu bikalimatillahit tammati min kulli shaytanin va hammah va min kulli aynin lammah",
+   "uz": "Har shayton, zaharli jonivor va yomon ko'zdan Allohning kalimalariga panoh so'rayman"
+  },
+  {
+   "nom": "Farzandlar uchun himoya",
+   "arab": "أُعِيذُكُمَا بِكَلِمَاتِ اللَّهِ التَّامَّةِ مِنْ كُلِّ شَيْطَانٍ وَهَامَّةٍ",
+   "translat": "U'idzukuma bikalimatillahit tammati min kulli shaytanin va hammah",
+   "uz": "Sizlarni har shayton va zararlidan Allohning kalimalariga topshiraman"
+  },
+  {
+   "nom": "Qo'rquv paytida",
+   "arab": "اللَّهُمَّ إِنَّا نَجْعَلُكَ فِي نُحُورِهِمْ وَنَعُوذُ بِكَ مِنْ شُرُورِهِمْ",
+   "translat": "Allahumma inna naj'aluka fi nuhurihim va na'udzu bika min shururihim",
+   "uz": "Ey Alloh, ularning qarshisiga Seni qo'yamiz va yomonliklaridan Senga panoh so'raymiz"
+  },
+  {
+   "nom": "Kufr va qashshoqlikdan",
+   "arab": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الكُفْرِ وَالفَقْرِ وَعَذَابِ القَبْرِ",
+   "translat": "Allahumma inni a'udzu bika minal kufri val faqri va azabil qabr",
+   "uz": "Ey Alloh, kufr, kambag'allik va qabr azobidan Senga panoh so'rayman"
+  }
+ ],
+ "safar": [
+  {
+   "nom": "Safarga chiqishda",
+   "arab": "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَٰذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ",
+   "translat": "Subhanalladzi saxxara lana haza va ma kunna lahu muqrinin va inna ila rabbina lamunqalibun",
+   "uz": "Buni bizga bo'ysundirgan Zot pokdir. Biz Rabbimizga qaytuvchimiz"
+  },
+  {
+   "nom": "Safar duosi",
+   "arab": "اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَٰذَا البِرَّ وَالتَّقْوَى",
+   "translat": "Allahumma inna nas'aluka fi safarina hazal birra vat taqva",
+   "uz": "Ey Alloh, bu safarimizda yaxshilik va taqvo so'raymiz"
+  },
+  {
+   "nom": "Manzilga yetganda",
+   "arab": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+   "translat": "A'udzu bikalimatillahit tammati min sharri ma xalaq",
+   "uz": "Allohning mukammal kalimalari bilan yaratganlarining yomonligidan panoh so'rayman"
+  },
+  {
+   "nom": "Safardan qaytganda",
+   "arab": "آيِبُونَ تَائِبُونَ عَابِدُونَ لِرَبِّنَا حَامِدُونَ",
+   "translat": "Ayibuna ta'ibuna abiduna li rabbina hamidun",
+   "uz": "Qaytuvchilar, tavba qiluvchilar, ibodat qiluvchilar va Rabbimizga hamd aytuvchilarmiz"
+  },
+  {
+   "nom": "Yo'lda qiyinchilikda",
+   "arab": "اللَّهُمَّ هَوِّنْ عَلَيْنَا سَفَرَنَا هَٰذَا وَاطْوِ عَنَّا بُعْدَهُ",
+   "translat": "Allahumma havvin alayna safarana haza vatvi anna bu'dah",
+   "uz": "Ey Alloh, bu safarimizni yengil qil va uzoqligini qisqart"
+  }
+ ],
+ "oila": [
+  {
+   "nom": "Ota-ona uchun",
+   "arab": "رَبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا",
+   "translat": "Rabbirhamhuma kama rabbayani sag'ira",
+   "uz": "Ey Rabbim, meni kichikligimda tarbiyalaganlaridek ularga rahm qil"
+  },
+  {
+   "nom": "Farzand so'rab",
+   "arab": "رَبِّ هَبْ لِي مِنْ لَدُنْكَ ذُرِّيَّةً طَيِّبَةً إِنَّكَ سَمِيعُ الدُّعَاءِ",
+   "translat": "Rabbi hab li min ladunka zurriyyatan tayyibah, innaka sami'ud du'a",
+   "uz": "Ey Rabbim, menga O'z huzuringdan pok zurriyot ato et. Sen duolarni eshituvchisan"
+  },
+  {
+   "nom": "Oila uchun",
+   "arab": "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ",
+   "translat": "Rabbana hab lana min azvajina va zurriyyatina qurrata a'yun",
+   "uz": "Ey Rabbimiz, juftlarimiz va zurriyotlarimizdan ko'zimizga quvonch ato et"
+  },
+  {
+   "nom": "Nikohga baraka",
+   "arab": "بَارَكَ اللَّهُ لَكَ وَبَارَكَ عَلَيْكَ وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ",
+   "translat": "Barakallahu laka va baraka alayka va jama'a baynakuma fi xayr",
+   "uz": "Alloh senga baraka bersin va ikkovingizni yaxshilikda birlashtirsin"
+  },
+  {
+   "nom": "Farzandning solihligi uchun",
+   "arab": "رَبِّ اجْعَلْنِي مُقِيمَ الصَّلَاةِ وَمِنْ ذُرِّيَّتِي",
+   "translat": "Rabbij'alni muqimas salati va min zurriyyati",
+   "uz": "Ey Rabbim, meni va zurriyotimni namozni barpo qiluvchilardan qil"
+  },
+  {
+   "nom": "Marhumlar uchun",
+   "arab": "اللَّهُمَّ اغْفِرْ لَهُ وَارْحَمْهُ وَعَافِهِ وَاعْفُ عَنْهُ",
+   "translat": "Allahummag'fir lahu varhamhu va afihi va'fu anh",
+   "uz": "Ey Alloh, uni kechir, unga rahm qil, ofiyat ber va avf et"
+  }
+ ]
 };
 
 function showDuaKat(kat,btn){
@@ -10938,6 +11379,58 @@ function hifzButunSura(){
   document.getElementById('hifz-m-oxir-inp').value=s[2];
   hifzQosh();
 }
+
+
+/* ==================================================================
+   MA'LUMOTNI TIKLASH  \u2014  06.09.2026
+   Ilgari faqat konsoldan qilinardi. Endi Sozlamadan ochiladi.
+   ================================================================== */
+function zaxiraOch(){
+  try{
+    openM('zaxira-modal');
+
+    var el=document.getElementById('zax-mahalliy');
+    var ro=[];
+    try{ ro=(window.intizomZaxiralar? window.intizomZaxiralar():[])||[]; }catch(e){}
+    if(el){
+      el.innerHTML = ro.length ? ro.map(function(z){
+        return '<div class="item">'+
+          '<div style="flex:1;min-width:0">'+
+            '<div style="font-size:14px;font-weight:700">'+esc(z.sana)+'</div>'+
+            '<div style="font-size:12.5px;color:var(--t2)">'+z.kalit+' ta bo\'lim'+
+              (z.sabab?' \u00b7 '+esc(z.sabab):'')+'</div>'+
+          '</div>'+
+          '<button onclick="zaxiraQaytar('+z.nomer+')" style="border:none;background:var(--g);color:#fff;'+
+            'border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">Tiklash</button>'+
+        '</div>';
+      }).join('') : '<div class="empty" style="padding:14px 0">Nusxa yo\'q</div>';
+    }
+
+    var bEl=document.getElementById('zax-bulut');
+    if(bEl && window.intizomBulutZaxiralar){
+      window.intizomBulutZaxiralar().then(function(list){
+        list=list||[];
+        bEl.innerHTML = list.length ? list.slice(0,10).map(function(z){
+          return '<div class="item">'+
+            '<div style="flex:1;min-width:0">'+
+              '<div style="font-size:14px;font-weight:700">'+esc(z.sana)+'</div>'+
+              '<div style="font-size:12.5px;color:var(--t2)">'+z.kalit+' ta bo\'lim \u00b7 '+z.kb+' KB</div>'+
+            '</div>'+
+            '<button onclick="zaxiraBulutdan('+z.id+')" style="border:1.5px solid var(--bd);background:var(--card);'+
+              'color:var(--text);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer">Tiklash</button>'+
+          '</div>';
+        }).join('') : '<div class="empty" style="padding:14px 0">Nusxa yo\'q</div>';
+      }).catch(function(){
+        bEl.innerHTML='<div class="empty" style="padding:14px 0">Serverga ulanib bo\'lmadi</div>';
+      });
+    } else if(bEl){
+      bEl.innerHTML='<div class="empty" style="padding:14px 0">Bulutga kirmagansiz</div>';
+    }
+  }catch(e){ console.error('zaxiraOch:',e); }
+}
+function zaxiraQaytar(n){ try{ window.intizomZaxiraQaytar(n); }catch(e){} }
+function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} }
+
 </script>
 <!-- ============ PRO (PAYWALL) MODALI — 04.09.2026 ============ -->
 <div class="moverlay" id="pro-modal"><div class="modal"><div class="mhandle"></div>
