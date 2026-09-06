@@ -11440,18 +11440,29 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '28';
+var ILOVA_VERSIYA = '29';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
   var mos = (b === ILOVA_VERSIYA);
-  var belgi = '\u2014', och = 'yo\u2018q';
+  var belgi = '\u2014', och = 'yo\u2018q', kalit = 'yo\u2018q', yozuv = '\u2014';
   try{
     var v = JSON.parse(localStorage.getItem('i_kalit_vaqt') || '{}');
     belgi = Object.keys(v).length + ' ta';
   }catch(e){}
   try{
     if(localStorage.getItem('i_ochirilgan')) och = 'bor';
+  }catch(e){}
+  /* Kirish kaliti saqlanganmi \u2014 shu bo'lsa qayta kod so'ralmaydi */
+  try{
+    if(localStorage.getItem('kirish_kaliti')) kalit = 'bor \u2705';
+    else kalit = 'YO\u2018Q \u26A0\uFE0F';
+  }catch(e){}
+  /* Odat va reja serverga ko'chganmi */
+  try{
+    var o = JSON.parse(localStorage.getItem('i_yozuv_holat_i_odatlar') || '{}');
+    var r = JSON.parse(localStorage.getItem('i_yozuv_holat_i_reja') || '{}');
+    yozuv = Object.keys(o).length + ' odat, ' + Object.keys(r).length + ' reja';
   }catch(e){}
 
   var el = document.getElementById('s-versiya');
@@ -11462,7 +11473,10 @@ function versiyaKorsat(){
   }
 
   var xabar = mos
-    ? 'Ikkala fayl ham yangi (v'+ILOVA_VERSIYA+').\n\nSinxron belgilari: '+belgi+
+    ? 'Ikkala fayl ham yangi (v'+ILOVA_VERSIYA+').\n\n'+
+      'Kirish kaliti: '+kalit+
+      '\nServerdagi yozuv: '+yozuv+
+      '\n\nSinxron belgilari: '+belgi+
       '\nO\u2018chirish ro\u2018yxati: '+och
     : 'FAYLLAR MOS EMAS\n\nindex.html \u2014 v'+ILOVA_VERSIYA+'\nbulut.js \u2014 v'+b+
       '\n\nEski fayl keshda qolgan. Ilovani butunlay yopib qayta oching. '+
