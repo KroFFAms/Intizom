@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "36";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "38";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -515,6 +515,83 @@
   };
   var SINXRON_VAQT = "i_yozuv_sinxron";   /* oxirgi muvaffaqiyatli o'qish vaqti */
 
+  /* ------------------------------------------------------------
+     XOTIRA NAZORATI (06.09.2026)
+     Brauzer localStorage uchun ~5 MB beradi. To'lganda Supabase
+     yangi kirish kalitini SAQLAY OLMAYDI \u2014 keyingi ochilishda
+     eski kalit ishlatiladi, server rad etadi va kod so'raladi.
+     Aynan shuning uchun har yangilanishda kirish so'ralardi.
+     Shuning uchun xotirani o'lchab, kerak bo'lsa bo'shatamiz.
+     Ma'lumot yo'qolmaydi \u2014 u serverda turibdi.
+     ------------------------------------------------------------ */
+  function xotiraHajmi() {
+    var jami = 0;
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        var v = localStorage.getItem(k) || "";
+        jami += (k.length + v.length) * 2;
+      }
+    } catch (e) {}
+    return jami;
+  }
+
+  /* Bo'shatish tartibi: eng kam kerakli narsadan boshlab */
+  var BOSHATISH = [
+    { kalit: "zaxira_3",  nom: "eski zaxira 3" },
+    { kalit: "zaxira_2",  nom: "eski zaxira 2" },
+    { kalit: "zaxira_oxirgi", nom: "eski zaxira" },
+    { kalit: "zaxira_1",  nom: "zaxira 1" }
+  ];
+
+  function xotiraBoshat() {
+    var oldin = xotiraHajmi();
+    if (oldin < 3.6 * 1024 * 1024) return false;   /* joy yetarli */
+
+    console.warn("Xotira to'lay deb qoldi:", Math.round(oldin / 1024), "KB \u2014 bo'shatilmoqda");
+
+    /* 1-qadam: sinxron yordamchi nusxalari (serverdan qayta olinadi) */
+    try {
+      Object.keys(YOZUV_TURLARI).forEach(function (k) {
+        localStorage.removeItem("i_yozuv_holat_" + k);
+      });
+    } catch (e) {}
+
+    /* 2-qadam: zaxiralar (ma'lumot serverda bor) */
+    for (var i = 0; i < BOSHATISH.length; i++) {
+      if (xotiraHajmi() < 3.2 * 1024 * 1024) break;
+      try { localStorage.removeItem(BOSHATISH[i].kalit); } catch (e) {}
+      console.warn("Bo'shatildi:", BOSHATISH[i].nom);
+    }
+
+    var keyin = xotiraHajmi();
+    console.warn("Xotira:", Math.round(oldin / 1024), "->", Math.round(keyin / 1024), "KB");
+
+    /* Sinxron holati o'chgani uchun to'liq qayta o'qiymiz */
+    try { localStorage.removeItem(SINXRON_VAQT); } catch (e) {}
+    return true;
+  }
+
+  /* Ilova ochilganda va har yarim soatda tekshiramiz */
+  /* Eski ortiqcha nusxalarni bir marta olib tashlaymiz */
+  try {
+    if (localStorage.getItem("i_zaxira_v2") !== "1") {
+      localStorage.removeItem("zaxira_2");
+      localStorage.removeItem("zaxira_3");
+      localStorage.setItem("i_zaxira_v2", "1");
+    }
+  } catch (e) {}
+
+  try {
+    xotiraBoshat();
+    setInterval(xotiraBoshat, 30 * 60 * 1000);
+  } catch (e) {}
+  window.intizomXotira = function () {
+    var kb = Math.round(xotiraHajmi() / 1024);
+    console.log(kb + " KB");
+    return kb;
+  };
+
   /* Eski versiyada to'liq nusxalar saqlangan edi \u2014 ular xotirani
      behuda egallaydi. Bir marta tozalaymiz, keyingi yuborishda
      qisqa belgilar bilan qaytadan yoziladi. */
@@ -880,6 +957,110 @@
     }
   };
 
+
+  /* ============================================================
+     RASMLAR  —  06.09.2026
+     Ilgari rasmlar telefon xotirasida matn ko'rinishida yotardi:
+     bitta avatar 1 MB dan oshardi. Xotira to'lganda Supabase
+     kirish kalitini saqlay olmas, sessiya o'lar va kod so'ralardi.
+
+     Endi: rasm avval SIQILADI, keyin Storage'ga yuklanadi.
+     Telefonda faqat yo'li qoladi (bir necha o'nlab belgi).
+     ============================================================ */
+
+  var RASM_BUCKET = "rasm";
+  var _rasmKesh = {};   /* yo'l -> imzolangan havola */
+
+  /* Rasmni kichraytirib, JPEG qilib siqadi.
+     1 MB li surat odatda 40-60 KB ga tushadi. */
+  function rasmSiq(dataUrl, maxOlcham, sifat) {
+    maxOlcham = maxOlcham || 900;
+    sifat = sifat || 0.72;
+    return new Promise(function (res) {
+      try {
+        var img = new Image();
+        img.onload = function () {
+          try {
+            var w = img.width, hh = img.height;
+            if (w > maxOlcham || hh > maxOlcham) {
+              if (w > hh) { hh = Math.round(hh * maxOlcham / w); w = maxOlcham; }
+              else { w = Math.round(w * maxOlcham / hh); hh = maxOlcham; }
+            }
+            var c = document.createElement("canvas");
+            c.width = w; c.height = hh;
+            c.getContext("2d").drawImage(img, 0, 0, w, hh);
+            res(c.toDataURL("image/jpeg", sifat));
+          } catch (e) { res(dataUrl); }
+        };
+        img.onerror = function () { res(dataUrl); };
+        img.src = dataUrl;
+      } catch (e) { res(dataUrl); }
+    });
+  }
+
+  function _dataUrlToBlob(dataUrl) {
+    var qism = dataUrl.split(",");
+    var mime = (qism[0].match(/:(.*?);/) || [])[1] || "image/jpeg";
+    var bin = atob(qism[1]);
+    var n = bin.length, u8 = new Uint8Array(n);
+    while (n--) u8[n] = bin.charCodeAt(n);
+    return new Blob([u8], { type: mime });
+  }
+
+  /* Rasmni yuklaydi. Qaytaradi: "rasm:<yo'l>" yoki xato bo'lsa
+     siqilgan dataUrl (ilova baribir ishlayveradi). */
+  window.rasmYukla = function (dataUrl, tur) {
+    return rasmSiq(dataUrl).then(function (siqilgan) {
+      if (!sb || !uid) return siqilgan;
+      try {
+        var blob = _dataUrlToBlob(siqilgan);
+        var yol = uid + "/" + (tur || "rasm") + "-" +
+                  Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".jpg";
+        return sb.storage.from(RASM_BUCKET)
+          .upload(yol, blob, { contentType: "image/jpeg", upsert: false })
+          .then(function (r) {
+            if (r.error) {
+              console.warn("Rasm yuklanmadi:", r.error.message);
+              return siqilgan;      /* zaxira yo'l: telefonda qoladi */
+            }
+            return "rasm:" + yol;
+          }).catch(function () { return siqilgan; });
+      } catch (e) { return siqilgan; }
+    });
+  };
+
+  /* "rasm:<yo'l>" ni ko'rsatiladigan havolaga aylantiradi.
+     Oddiy dataUrl bo'lsa o'zini qaytaradi \u2014 eski rasmlar ham ishlaydi. */
+  window.rasmManzil = function (qiymat) {
+    if (!qiymat) return Promise.resolve("");
+    if (qiymat.indexOf("rasm:") !== 0) return Promise.resolve(qiymat);
+    var yol = qiymat.slice(5);
+    if (_rasmKesh[yol]) return Promise.resolve(_rasmKesh[yol]);
+    if (!sb) return Promise.resolve("");
+    return sb.storage.from(RASM_BUCKET).createSignedUrl(yol, 60 * 60 * 12)
+      .then(function (r) {
+        if (r.error || !r.data) return "";
+        _rasmKesh[yol] = r.data.signedUrl;
+        return r.data.signedUrl;
+      }).catch(function () { return ""; });
+  };
+
+  /* <img data-rasm="rasm:..."> larni topib manzilini qo'yadi.
+     Ilova chizganidan keyin chaqiriladi. */
+  window.rasmlarniKorsat = function () {
+    try {
+      var el = document.querySelectorAll("img[data-rasm]");
+      for (var i = 0; i < el.length; i++) {
+        (function (img) {
+          var q = img.getAttribute("data-rasm");
+          if (!q || img.getAttribute("data-rasm-ok") === "1") return;
+          img.setAttribute("data-rasm-ok", "1");
+          window.rasmManzil(q).then(function (u) { if (u) img.src = u; });
+        })(el[i]);
+      }
+    } catch (e) {}
+  };
+
   function pullThenStart(urinish) {
     urinish = urinish || 1;
     pulling = true;
@@ -954,7 +1135,11 @@
      Ilgari bitta nusxa saqlanardi va u har safar ustiga yozilardi:
      ikki marta noto'g'ri sinxronlash bo'lsa, qaytaradigan narsa
      qolmasdi. Endi oxirgi uchtasi turadi. */
-  var ZAX_SONI = 3;
+  /* Ilgari uchta to'liq nusxa saqlanardi \u2014 har biri butun
+     ma'lumot hajmida. Uchtasi 3-4 MB egallab, xotirani to'ldirar
+     va kirish kaliti saqlanmay qolardi. Server tarixi bor ekan,
+     telefonda bittasi yetarli. */
+  var ZAX_SONI = 1;
   function zaxiraOl(sabab) {
     try {
       var d = collect();
@@ -963,7 +1148,7 @@
 
       var matn = JSON.stringify({ vaqt: hozir(), sabab: sabab || "", data: d });
       /* Juda katta bo'lsa xotirani to'ldirmaymiz */
-      if (matn.length > 1500000) return;
+      if (matn.length > 600000) return;
 
       /* Eskilarini suramiz: 2 -> 3, 1 -> 2 */
       for (var i = ZAX_SONI - 1; i >= 1; i--) {
