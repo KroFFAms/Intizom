@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "29";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "30";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -982,15 +982,12 @@
      yuborilmaydi va boshqa qurilmaga o'tmaydi. Bu ataylab: kirish
      kaliti faqat shu qurilmada qolishi kerak. */
 
-  function kirishKalitiSaqla() {
-    try {
-      sb.auth.getSession().then(function (r) {
-        var s = r && r.data && r.data.session;
-        if (s && s.refresh_token) {
-          localStorage.setItem("kirish_kaliti", s.refresh_token);
-        }
-      });
-    } catch (e) {}
+  /* Zaxira kalit saqlash OLIB TASHLANDI (06.09.2026).
+     Saqlangan yangilanish kalitini keyin ishlatish \u2014 uni ikkinchi
+     marta ishlatish demak. Supabase buni sessiya o'g'irlanishi deb
+     hisoblab, butun sessiyani bekor qiladi. Foydasidan zarari ko'p edi. */
+  function kirishKalitiTozala() {
+    try { localStorage.removeItem("kirish_kaliti"); } catch (e) {}
   }
 
   /* Brauzerdan xotirani o'chirmaslikni so'raymiz.
@@ -1013,13 +1010,7 @@
     uid = user.id;
     removeGate();
     xotiraniHimoyala();
-    setTimeout(kirishKalitiSaqla, 500);
-    /* Token har yangilanganda zaxira nusxa ham yangilansin */
-    try {
-      sb.auth.onAuthStateChange(function (hodisa) {
-        if (hodisa === "TOKEN_REFRESHED" || hodisa === "SIGNED_IN") kirishKalitiSaqla();
-      });
-    } catch (e) {}
+    kirishKalitiTozala();
     obunaYangila();
     /* Ilgari sessiyada bir marta o'qib, keyin boshqa qaytib
        qaramasdi. Natijada qurilma o'zinikini yuborar, boshqasinikini
@@ -1398,62 +1389,41 @@
           return;
         }
 
-        /* Sessiya topilmadi. Ilgari shu yerda darhol kod so'ralardi \u2014
-           token muddati o'tgan yoki internet sekin bo'lsa ham. Endi avval
-           yangilashga urinamiz. */
-        var zaxiraKalit = null;
-        try { zaxiraKalit = localStorage.getItem("kirish_kaliti"); } catch (e) {}
+        /* MUHIM (06.09.2026): bu yerda refreshSession() ni QO'LDA
+           chaqirmaymiz va saqlangan kalitni ham ishlatmaymiz.
+           Supabase yangilanish kalitini har safar almashtiradi.
+           Bitta kalit ikki marta ishlatilsa \u2014 kutubxona bir marta,
+           biz ikkinchi marta \u2014 server 400 "already used" qaytaradi
+           va butun sessiyani bekor qiladi. Konsolda ko'ringan
+           400 (Bad Request) aynan shundan edi.
 
-        if (!_sessiyaBormi()) {
-          /* Supabase xotirasi tozalangan, lekin bizda zaxira kalit bor \u2014
-             kod so'ramasdan tiklaymiz. */
-          if (zaxiraKalit) {
-            console.log("Zaxira kalitdan tiklanmoqda...");
-            sb.auth.setSession({ access_token: "", refresh_token: zaxiraKalit })
-              .then(function (r3) {
-                if (r3 && r3.data && r3.data.session && r3.data.session.user) {
-                  console.log("Kirish tiklandi \u2014 kod so'ralmadi.");
-                  afterAuth(r3.data.session.user);
-                } else {
-                  console.warn("Zaxira kalit ishlamadi:", r3 && r3.error && r3.error.message);
-                  try { localStorage.removeItem("kirish_kaliti"); } catch (e) {}
-                  gate();
-                }
-              }).catch(function () {
-                try { localStorage.removeItem("kirish_kaliti"); } catch (e) {}
-                gate();
-              });
-            return;
-          }
-          gate(); return;
-        }
+           To'g'ri yo'l: kutubxona o'zi yangilaydi, biz kutamiz. */
+        if (!_sessiyaBormi()) { gate(); return; }
 
-        console.log("Sessiya bor, yangilanmoqda...");
-        sb.auth.refreshSession().then(function (r2) {
-          if (r2 && r2.data && r2.data.session && r2.data.session.user) {
-            console.log("Sessiya yangilandi.");
-            afterAuth(r2.data.session.user);
-            return;
-          }
-          /* Internet yo'q bo'lsa kod so'ramaymiz \u2014 ilova mahalliy
-             ma'lumot bilan ishlayversin, ulanganda o'zi tiklanadi. */
-          if (typeof navigator !== "undefined" && navigator.onLine === false) {
-            console.warn("Internet yo'q \u2014 kirish keyinga qoldirildi.");
-            removeGate();
-            window.addEventListener("online", function () { location.reload(); }, { once: true });
-            return;
-          }
-          console.warn("Sessiyani yangilab bo'lmadi:", r2 && r2.error && r2.error.message);
-          gate();
-        }).catch(function (e) {
-          if (typeof navigator !== "undefined" && navigator.onLine === false) {
-            removeGate();
-            window.addEventListener("online", function () { location.reload(); }, { once: true });
-            return;
-          }
-          console.warn("refreshSession xatosi:", e && e.message);
-          gate();
-        });
+        console.log("Sessiya bor \u2014 yangilanishini kutamiz...");
+        var urinish = 0;
+        var kutish = setInterval(function () {
+          urinish++;
+          sb.auth.getSession().then(function (r2) {
+            if (r2 && r2.data && r2.data.session && r2.data.session.user) {
+              clearInterval(kutish);
+              console.log("Sessiya tiklandi \u2014 kod so'ralmadi.");
+              afterAuth(r2.data.session.user);
+              return;
+            }
+            if (urinish >= 8) {
+              clearInterval(kutish);
+              if (typeof navigator !== "undefined" && navigator.onLine === false) {
+                console.warn("Internet yo'q \u2014 kirish keyinga qoldirildi.");
+                removeGate();
+                window.addEventListener("online", function () { location.reload(); }, { once: true });
+                return;
+              }
+              console.warn("Sessiya tiklanmadi \u2014 kirish so'ralmoqda.");
+              gate();
+            }
+          });
+        }, 1000);
       });
 
       /* Sessiya o'zgarishini kuzatamiz: token yangilanganda qayta kirish

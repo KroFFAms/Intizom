@@ -11440,7 +11440,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '29';
+var ILOVA_VERSIYA = '30';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
@@ -11453,10 +11453,13 @@ function versiyaKorsat(){
   try{
     if(localStorage.getItem('i_ochirilgan')) och = 'bor';
   }catch(e){}
-  /* Kirish kaliti saqlanganmi \u2014 shu bo'lsa qayta kod so'ralmaydi */
+  /* Supabase sessiyasi saqlanganmi */
   try{
-    if(localStorage.getItem('kirish_kaliti')) kalit = 'bor \u2705';
-    else kalit = 'YO\u2018Q \u26A0\uFE0F';
+    kalit = 'yo\u2018q \u26A0\uFE0F';
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k && k.indexOf('sb-')===0 && k.indexOf('auth-token')>0){ kalit='bor \u2705'; break; }
+    }
   }catch(e){}
   /* Odat va reja serverga ko'chganmi */
   try{
@@ -11474,7 +11477,7 @@ function versiyaKorsat(){
 
   var xabar = mos
     ? 'Ikkala fayl ham yangi (v'+ILOVA_VERSIYA+').\n\n'+
-      'Kirish kaliti: '+kalit+
+      'Sessiya: '+kalit+
       '\nServerdagi yozuv: '+yozuv+
       '\n\nSinxron belgilari: '+belgi+
       '\nO\u2018chirish ro\u2018yxati: '+och
