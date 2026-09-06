@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "50";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "51";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -148,6 +148,7 @@
 
   var oxirgiImzo = null;   // oxirgi muvaffaqiyatli yuborilgan ma'lumot imzosi
   var oxirgiHajm = 0;      // uning hajmi — keskin kamayishni sezish uchun
+  var oxirgiKalit = 0;     // nechta bo'lim bor edi — asosiy o'lchov shu
 
   // Arzon imzo: uzunlik + belgilar yig'indisi. Kriptografik emas,
   // maqsad — "o'zgardimi yo'qmi" degan savolga tez javob berish.
@@ -173,29 +174,37 @@
     /* HIMOYA: yuborilayotgan ma'lumot oldingisidan keskin kichik
        bo'lsa — bu ehtimol xato. Bulutdagi to'liq nusxani
        yo'qotmaslik uchun to'xtaymiz va zaxira olamiz. */
-    if (oxirgiHajm && JSON.stringify(d).length < oxirgiHajm * 0.5) {
-      /* Rasm ko'chirilganda ma'lumot ATAYLAB keskin kichrayadi
-         (650 KB \u2192 15 KB). Himoya buni ma'lumot yo'qolishi deb
-         tushunib sinxronni to'xtatib qo'yardi. Ko'chirishdan
-         keyingi BIR marta bu tekshiruvni o'tkazib yuboramiz. */
-      if (_kamayishRuxsat) {
-        _kamayishRuxsat = false;
-        console.log("Ma'lumot kichraydi \u2014 rasm ko'chirilgani uchun, bu kutilgan.");
-      } else {
-        console.warn("Sinxron to'xtatildi: ma'lumot keskin kamaydi.",
-                     "oldin:", oxirgiHajm, "hozir:", JSON.stringify(d).length);
-        zaxiraOl("keskin kamayish");
-        badgeHolat("xato");
-        return;
-      }
+    /* HIMOYA \u2014 endi BAYT emas, BO'LIM soni bo'yicha.
+
+       Ilgari "hajm yarmidan kam bo'lsa to'xta" deb tekshirilardi.
+       Lekin rasm Storage'ga ko'chirilganda hajm ataylab 650 KB
+       dan 15 KB ga tushadi \u2014 bo'limlar esa hammasi joyida.
+       Bayt bo'yicha tekshiruv shuni ma'lumot yo'qolishi deb
+       tushunib, sinxronni butunlay qamab qo'ygan edi.
+
+       Haqiqiy xavf \u2014 bo'lim YO'QOLISHI. Shuni tekshiramiz. */
+    var yangiHajm = JSON.stringify(d).length;
+    var yangiKalit = Object.keys(d).length;
+
+    if (oxirgiKalit && yangiKalit < oxirgiKalit - 2) {
+      console.warn("Sinxron to'xtatildi: bo'limlar yo'qoldi.",
+                   "oldin:", oxirgiKalit, "hozir:", yangiKalit);
+      zaxiraOl("bo'lim yo'qolishi");
+      badgeHolat("xato");
+      return;
+    }
+    if (oxirgiHajm && yangiHajm < oxirgiHajm * 0.5) {
+      console.log("Ma'lumot kichraydi (" + Math.round(oxirgiHajm / 1024) + " KB \u2192 " +
+                  Math.round(yangiHajm / 1024) + " KB), lekin " + yangiKalit +
+                  " ta bo'lim joyida \u2014 rasm ko'chirilgani uchun, bu kutilgan.");
     }
 
     var row = { user_id: uid, data: d, updated_at: new Date(hozir()).toISOString() };
     sb.from(TABLE).upsert(row, { onConflict: "user_id" }).then(function (r) {
       if (!r.error) {
         oxirgiImzo = yangiImzo;
-        oxirgiHajm = JSON.stringify(d).length;
-        try { localStorage.removeItem("i_kamayish_ruxsat"); } catch (e) {}
+        oxirgiHajm = yangiHajm;
+        oxirgiKalit = yangiKalit;
       }
       badgeHolat(r.error ? "xato" : "ok");
     });
@@ -1326,10 +1335,6 @@
   }
 
   var _rasmYuribdi = false;
-  /* Rasm ko'chirilgach ma'lumot ataylab kichrayadi \u2014 shuni
-     kamayish himoyasiga bir marta ruxsat berish uchun. */
-  var _kamayishRuxsat = false;
-  try { if (localStorage.getItem("i_kamayish_ruxsat") === "1") _kamayishRuxsat = true; } catch (e) {}
   function rasmKochir(majburiy) {
     if (!sb || !uid) return Promise.resolve(0);
     if (_rasmYuribdi) return Promise.resolve(0);
@@ -1395,10 +1400,6 @@
       });
       try { localStorage.setItem(RASM_KOCH, "1"); } catch (e) {}
       _rasmYuribdi = false;
-      if (ozgardi) {
-        _kamayishRuxsat = true;
-        try { localStorage.setItem("i_kamayish_ruxsat", "1"); } catch (e) {}
-      }
       var kb = Math.round(xotiraHajmi() / 1024);
       console.log("Rasm ko'chirildi: " + yuklandi + "/" + royxat.length +
                   " ta Storage'ga, " + ozgardi + " ta bo'lim yangilandi. Xotira: " + kb + " KB");
@@ -1411,6 +1412,14 @@
     });
   }
   window.intizomRasmKochir = function () { return rasmKochir(true); };
+
+  /* Zaxira yo'l: himoya noto'g'ri ishlab qolsa, konsoldan
+     majburan yuborish uchun \u2014 intizomMajburiyYubor() */
+  window.intizomMajburiyYubor = function () {
+    oxirgiHajm = 0; oxirgiKalit = 0; oxirgiImzo = null;
+    pushNow();
+    return "Yuborildi \u2014 Hisob nuqtasiga qarang.";
+  };
 
   /* Bir marta \u2014 v45 ga o'tgan har qurilmada. Rasmlar
      ko'chirilgandan KEYIN ishlaydi: shunda profil yozuvi
@@ -1439,7 +1448,10 @@
         var bVaqt = 0;
         try { bVaqt = new Date(r.data.updated_at).getTime() || 0; } catch (e) {}
 
-        try { oxirgiHajm = JSON.stringify(r.data.data).length; } catch (e) {}
+        try {
+          oxirgiHajm = JSON.stringify(r.data.data).length;
+          oxirgiKalit = Object.keys(r.data.data).length;
+        } catch (e) {}
         var b = birlashtir(r.data.data, bVaqt);
         apply(b.data);
         sinxronTayyor = true;
