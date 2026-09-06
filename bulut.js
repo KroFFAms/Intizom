@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "47";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "49";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -233,7 +233,10 @@
           if (k !== OCH_KEY) ochirishlarniYoz(k, eski, v);
         }
         /* Odat va reja endi bazada alohida qator — farqini yuboramiz */
-        if (eski !== v && YOZUV_TURLARI[k]) yozuvNavbatga(k);
+        if (eski !== v && YOZUV_TURLARI[k]) {
+          _ochirilganlarniTop(k, eski, v);
+          yozuvNavbatga(k);
+        }
         scheduleSave();
       }
     };
@@ -805,6 +808,53 @@
   var _yuborishNavbat = {};
   var _yuborishTimer = null;
 
+  /* ============================================================
+     O'CHIRISH \u2014 FAQAT HAQIQIY O'CHIRISH  (06.09.2026)
+
+     Ilgari o'chirilgan yozuv shunday aniqlanardi: oxirgi marta
+     serverga yuborilgan ro'yxatda bor-u, hozirgi mahalliy
+     ro'yxatda yo'q bo'lsa \u2014 demak o'chirilgan.
+
+     Bu XATO edi. Mahalliy ro'yxat serverdagidan kam bo'lishining
+     bir necha sababi bor: qurilma eskirgan, belgilar tozalangan,
+     yoki hali to'liq o'qib ulgurmagan. Har uchalasida ham
+     yo'qolgan yozuvlar "o'chirildi" deb serverga xabar qilinar
+     va boshqa qurilmadagi ma'lumot yo'q qilinardi.
+
+     Endi o'chirish FAQAT foydalanuvchi haqiqatan o'chirganda
+     yoziladi: localStorage qiymati o'zgarganda eski va yangi
+     ro'yxat solishtiriladi va aynan tushib qolgan id lar
+     navbatga qo'yiladi. Boshqa hech qanday yo'l bilan
+     yozuv o'chirilmaydi.
+     ============================================================ */
+  var _ochirishNavbat = {};   /* {kalit: {id:1}} */
+
+  function _ochirilganlarniTop(kalit, eskiMatn, yangiMatn) {
+    try {
+      var eski = _yozuvlarga(kalit, eskiMatn);
+      var yangi = _yozuvlarga(kalit, yangiMatn);
+      var eskiSon = Object.keys(eski).length;
+      if (!eskiSon) return;
+
+      var ketgan = [];
+      Object.keys(eski).forEach(function (id) {
+        if (yangi[id] === undefined) ketgan.push(id);
+      });
+      if (!ketgan.length) return;
+
+      /* HIMOYA: bir zumda yarmidan ko'pi yo'qolsa \u2014 bu
+         foydalanuvchi emas, xato. O'chirish yozilmaydi. */
+      if (ketgan.length > 3 && ketgan.length > eskiSon * 0.5) {
+        console.warn("O'chirish rad etildi: " + kalit + " da " + ketgan.length +
+                     "/" + eskiSon + " yozuv birdan yo'qoldi \u2014 bu xatoga o'xshaydi.");
+        return;
+      }
+
+      if (!_ochirishNavbat[kalit]) _ochirishNavbat[kalit] = {};
+      ketgan.forEach(function (id) { _ochirishNavbat[kalit][id] = 1; });
+    } catch (e) {}
+  }
+
   function yozuvNavbatga(kalit) {
     if (!YOZUV_TURLARI[kalit]) return;
     _yuborishNavbat[kalit] = 1;
@@ -827,9 +877,12 @@
           var m = _belgiHash(hozirgi[id]);
           if (eski[id] !== m) yangilar.push({ id: id, data: hozirgi[id] });
         });
-        Object.keys(eski).forEach(function (id) {
-          if (hozirgi[id] === undefined) ochirilganlar.push(id);
-        });
+        /* O'chirish faqat haqiqiy o'chirish navbatidan olinadi.
+           Holat solishtiruvi bu yerda ATAYLAB ishlatilmaydi. */
+        if (_ochirishNavbat[kalit]) {
+          ochirilganlar = Object.keys(_ochirishNavbat[kalit]);
+          delete _ochirishNavbat[kalit];
+        }
 
         if (!yangilar.length && !ochirilganlar.length) return;
 
@@ -848,11 +901,15 @@
             _yuborishNavbat[kalit] = 1;   /* keyingi safar qayta */
             return;
           }
-          /* Muvaffaqiyatli \u2014 holatni yangilaymiz */
+          /* Muvaffaqiyatli \u2014 holatni yangilaymiz. Eski
+             belgilarni saqlab qolamiz: ular endi o'chirish uchun
+             emas, faqat "o'zgardimi" savoliga javob beradi. */
           var yangiHolat = {};
+          Object.keys(eski).forEach(function (id) { yangiHolat[id] = eski[id]; });
           Object.keys(hozirgi).forEach(function (id) {
             yangiHolat[id] = _belgiHash(hozirgi[id]);
           });
+          ochirilganlar.forEach(function (id) { delete yangiHolat[id]; });
           _holatYoz(kalit, yangiHolat);
           badgeHolat("ok");
         }).catch(function () { _yuborishNavbat[kalit] = 1; });
@@ -1021,6 +1078,10 @@
       _serverHolat = {};
       localStorage.removeItem(SINXRON_VAQT);
     } catch (e) {}
+
+    /* O'chirish navbatini bo'shatamiz: tenglashtirish paytida
+       hech narsa o'chmasligi kerak. */
+    _ochirishNavbat = {};
 
     /* 1) o'zimiznikini yuboramiz */
     Object.keys(YOZUV_TURLARI).forEach(function (k) {
@@ -1251,8 +1312,10 @@
     return chiq;
   }
 
+  var _rasmYuribdi = false;
   function rasmKochir(majburiy) {
     if (!sb || !uid) return Promise.resolve(0);
+    if (_rasmYuribdi) return Promise.resolve(0);
     if (!majburiy) {
       try { if (localStorage.getItem(RASM_KOCH) === "1") return Promise.resolve(0); } catch (e) {}
     }
@@ -1276,8 +1339,10 @@
     var royxat = Object.keys(barcha);
     if (!royxat.length) {
       try { localStorage.setItem(RASM_KOCH, "1"); } catch (e) {}
+      console.log("Eski rasm topilmadi \u2014 ko'chirish shart emas.");
       return Promise.resolve(0);
     }
+    _rasmYuribdi = true;
 
     console.log("Eski rasm topildi: " + royxat.length + " ta \u2014 Storage'ga ko'chirilmoqda...");
 
@@ -1312,6 +1377,7 @@
         } catch (e) {}
       });
       try { localStorage.setItem(RASM_KOCH, "1"); } catch (e) {}
+      _rasmYuribdi = false;
       var kb = Math.round(xotiraHajmi() / 1024);
       console.log("Rasm ko'chirildi: " + yuklandi + "/" + royxat.length +
                   " ta Storage'ga, " + ozgardi + " ta bo'lim yangilandi. Xotira: " + kb + " KB");
@@ -1328,12 +1394,7 @@
   /* Bir marta \u2014 v45 ga o'tgan har qurilmada. Rasmlar
      ko'chirilgandan KEYIN ishlaydi: shunda profil yozuvi
      kichkina bo'lib qoladi va serverga bemalol yetib boradi. */
-  var TENG_KEY = "i_tenglash_v45";
-  function birMartaTenglash() {
-    try { if (localStorage.getItem(TENG_KEY) === "1") return; } catch (e) {}
-    try { localStorage.setItem(TENG_KEY, "1"); } catch (e) {}
-    setTimeout(function () { toliqTenglashtir(); }, 2000);
-  }
+
 
   function pullThenStart(urinish) {
     urinish = urinish || 1;
@@ -1379,7 +1440,6 @@
             try { window.INTIZOM_YANGILA(); } catch (e) {}
             hookStorage(); pushNow(); badge();
             yozuvBoshla();
-            setTimeout(function () { rasmKochir().then(birMartaTenglash); }, 6000);
             return;
           }
           location.reload();
@@ -1389,7 +1449,6 @@
              qaytarib yuboramiz, ikki tomon tenglashsin. */
           hookStorage(); pushNow(); badge();
           yozuvBoshla();
-          setTimeout(function () { rasmKochir().then(birMartaTenglash); }, 6000);
         }
         return;
       }
@@ -1398,7 +1457,6 @@
       sinxronTayyor = true;
       hookStorage(); pushNow(); badge();
       yozuvBoshla();
-      setTimeout(function () { rasmKochir().then(birMartaTenglash); }, 6000);
     }).catch(function (e) {
       pulling = false;
       console.warn("Bulut xatosi:", e);
@@ -1627,6 +1685,16 @@
     uid = user.id;
     removeGate();
     tgTaklif();
+    /* Rasm ko'chirish va tenglashtirish pullThenStart ning
+       tarmoqlariga bog'lanmasin: u yerda bir necha chiqish yo'li
+       bor va biri chetlab o'tsa ish umuman bajarilmasdi. */
+    setTimeout(function () {
+      /* Rasm ko'chirish xavfsiz \u2014 u faqat mahalliy qiymatni
+         qisqartiradi. Tenglashtirish esa endi AVTOMATIK
+         ishlamaydi: u bir marta yozuvlarni o'chirib yuborgan.
+         Kerak bo'lsa Sozlama \u2192 Qurilmalarni tenglashtirish. */
+      try { rasmKochir(); } catch (e) { console.warn(e); }
+    }, 10000);
     xotiraniHimoyala();
     kirishKalitiTozala();
     obunaYangila();

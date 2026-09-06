@@ -916,7 +916,7 @@
       </div>
       <div class="sitem" onclick="qurilmaTenglash()">
         <div class="sicon" style="background:rgba(0,200,150,.12)">&#128260;</div>
-        <div style="flex:1"><div style="font-size:15px;font-weight:700">Qurilmalarni tenglashtirish</div><div style="font-size:14px;color:var(--t2)">Telefon va kompyuterdagi yozuvlarni qo&#39;shish</div></div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:700">Qurilmalarni tenglashtirish</div><div style="font-size:14px;color:var(--t2)">Yozuvlarni faqat qo&#39;shadi &mdash; hech narsa o&#39;chmaydi</div></div>
         <span style="color:var(--t2)">&#8250;</span>
       </div>
       <div class="sitem" onclick="openJurQulf()">
@@ -5140,11 +5140,19 @@ function qurilmaTenglash(){
     showNotif('\u26a0\ufe0f','Bulutga ulanmagan');
     return;
   }
-  if(!confirm('Telefon va kompyuterdagi yozuvlar qo\'shilsinmi?\n\nHech narsa o\'chmaydi \u2014 ikkala tomonda bor yozuvlar birlashtiriladi. Bir necha soniya ketadi.')) return;
-  showNotif('\ud83d\udd04 Tenglashtirilmoqda...','Biroz kuting');
-  window.intizomTenglashtir().then(function(oz){
-    showNotif(oz?'\u2705 Tenglashtirildi':'\u2705 Hammasi joyida', oz?'Yangi yozuvlar qo\'shildi':'Farq topilmadi');
-  }).catch(function(){ showNotif('\u26a0\ufe0f','Tenglashtirib bo\'lmadi \u2014 internetni tekshiring'); });
+  if(!confirm('Telefon va kompyuterdagi yozuvlar qo\'shilsinmi?\n\nEski rasmlar bulutga ko\'chiriladi, so\'ng ikkala qurilmadagi yozuvlar birlashtiriladi. Hech narsa o\'chmaydi. Bir necha soniya ketadi.')) return;
+  showNotif('\ud83d\udd04 Ishlanmoqda...','Rasmlar ko\'chirilmoqda, biroz kuting');
+  var ish = (typeof window.intizomRasmKochir==='function')
+    ? window.intizomRasmKochir() : Promise.resolve(0);
+  ish.catch(function(){ return 0; }).then(function(){
+    showNotif('\ud83d\udd04 Tenglashtirilmoqda...','Deyarli tayyor');
+    return window.intizomTenglashtir();
+  }).then(function(oz){
+    var kb = (typeof window.intizomXotira==='function') ? window.intizomXotira() : 0;
+    showNotif(oz?'\u2705 Tenglashtirildi':'\u2705 Hammasi joyida',
+      (oz?'Yangi yozuvlar qo\'shildi':'Farq topilmadi') + (kb?' \u00b7 xotira '+kb+' KB':''));
+    try{ INTIZOM_YANGILA(); }catch(e){}
+  }).catch(function(){ showNotif('\u26a0\ufe0f','Tugallanmadi \u2014 internetni tekshiring'); });
 }
 function jurQulfDesc(){
   var el=document.getElementById('jurqulf-desc'); if(!el)return;
@@ -11234,7 +11242,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '47';
+var KUZ_VERSIYA = '49';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -11757,7 +11765,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '47';
+var ILOVA_VERSIYA = '49';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
@@ -12008,6 +12016,17 @@ window.addEventListener('intizom-bulut-yangilandi', function(){
     ru:{
       /* --- pastki menyu va bo'limlar --- */
       "Bosh":"Главная","Odat":"Привычки","Reja":"План","Moliya":"Финансы","Din":"Религия",
+      "Sozlama":"Настройки","Profil":"Профиль","Qo'llanma":"Руководство","Panel":"Панель",
+      "Statistika":"Статистика","Tranzaksiyalar":"Операции","Jamg'arma":"Накопления",
+      "Ism, kasb, rasm":"Имя, профессия, фото","Har bo'lim nima uchun kerak":"Для чего нужен каждый раздел",
+      "Tekshirish uchun bosing":"Нажмите для проверки","Qaysi bo'limlar ko'rinsin — tanlang":"Выберите разделы для главного экрана",
+      "Qurilmalarni tenglashtirish":"Синхронизировать устройства",
+      "Telefon va kompyuterdagi yozuvlarni qo'shish":"Объединить записи телефона и компьютера",
+      "Maxfiylik siyosati":"Политика конфиденциальности","Ma'lumotingiz qanday saqlanadi":"Как хранятся ваши данные",
+      "Yordam va taklif":"Помощь и предложения","Avvalgi holatga qaytarish":"Вернуть прежнее состояние",
+      "Ilovani qulflab chiqish — qayta kirishda PIN so'raydi":"Заблокировать приложение — при входе спросит PIN",
+      "Ilova tilini tanlang":"Выберите язык приложения","Xayrli tong":"Доброе утро","Xayrli kun":"Добрый день",
+      "Xayrli oqshom":"Добрый вечер","Xayrli kecha":"Доброй ночи",
       "Sport":"Спорт","Ratsion":"Питание","Odatlar":"Привычки","Kunlik Reja":"План на день",
       "Hisobot":"Отчёт","Kundalik":"Дневник","Sozlamalar":"Настройки","Oila":"Семья",
       "Uyqu":"Сон","Namoz":"Намаз","Qur'on":"Коран","Yodlash":"Заучивание","Tilovat":"Чтение",
@@ -12056,6 +12075,17 @@ window.addEventListener('intizom-bulut-yangilandi', function(){
     },
     en:{
       "Bosh":"Home","Odat":"Habits","Reja":"Plan","Moliya":"Finance","Din":"Faith",
+      "Sozlama":"Settings","Profil":"Profile","Qo'llanma":"Guide","Panel":"Overview",
+      "Statistika":"Statistics","Tranzaksiyalar":"Transactions","Jamg'arma":"Savings",
+      "Ism, kasb, rasm":"Name, job, photo","Har bo'lim nima uchun kerak":"What each section is for",
+      "Tekshirish uchun bosing":"Tap to check","Qaysi bo'limlar ko'rinsin — tanlang":"Choose which sections appear",
+      "Qurilmalarni tenglashtirish":"Sync devices",
+      "Telefon va kompyuterdagi yozuvlarni qo'shish":"Merge phone and computer records",
+      "Maxfiylik siyosati":"Privacy policy","Ma'lumotingiz qanday saqlanadi":"How your data is stored",
+      "Yordam va taklif":"Help and feedback","Avvalgi holatga qaytarish":"Restore previous state",
+      "Ilovani qulflab chiqish — qayta kirishda PIN so'raydi":"Lock the app — PIN required to return",
+      "Ilova tilini tanlang":"Choose the app language","Xayrli tong":"Good morning","Xayrli kun":"Good afternoon",
+      "Xayrli oqshom":"Good evening","Xayrli kecha":"Good night",
       "Sport":"Sport","Ratsion":"Nutrition","Odatlar":"Habits","Kunlik Reja":"Daily plan",
       "Hisobot":"Report","Kundalik":"Journal","Sozlamalar":"Settings","Oila":"Family",
       "Uyqu":"Sleep","Namoz":"Prayer","Qur'on":"Quran","Yodlash":"Memorising","Tilovat":"Recitation",
