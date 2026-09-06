@@ -16,7 +16,7 @@
 body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15.5px;line-height:1.55;min-height:100vh;padding-bottom:90px;transition:background .3s,color .3s}
 
 /* TOPBAR */
-.topbar{background:linear-gradient(150deg,rgba(0,200,150,.30),rgba(0,200,150,.12) 60%,var(--card));color:var(--text);padding:52px 20px 18px;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(0,0,0,.04)}
+.topbar{background:linear-gradient(150deg,rgba(0,200,150,.30),rgba(0,200,150,.12) 60%,var(--card));color:var(--text);padding:52px 20px 18px;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.06);margin:-16px -16px 14px}
 /* Oq naqsh olib tashlandi — yorug' fonda ko'rinmaydi */
 .topbar-inner{display:flex;align-items:center;justify-content:space-between;position:relative}
 .topbar h2{font-size:24px;font-weight:800;letter-spacing:-.5px}
@@ -35,7 +35,11 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 /* PAGES */
 .page{display:none;padding:16px;animation:fadeIn .25s ease}
 .page.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+/* Ilgari bu yerda transform bor edi. Transform ishlatilgan element
+   ichidagi position:sticky viewportga emas, o'sha elementga
+   bog'lanib qoladi \u2014 shuning uchun sahifa sarlavhalari
+   qotmasdan surilib ketardi. Endi faqat shaffoflik o'zgaradi. */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 /* CARDS */
 .card{background:var(--card);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.8);transition:transform .15s}

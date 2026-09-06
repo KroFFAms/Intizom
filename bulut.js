@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "38";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "41";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -502,7 +502,9 @@
     i_hifz:    "hifz",     /* Qur'on yodlash \u2014 sura bo'yicha */
     i_trans:   "moliya",
     i_xarid:   "xarid",
-    i_jurnal:  "kundalik"  /* matni shifrlangan holicha ko'chadi */
+    i_jurnal:  "kundalik", /* matni shifrlangan holicha ko'chadi */
+    i_maqsad:  "maqsad",
+    i_profil:  "profil"    /* ism, kasb, avatar \u2014 bitta yozuv */
   };
   /* Har turning shakli: royxat (massiv), reja (ichma-ich), hifz (sura) */
   var YOZUV_SHAKLI = {
@@ -511,7 +513,9 @@
     i_hifz:    "hifz",
     i_trans:   "royxat",
     i_xarid:   "royxat",
-    i_jurnal:  "royxat"
+    i_jurnal:  "royxat",
+    i_maqsad:  "royxat",
+    i_profil:  "yakka"     /* bitta obyekt \u2014 bo'linmaydi */
   };
   var SINXRON_VAQT = "i_yozuv_sinxron";   /* oxirgi muvaffaqiyatli o'qish vaqti */
 
@@ -625,6 +629,13 @@
       return chiq;
     }
 
+    if (shakl === "yakka") {
+      /* Butun obyekt bitta yozuv bo'lib boradi */
+      if (typeof d !== "object") return chiq;
+      chiq["1"] = d;
+      return chiq;
+    }
+
     if (shakl === "hifz") {
       /* {s:{sura:[[a,b]]}, t:{sura:{k,d}}} \u2014 har sura bitta yozuv */
       if (typeof d !== "object") return chiq;
@@ -679,6 +690,11 @@
         arr.sort(function (a, b) { return (a.id || 0) - (b.id || 0); });
       }
       return JSON.stringify(arr);
+    }
+
+    if (shakl === "yakka") {
+      var y1 = yozuvlar["1"];
+      return y1 ? JSON.stringify(y1) : null;
     }
 
     if (shakl === "hifz") {

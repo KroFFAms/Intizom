@@ -186,7 +186,7 @@
 
 <!-- BOSH SAHIFA -->
 <div id="page-bosh" class="page active">
-  <div style="background:linear-gradient(165deg,rgba(0,200,150,.34) 0%,rgba(0,200,150,.16) 55%,var(--bg) 100%);min-height:270px;padding:52px 20px 22px;position:relative;overflow:hidden">
+  <div style="background:linear-gradient(165deg,rgba(0,200,150,.34) 0%,rgba(0,200,150,.16) 55%,var(--bg) 100%);min-height:270px;padding:52px 20px 22px;position:sticky;top:0;z-index:90;overflow:hidden">
     <div style="position:absolute;top:-50px;right:-50px;width:190px;height:190px;border-radius:50%;background:rgba(0,200,150,.07)"></div>
     <div style="position:absolute;bottom:-30px;left:-30px;width:130px;height:130px;border-radius:50%;background:rgba(0,200,150,.05)"></div>
     <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
@@ -11459,7 +11459,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '38';
+var ILOVA_VERSIYA = '41';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
@@ -11510,7 +11510,8 @@ function versiyaKorsat(){
   /* Odat va reja serverga ko'chganmi */
   try{
     var _t = [['i_odatlar','odat'],['i_reja','reja'],['i_hifz','sura'],
-              ['i_trans','moliya'],['i_xarid','xarid'],['i_jurnal','kundalik']];
+              ['i_trans','moliya'],['i_xarid','xarid'],['i_jurnal','kundalik'],
+              ['i_maqsad','maqsad'],['i_profil','profil']];
     var _q = [];
     _t.forEach(function(p){
       try{
