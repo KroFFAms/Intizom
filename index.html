@@ -4582,6 +4582,8 @@ function _tozalaSuv(chegara){
 /* ---- Kuniga bir marta ishga tushadi ---- */
 function tozalash(majburiy){
   try{
+    /* Xotiradagi eski nusxa yangi ma'lumot ustiga yozilmasin */
+    try{ state.odatlar = S.g('i_odatlar') || state.odatlar; }catch(e){}
     var bugun = bugunKun();
     if(!majburiy && localStorage.getItem(TOZ_OXIRGI) === bugun) return null;
 
@@ -6240,9 +6242,8 @@ function showAiReja(res){
 }
 
 function addAiTask(soat, emoji, vazifa){
-  var reja = S.g('i_reja')||[];
-  reja.push({id:Date.now(),text:emoji+' '+vazifa,done:false,time:soat,date:bugunKun()});
-  S.s('i_reja',reja);
+  rejaQosh({id:Date.now(), name:emoji+' '+vazifa, text:emoji+' '+vazifa,
+            done:false, start:soat, time:soat, date:bugunKun(), icon:emoji});
   showNotif('✅','"'+vazifa+'" rejaga qo\'shildi!');
 }
 var DEFAULT_MISSIONS = [
@@ -6807,7 +6808,7 @@ function checkEslatmalar(){
   var timeStr=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;
   var key=timeStr;
   var today=kunKal(now);
-  var rejaData=S.g('i_reja');if(!Array.isArray(rejaData))rejaData=[];
+  var rejaData=rejaRoyxat();
   rejaData.forEach(function(item){
     if(item.signal&&item.signal>0){
       var startParts=item.start.split(':');
@@ -7094,7 +7095,7 @@ function getBadges(){return S.g('i_badges')||[];}
 function checkBadges(){
   var earned=getBadges();
   var state2={
-    reja: S.g('i_reja')||[],
+    reja: rejaRoyxat(),
     odatlar: S.g('i_odatlar')||[],
     streak: S.g('i_streak')||0,
     namozCount: S.g('i_namoz_count')||0,
@@ -7220,7 +7221,7 @@ function showStreakBreak(){
 }
 function checkRejaBanner(){
   var today = bugunKun();
-  var rejaData = S.g('i_reja') || [];
+  var rejaData = rejaRoyxat();
   var bugunReja = rejaData.filter(function(r){ return r.date === today; });
   var bajarilmagan = bugunReja.filter(function(r){ return !r.done; });
   
@@ -7255,7 +7256,7 @@ function checkRejaJazo(){
   
   if(lastJazo === yesterday) return; // Kecha allaqachon tekshirilgan
   
-  var rejaData = S.g('i_reja') || [];
+  var rejaData = rejaRoyxat();
   var kechaReja = rejaData.filter(function(r){ return r.date === yesterday; });
   var bajarilmagan = kechaReja.filter(function(r){ return !r.done; });
   
@@ -7272,7 +7273,7 @@ function checkVaqtOgohlantirish(){
   var m = now.getMinutes();
   var today = kunKal(now);
   
-  var rejaData = S.g('i_reja') || [];
+  var rejaData = rejaRoyxat();
   var bugunReja = rejaData.filter(function(r){ return r.date === today && !r.done; });
   
   bugunReja.forEach(function(item){
@@ -7342,7 +7343,7 @@ function showAlarmPopup(item){
 function snoozeAlarm(popup, itemId){
   popup.remove();
   setTimeout(function(){
-    var rejaData = S.g('i_reja') || [];
+    var rejaData = rejaRoyxat();
     var item = rejaData.find(function(r){ return r.id === itemId; });
     if(item && !item.done){
       playAlarm();
@@ -7354,11 +7355,11 @@ function snoozeAlarm(popup, itemId){
 
 function doneFromAlarm(itemId, popup){
   popup.remove();
-  var rejaData = S.g('i_reja') || [];
+  var rejaData = rejaRoyxat();
   var item = rejaData.find(function(r){ return r.id === itemId; });
   if(item){
     item.done = true;
-    S.s('i_reja', rejaData);
+    rejaSaqla(rejaData);
     addBall(20, 'Reja bajarildi');
     konfetti();
     showNotif('🎉 Bajarildi!', item.name);
@@ -7374,7 +7375,7 @@ function checkStreakSaveWarning(){
   
   var streak = S.g('i_streak') || 0;
   if(streak > 0){
-    var rejaData = S.g('i_reja') || [];
+    var rejaData = rejaRoyxat();
     var bajarilmagan = rejaData.filter(function(r){ return r.date === today && !r.done; });
     if(bajarilmagan.length > 0){
       sessionStorage.setItem(key, '1');
@@ -8135,8 +8136,7 @@ function renderKasbTavsiya(){
 function addKasbTavsiyaToReja(){
   var t = getKasbTavsiya();
   var today = bugunKun();
-  var rejaData = S.g('i_reja') || [];
-  rejaData.unshift({
+  rejaQosh({
     id: Date.now(),
     name: t.tavsiya,
     icon: t.emoji,
@@ -8147,7 +8147,6 @@ function addKasbTavsiyaToReja(){
     done: false,
     signal: 0
   });
-  S.s('i_reja', rejaData);
   addBall(5, 'Kasb tavsiya');
   showNotif(t.emoji + ' Rejaga qo\'shildi!', t.tavsiya);
   if(typeof renderBosh === 'function') renderBosh();
@@ -11441,7 +11440,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '22';
+var ILOVA_VERSIYA = '23';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
@@ -11470,6 +11469,95 @@ function versiyaKorsat(){
       'Yordam bermasa brauzer keshini tozalang.';
   try{ alert(xabar); }catch(e){ console.log(xabar); }
 }
+
+
+/* ==================================================================
+   REJA MA'LUMOTI  \u2014  06.09.2026
+   'i_reja' kalitini ikki bo'lim ikki xil shaklda ishlatardi:
+   asosiy Reja sahifasi obyekt ({shablon, bugun}), AI reja va kasb
+   tavsiyasi esa oddiy massiv. Qaysi biri oxirgi yozsa, ikkinchisining
+   ma'lumoti yo'q bo'lardi. Endi bitta shakl \u2014 obyekt, quyidagi
+   yordamchilar orqali ishlanadi.
+   ================================================================== */
+function rejaObyekt(){
+  var d = S.g('i_reja');
+  if(Array.isArray(d)){
+    /* Eski massiv shakli \u2014 obyektga ko'chiramiz, hech narsa yo'qolmaydi */
+    var o = {shablon:[], bugun:{}};
+    d.forEach(function(x){
+      if(!x || typeof x!=='object') return;
+      var k = x.date || bugunKun();
+      if(!o.bugun[k]) o.bugun[k] = [];
+      o.bugun[k].push(x);
+    });
+    S.s('i_reja', o);
+    return o;
+  }
+  if(!d || typeof d!=='object') d = {shablon:[], bugun:{}};
+  if(!d.bugun || typeof d.bugun!=='object') d.bugun = {};
+  if(!Array.isArray(d.shablon)) d.shablon = [];
+  return d;
+}
+
+/* Barcha kunlarni yassi ro'yxat qilib beradi (eski kod shuni kutadi) */
+function rejaRoyxat(){
+  var o = rejaObyekt(), r = [];
+  Object.keys(o.bugun).forEach(function(k){
+    (o.bugun[k]||[]).forEach(function(x){
+      if(!x || typeof x!=='object') return;
+      if(!x.date) x.date = k;
+      r.push(x);
+    });
+  });
+  return r;
+}
+
+function rejaQosh(item){
+  var o = rejaObyekt();
+  var k = item.date || bugunKun();
+  if(!o.bugun[k]) o.bugun[k] = [];
+  o.bugun[k].push(item);
+  S.s('i_reja', o);
+  try{ state.reja = o; }catch(e){}
+  try{ renderReja(); renderBosh(); }catch(e){}
+}
+
+/* Yassi ro'yxatdagi o'zgarishni obyektga qaytarib yozadi */
+function rejaSaqla(royxat){
+  var o = rejaObyekt();
+  (royxat||[]).forEach(function(x){
+    if(!x || typeof x!=='object') return;
+    var k = x.date || bugunKun();
+    var arr = o.bugun[k] || [];
+    var topildi = false;
+    for(var i=0;i<arr.length;i++){ if(arr[i].id === x.id){ arr[i] = x; topildi = true; break; } }
+    if(!topildi) arr.push(x);
+    o.bugun[k] = arr;
+  });
+  S.s('i_reja', o);
+  try{ state.reja = o; }catch(e){}
+}
+
+/* ==================================================================
+   XOTIRANI YANGILASH
+   state.odatlar va state.reja ilova ochilganda BIR MARTA o'qilardi.
+   Bulut ma'lumotni yangilagach, xotiradagi eski nusxa saqlanganda
+   yangi ma'lumot ustiga yozilib ketardi \u2014 odat va reja aynan
+   shuning uchun yo'qolardi. Endi yozishdan oldin yangilanadi.
+   ================================================================== */
+window.INTIZOM_YANGILA = function(){
+  try{
+    state.odatlar = S.g('i_odatlar') || [];
+    state.reja    = rejaObyekt();
+    state.trans   = S.g('i_trans') || [];
+  }catch(e){}
+  try{ renderBosh(); }catch(e){}
+  try{ renderOdat(); }catch(e){}
+  try{ renderReja(); }catch(e){}
+};
+window.addEventListener('intizom-bulut-yangilandi', function(){
+  try{ window.INTIZOM_YANGILA(); }catch(e){}
+});
 
 </script>
 <!-- ============ PRO (PAYWALL) MODALI — 04.09.2026 ============ -->

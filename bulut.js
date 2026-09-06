@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "22";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "23";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -162,7 +162,9 @@
       apply(b.data);
       pushNow();
       try { showNotif("\u2601\ufe0f Yangilandi", "Boshqa qurilmadagi o'zgarish qo'shildi"); } catch (e) {}
-      setTimeout(function () { location.reload(); }, 1200);
+      if (typeof window.INTIZOM_YANGILA !== "function") {
+        setTimeout(function () { location.reload(); }, 1200);
+      }
     }).catch(function () {});
   }
   setInterval(fondaTekshir, 3 * 60 * 1000);
@@ -445,7 +447,14 @@
         if (b.ozgardi) sessionStorage.setItem("i_reload_soni", String(qaytaSoni + 1));
 
         if (b.ozgardi) {
-          /* Bulutdan yangi ma'lumot keldi — ekranni yangilaymiz */
+          /* Ilova o'zi yangilana olsa — qayta yuklamaymiz. Qayta
+             yuklash paytida boshqa kod xotiradagi eski ma'lumotni
+             saqlab yuborishi mumkin edi. */
+          if (typeof window.INTIZOM_YANGILA === "function") {
+            try { window.INTIZOM_YANGILA(); } catch (e) {}
+            hookStorage(); pushNow(); badge();
+            return;
+          }
           location.reload();
         } else {
           /* Mahalliy nusxa yangiroq yoki bir xil edi. Sahifani
