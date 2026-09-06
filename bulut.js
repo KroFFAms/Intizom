@@ -158,7 +158,10 @@
         /* Qiymat haqiqatan o'zgargandagina vaqt yangilanadi. Ilova
            ko'p joyda bir xil qiymatni qayta yozadi — ular hisobga
            olinsa, tegilmagan kalit ham "yangi" bo'lib ko'rinardi. */
-        if (eski !== v && tegildi) vaqtBelgila(k);
+        if (eski !== v && tegildi) {
+          vaqtBelgila(k);
+          if (k !== OCH_KEY) ochirishlarniYoz(k, eski, v);
+        }
         scheduleSave();
       }
     };
@@ -195,6 +198,61 @@
      yozuv hech qachon yo'qolmaydi.
      ============================================================ */
 
+  /* ------------------------------------------------------------
+     O'CHIRISH BELGILARI
+     Yozuvlar qo'shilgani uchun o'chirilgan narsa boshqa qurilmadan
+     qaytib kelishi mumkin edi. Endi nima o'chirilgani ham yozib
+     boriladi va qaytib kelmaydi. Belgilar bulutga ham ketadi.
+     ------------------------------------------------------------ */
+  var OCH_KEY = "i_ochirilgan";
+
+  function ochirilganOl() {
+    try { return JSON.parse(localStorage.getItem(OCH_KEY) || "{}") || {}; }
+    catch (e) { return {}; }
+  }
+
+  /* Yozuv qachon yaratilgan: id odatda Date.now() bo'ladi */
+  function _yaratilgan(x) {
+    if (x && typeof x === "object") {
+      if (typeof x.id === "number" && x.id > 1000000000000) return x.id;
+      var s = x.date || x.sana || x.vaqt;
+      if (s) { var t = new Date(s).getTime(); if (t) return t; }
+    }
+    return 0;
+  }
+
+  /* Eski va yangi ro'yxatni solishtirib, tushib qolganlarini belgilaymiz */
+  function ochirishlarniYoz(kalit, eskiMatn, yangiMatn) {
+    try {
+      var a, b;
+      try { a = JSON.parse(eskiMatn); b = JSON.parse(yangiMatn); } catch (e) { return; }
+      if (!Array.isArray(a) || !Array.isArray(b)) return;
+      if (b.length >= a.length) return;          // o'chirish bo'lmagan
+
+      var bor = {};
+      b.forEach(function (x) { bor[_belgi(x)] = 1; });
+
+      var och = ochirilganOl();
+      if (!och[kalit]) och[kalit] = {};
+      var vaqt = hozir(), oz = false;
+      a.forEach(function (x) {
+        var bl = _belgi(x);
+        if (!bor[bl]) { och[kalit][bl] = vaqt; oz = true; }
+      });
+      if (!oz) return;
+
+      /* Ro'yxat cheksiz o'smasin: har bo'limda oxirgi 400 tasi */
+      var kalitlar = Object.keys(och[kalit]);
+      if (kalitlar.length > 400) {
+        kalitlar.sort(function (x, y) { return och[kalit][y] - och[kalit][x]; });
+        var yangi = {};
+        kalitlar.slice(0, 400).forEach(function (k) { yangi[k] = och[kalit][k]; });
+        och[kalit] = yangi;
+      }
+      _rawSet(OCH_KEY, JSON.stringify(och));
+    } catch (e) {}
+  }
+
   /* Yozuvni nimasi bilan tanish: id, bo'lmasa sana, bo'lmasa o'zi */
   function _belgi(x) {
     if (x && typeof x === "object") {
@@ -207,16 +265,23 @@
 
   /* Ikki ro'yxatni qo'shadi. Avval yangi tomon, keyin eski tomonda
      bor-u yangisida yo'q yozuvlar. Hech biri tushib qolmaydi. */
-  function _royxatQosh(yangi, eski) {
+  function _royxatQosh(yangi, eski, ochirilgan) {
     var chiq = [], korilgan = {};
-    (yangi || []).forEach(function (x) {
+    function qosh(x) {
       var b = _belgi(x);
-      if (!korilgan[b]) { korilgan[b] = 1; chiq.push(x); }
-    });
-    (eski || []).forEach(function (x) {
-      var b = _belgi(x);
-      if (!korilgan[b]) { korilgan[b] = 1; chiq.push(x); }
-    });
+      if (korilgan[b]) return;
+      /* O'chirilgan bo'lsa va o'chirish yozuvdan KEYIN bo'lgan bo'lsa —
+         qaytarmaymiz. O'chirib, keyin qayta qo'shilgan bo'lsa yangi id
+         oladi va o'tib ketadi. */
+      if (ochirilgan && ochirilgan[b]) {
+        var yar = _yaratilgan(x);
+        if (!yar || ochirilgan[b] >= yar) { korilgan[b] = 1; return; }
+      }
+      korilgan[b] = 1;
+      chiq.push(x);
+    }
+    (yangi || []).forEach(qosh);
+    (eski || []).forEach(qosh);
     return chiq;
   }
 
@@ -231,15 +296,13 @@
 
   /* Ikki matnni mazmuniga qarab qo'shishga urinadi.
      Uddasidan chiqmasa null qaytaradi — shunda eski usul ishlaydi. */
-  function _aqlliQosh(yangiMatn, eskiMatn) {
+  function _aqlliQosh(yangiMatn, eskiMatn, ochirilgan) {
     var a, b;
     try { a = JSON.parse(yangiMatn); b = JSON.parse(eskiMatn); }
     catch (e) { return null; }
 
     if (Array.isArray(a) && Array.isArray(b)) {
-      var r = _royxatQosh(a, b);
-      /* Natija ikkalasidan ham qisqa bo'lib qolmasligi kerak */
-      if (r.length < Math.max(a.length, b.length)) return null;
+      var r = _royxatQosh(a, b, ochirilgan);
       try { return JSON.stringify(r); } catch (e) { return null; }
     }
     if (a && b && typeof a === "object" && typeof b === "object" &&
@@ -255,11 +318,26 @@
     var bVaqt = {};
     try { bVaqt = JSON.parse((bulutData && bulutData[VAQT_KEY]) || "{}") || {}; } catch (e) {}
 
+    /* O'chirish belgilarini ham ikki tomondan qo'shamiz */
+    var mOch = ochirilganOl(), bOch = {};
+    try { bOch = JSON.parse((bulutData && bulutData[OCH_KEY]) || "{}") || {}; } catch (e) {}
+    var birlashganOch = {};
+    [mOch, bOch].forEach(function (manba) {
+      Object.keys(manba || {}).forEach(function (kal) {
+        if (!birlashganOch[kal]) birlashganOch[kal] = {};
+        Object.keys(manba[kal] || {}).forEach(function (bl) {
+          var t = manba[kal][bl] || 0;
+          if (!birlashganOch[kal][bl] || t > birlashganOch[kal][bl]) birlashganOch[kal][bl] = t;
+        });
+      });
+    });
+
     var natija = {}, ozgardi = false, yangiVaqt = {};
     var kalitlar = {};
     Object.keys(mahalliy).forEach(function (k) { kalitlar[k] = 1; });
     Object.keys(bulutData || {}).forEach(function (k) { kalitlar[k] = 1; });
     delete kalitlar[VAQT_KEY];
+    delete kalitlar[OCH_KEY];
 
     Object.keys(kalitlar).forEach(function (k) {
       var mQiymat = mahalliy[k];
@@ -278,7 +356,7 @@
            qo'shishga urinamiz, shunda hech narsa yo'qolmaydi. */
         var yangiTomon = (mt >= bt) ? mQiymat : bQiymat;
         var eskiTomon  = (mt >= bt) ? bQiymat : mQiymat;
-        var qoshilgan = _aqlliQosh(yangiTomon, eskiTomon);
+        var qoshilgan = _aqlliQosh(yangiTomon, eskiTomon, birlashganOch[k]);
         if (qoshilgan !== null) {
           tanlangan = qoshilgan;
           tanlanganVaqt = Math.max(mt, bt);
@@ -298,6 +376,10 @@
     });
 
     natija[VAQT_KEY] = JSON.stringify(yangiVaqt);
+    try {
+      natija[OCH_KEY] = JSON.stringify(birlashganOch);
+      _rawSet(OCH_KEY, natija[OCH_KEY]);
+    } catch (e) {}
     return { data: natija, ozgardi: ozgardi };
   }
 
