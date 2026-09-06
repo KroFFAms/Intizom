@@ -11440,7 +11440,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '30';
+var ILOVA_VERSIYA = '31';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
@@ -11463,9 +11463,17 @@ function versiyaKorsat(){
   }catch(e){}
   /* Odat va reja serverga ko'chganmi */
   try{
-    var o = JSON.parse(localStorage.getItem('i_yozuv_holat_i_odatlar') || '{}');
-    var r = JSON.parse(localStorage.getItem('i_yozuv_holat_i_reja') || '{}');
-    yozuv = Object.keys(o).length + ' odat, ' + Object.keys(r).length + ' reja';
+    var _t = [['i_odatlar','odat'],['i_reja','reja'],['i_hifz','sura'],
+              ['i_trans','moliya'],['i_xarid','xarid'],['i_jurnal','kundalik']];
+    var _q = [];
+    _t.forEach(function(p){
+      try{
+        var v = JSON.parse(localStorage.getItem('i_yozuv_holat_'+p[0]) || '{}');
+        var n = Object.keys(v).length;
+        if(n) _q.push(n + ' ' + p[1]);
+      }catch(e){}
+    });
+    yozuv = _q.length ? _q.join(', ') : 'hali ko\u2018chmagan';
   }catch(e){}
 
   var el = document.getElementById('s-versiya');

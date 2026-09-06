@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "30";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "31";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -498,7 +498,20 @@
 
   var YOZUV_TURLARI = {
     i_odatlar: "odat",
-    i_reja:    "reja"
+    i_reja:    "reja",
+    i_hifz:    "hifz",     /* Qur'on yodlash \u2014 sura bo'yicha */
+    i_trans:   "moliya",
+    i_xarid:   "xarid",
+    i_jurnal:  "kundalik"  /* matni shifrlangan holicha ko'chadi */
+  };
+  /* Har turning shakli: royxat (massiv), reja (ichma-ich), hifz (sura) */
+  var YOZUV_SHAKLI = {
+    i_odatlar: "royxat",
+    i_reja:    "reja",
+    i_hifz:    "hifz",
+    i_trans:   "royxat",
+    i_xarid:   "royxat",
+    i_jurnal:  "royxat"
   };
   var SINXRON_VAQT = "i_yozuv_sinxron";   /* oxirgi muvaffaqiyatli o'qish vaqti */
 
@@ -509,10 +522,30 @@
     try { d = JSON.parse(matn || "null"); } catch (e) { return chiq; }
     if (!d) return chiq;
 
-    if (kalit === "i_odatlar") {
+    var shakl = YOZUV_SHAKLI[kalit] || "royxat";
+
+    if (shakl === "royxat") {
       if (!Array.isArray(d)) return chiq;
       d.forEach(function (x) {
-        if (x && x.id !== undefined) chiq[String(x.id)] = x;
+        if (!x || typeof x !== "object") return;
+        /* Kundalik yozuvlarida id yo'q \u2014 sana o'rniga ishlaydi */
+        var id = (x.id !== undefined && x.id !== null) ? x.id : (x.date || x.sana);
+        if (id === undefined || id === null) return;
+        chiq[String(id)] = x;
+      });
+      return chiq;
+    }
+
+    if (shakl === "hifz") {
+      /* {s:{sura:[[a,b]]}, t:{sura:{k,d}}} \u2014 har sura bitta yozuv */
+      if (typeof d !== "object") return chiq;
+      var s = d.s || {}, t = d.t || {};
+      Object.keys(s).forEach(function (sura) {
+        chiq[String(sura)] = { s: s[sura], t: t[sura] || null };
+      });
+      /* Faqat takror holati bor sura ham tushib qolmasin */
+      Object.keys(t).forEach(function (sura) {
+        if (!chiq[String(sura)]) chiq[String(sura)] = { s: [], t: t[sura] };
       });
       return chiq;
     }
@@ -541,12 +574,33 @@
 
   /* --- yozuvlar ro'yxati -> localStorage qiymati --- */
   function _qiymatga(kalit, yozuvlar) {
-    if (kalit === "i_odatlar") {
+    var shakl = YOZUV_SHAKLI[kalit] || "royxat";
+
+    if (shakl === "royxat") {
       var arr = [];
       Object.keys(yozuvlar).forEach(function (id) { arr.push(yozuvlar[id]); });
-      /* Yaratilish tartibi saqlansin */
-      arr.sort(function (a, b) { return (a.id || 0) - (b.id || 0); });
+      if (kalit === "i_jurnal" || kalit === "i_trans") {
+        /* Yangi yozuv tepada tursin */
+        arr.sort(function (a, b) {
+          var x = new Date(a.date || 0).getTime() || (a.id || 0);
+          var y = new Date(b.date || 0).getTime() || (b.id || 0);
+          return y - x;
+        });
+      } else {
+        arr.sort(function (a, b) { return (a.id || 0) - (b.id || 0); });
+      }
       return JSON.stringify(arr);
+    }
+
+    if (shakl === "hifz") {
+      var o = { s: {}, t: {} };
+      Object.keys(yozuvlar).forEach(function (sura) {
+        var y = yozuvlar[sura];
+        if (!y) return;
+        if (y.s && y.s.length) o.s[sura] = y.s;
+        if (y.t) o.t[sura] = y.t;
+      });
+      return JSON.stringify(o);
     }
 
     if (kalit === "i_reja") {
