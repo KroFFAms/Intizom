@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "32";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "33";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -799,6 +799,49 @@
       });
     }).catch(function () {});
   }
+
+  /* Yozuv sinxronini ishga tushiradi: avval ko'chirish (bir marta),
+     keyin serverdan o'qish, so'ng vaqti-vaqti bilan tekshirib turish. */
+  var _yozuvBoshlandi = false;
+  function yozuvBoshla() {
+    if (_yozuvBoshlandi) return;
+    _yozuvBoshlandi = true;
+    try {
+      yozuvKochir();
+      setTimeout(function () { yozuvlarniOl(false); }, 1500);
+      setInterval(function () { yozuvlarniOl(false); }, 60 * 1000);
+      document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible") {
+          setTimeout(function () { yozuvlarniOl(false); }, 600);
+        }
+      });
+      /* Ilova yopilayotganda kutib turgan o'zgarish darhol ketsin */
+      window.addEventListener("pagehide", function () {
+        try { clearTimeout(_yuborishTimer); yozuvlarniYubor(); } catch (e) {}
+      });
+    } catch (e) { console.warn("yozuvBoshla:", e); }
+  }
+
+  /* Konsoldan tekshirish uchun */
+  window.intizomYozuv = {
+    yubor: function () {
+      Object.keys(YOZUV_TURLARI).forEach(yozuvNavbatga);
+      yozuvlarniYubor();
+      return "yuborilmoqda...";
+    },
+    ol: function () { return yozuvlarniOl(true); },
+    hisob: function () {
+      return sb.rpc("yozuv_hisob").then(function (r) { console.log(r.data); return r.data; });
+    },
+    kochir: function () {
+      /* Ko'chirish belgilarini tozalab, qaytadan ko'chiradi */
+      Object.keys(YOZUV_TURLARI).forEach(function (k) {
+        try { localStorage.removeItem("i_yozuv_kochdi_" + YOZUV_TURLARI[k]); } catch (e) {}
+      });
+      yozuvKochir();
+      return "ko'chirilmoqda...";
+    }
+  };
 
   function pullThenStart(urinish) {
     urinish = urinish || 1;
