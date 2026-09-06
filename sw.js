@@ -7,7 +7,7 @@
      - Supabase/API so'rovlari -> keshlanmaydi
    Yangi versiya chiqarganda KESH raqamini oshiring.
    ========================================================== */
-var KESH = 'intizom-v13';
+var KESH = 'intizom-v15';
 
 var ASOSIY = [
   './',

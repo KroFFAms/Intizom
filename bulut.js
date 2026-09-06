@@ -42,6 +42,30 @@
   }
 
   var SKIP_SYNC = { i_pin_session: 1, i_parol_ok: 1, i_parol: 1 };
+
+  /* ============================================================
+     VAQT TAMG'ALARI (06.09.2026)
+     Ilgari bulut ma'lumoti mahalliy ma'lumot ustiga so'zsiz
+     yozilardi. Ikki qurilmada ishlatilsa yoki yangi yozuv
+     yuklanishga ulgurmasa — u yo'qolardi.
+     Endi har kalit qachon o'zgargani yozib boriladi va
+     sinxronlashda faqat YANGIROG'I qoladi.
+     ============================================================ */
+  var VAQT_KEY = "i_kalit_vaqt";
+  var _rawSet = localStorage.setItem.bind(localStorage);
+
+  function vaqtlarOl() {
+    try { return JSON.parse(localStorage.getItem(VAQT_KEY) || "{}") || {}; }
+    catch (e) { return {}; }
+  }
+  function vaqtBelgila(k) {
+    if (!k || k.indexOf("i_") !== 0 || k === VAQT_KEY || SKIP_SYNC[k]) return;
+    try {
+      var v = vaqtlarOl();
+      v[k] = Date.now();
+      _rawSet(VAQT_KEY, JSON.stringify(v));
+    } catch (e) {}
+  }
   var sb = null, uid = null, saveTimer = null, pulling = false;
   // Serverdan bir marta muvaffaqiyatli o'qimaguncha hech narsa yozilmaydi
   var sinxronTayyor = false;
@@ -84,22 +108,87 @@
   function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(pushNow, 1200); }
 
   function hookStorage() {
+    if (hookStorage._qoyilgan) return;
+    hookStorage._qoyilgan = true;
+
     var _set = localStorage.setItem.bind(localStorage);
     localStorage.setItem = function (k, v) {
+      var eski = null;
+      try { eski = localStorage.getItem(k); } catch (e) {}
       _set(k, v);
-      if (k && k.indexOf("i_") === 0 && !SKIP_SYNC[k]) scheduleSave();
+      if (k && k.indexOf("i_") === 0 && !SKIP_SYNC[k] && k !== VAQT_KEY) {
+        /* Qiymat haqiqatan o'zgargandagina vaqt yangilanadi. Ilova
+           ko'p joyda bir xil qiymatni qayta yozadi — ular hisobga
+           olinsa, tegilmagan kalit ham "yangi" bo'lib ko'rinardi. */
+        if (eski !== v) vaqtBelgila(k);
+        scheduleSave();
+      }
     };
     var _rem = localStorage.removeItem.bind(localStorage);
     localStorage.removeItem = function (k) {
       _rem(k);
-      if (k && k.indexOf("i_") === 0) scheduleSave();
+      if (k && k.indexOf("i_") === 0) { vaqtBelgila(k); scheduleSave(); }
     };
+
+    /* Ilova yopilayotganda kutib turgan o'zgarishni darhol yuboramiz.
+       Ilgari 1.2 soniyalik kechikish tugamasdan ilova yopilsa,
+       oxirgi yozuv bulutga umuman bormasdi. */
+    function darhol() {
+      try { clearTimeout(saveTimer); pushNow(); } catch (e) {}
+    }
+    window.addEventListener("pagehide", darhol);
+    window.addEventListener("beforeunload", darhol);
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "hidden") darhol();
+    });
+  }
+
+  /* Bulut va telefondagi nusxani QO'SHIB chiqadi.
+     Har kalit uchun qaysi tomon yangiroq bo'lsa, o'shanisi qoladi.
+     Qaytaradi: {data, ozgardi} — ozgardi=true bo'lsa mahalliy
+     nusxada haqiqatan o'zgarish bo'ldi, sahifani yangilash kerak. */
+  function birlashtir(bulutData, bulutVaqt) {
+    var mahalliy = collect();
+    var mVaqt = vaqtlarOl();
+    var bVaqt = {};
+    try { bVaqt = JSON.parse((bulutData && bulutData[VAQT_KEY]) || "{}") || {}; } catch (e) {}
+
+    var natija = {}, ozgardi = false, yangiVaqt = {};
+    var kalitlar = {};
+    Object.keys(mahalliy).forEach(function (k) { kalitlar[k] = 1; });
+    Object.keys(bulutData || {}).forEach(function (k) { kalitlar[k] = 1; });
+    delete kalitlar[VAQT_KEY];
+
+    Object.keys(kalitlar).forEach(function (k) {
+      var mQiymat = mahalliy[k];
+      var bQiymat = (bulutData || {})[k];
+      var mt = mVaqt[k] || 0;
+      /* Bulutda vaqt yozilmagan bo'lsa — qatorning umumiy
+         yangilanish vaqtini olamiz (eski nusxalar uchun) */
+      var bt = bVaqt[k] || (bQiymat !== undefined ? bulutVaqt : 0);
+
+      var tanlangan, tanlanganVaqt;
+      if (mQiymat === bQiymat) { tanlangan = mQiymat; tanlanganVaqt = Math.max(mt, bt); }
+      else if (bQiymat === undefined) { tanlangan = mQiymat; tanlanganVaqt = mt; }
+      else if (mQiymat === undefined) { tanlangan = bQiymat; tanlanganVaqt = bt; }
+      else if (mt > bt) { tanlangan = mQiymat; tanlanganVaqt = mt; }
+      else { tanlangan = bQiymat; tanlanganVaqt = bt; }
+
+      if (tanlangan !== undefined) {
+        natija[k] = tanlangan;
+        if (tanlanganVaqt) yangiVaqt[k] = tanlanganVaqt;
+        if (tanlangan !== mQiymat) ozgardi = true;
+      }
+    });
+
+    natija[VAQT_KEY] = JSON.stringify(yangiVaqt);
+    return { data: natija, ozgardi: ozgardi };
   }
 
   function pullThenStart(urinish) {
     urinish = urinish || 1;
     pulling = true;
-    sb.from(TABLE).select("data").eq("user_id", uid).maybeSingle().then(function (r) {
+    sb.from(TABLE).select("data, updated_at").eq("user_id", uid).maybeSingle().then(function (r) {
       pulling = false;
 
       // --- Xato bo'lsa: HECH NARSA YOZMAYMIZ, qayta urinamiz ---
@@ -107,17 +196,31 @@
         console.warn("Bulutdan o'qib bo'lmadi:", r.error.message);
         badgeHolat("xato");
         if (urinish < 5) { setTimeout(function () { pullThenStart(urinish + 1); }, 3000 * urinish); }
-        else { hookStorage(); badge(); }   // hook qo'yamiz, lekin sinxronTayyor=false -> yozmaydi
+        else { hookStorage(); badge(); }   // sinxronTayyor=false -> yozmaydi
         return;
       }
 
-      // --- Serverda ma'lumot bor: mahalliy nusxani ZAXIRAGA olib, keyin qo'llaymiz ---
+      // --- Serverda ma'lumot bor: USTIGA YOZMAYMIZ, birlashtiramiz ---
       if (r.data && r.data.data) {
-        zaxiraOl();                       // ustiga yozishdan oldin
-        apply(r.data.data);
+        zaxiraOl();   // har ehtimolga qarshi mahalliy nusxa saqlanadi
+
+        var bVaqt = 0;
+        try { bVaqt = new Date(r.data.updated_at).getTime() || 0; } catch (e) {}
+
+        var b = birlashtir(r.data.data, bVaqt);
+        apply(b.data);
         sinxronTayyor = true;
         sessionStorage.setItem("i_bulut_hydrated", "1");
-        location.reload();
+
+        if (b.ozgardi) {
+          /* Bulutdan yangi ma'lumot keldi — ekranni yangilaymiz */
+          location.reload();
+        } else {
+          /* Mahalliy nusxa yangiroq yoki bir xil edi. Sahifani
+             yangilash shart emas; birlashgan holatni bulutga
+             qaytarib yuboramiz, ikki tomon tenglashsin. */
+          hookStorage(); pushNow(); badge();
+        }
         return;
       }
 
