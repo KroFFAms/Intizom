@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "31";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "32";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -763,51 +763,42 @@
   }
 
   /* --- Birinchi marta: mavjud ma'lumotni serverga ko'chirish --- */
+  /* --- Birinchi marta: mavjud ma'lumotni serverga ko'chirish ---
+     Belgi HAR TUR uchun alohida. Ilgari bitta umumiy belgi bor edi:
+     odat va reja ko'chgach belgi qo'yilar, keyin qo'shilgan turlar
+     (yodlash, moliya, xarid, kundalik) hech qachon ko'chmasdi. */
   function yozuvKochir() {
     if (!sb || !uid) return;
-    try {
-      if (localStorage.getItem("i_yozuv_kochirildi") === "1") return;
-    } catch (e) {}
 
-    /* Serverda allaqachon bor bo'lsa ko'chirmaymiz */
     sb.rpc("yozuv_hisob").then(function (r) {
-      var bor = r && r.data && Object.keys(r.data).length > 0;
-      if (bor) {
-        try { _rawSet("i_yozuv_kochirildi", "1"); } catch (e) {}
-        return;
-      }
-      Object.keys(YOZUV_TURLARI).forEach(function (k) { yozuvNavbatga(k); });
-      try { _rawSet("i_yozuv_kochirildi", "1"); } catch (e) {}
-      console.log("Odat va reja serverga ko'chirildi.");
+      var serverda = (r && r.data) ? r.data : {};
+
+      Object.keys(YOZUV_TURLARI).forEach(function (kalit) {
+        var tur = YOZUV_TURLARI[kalit];
+        var belgi = "i_yozuv_kochdi_" + tur;
+
+        try { if (localStorage.getItem(belgi) === "1") return; } catch (e) {}
+
+        /* Serverda shu turdan allaqachon bor bo'lsa \u2014 ko'chirmaymiz */
+        if (serverda[tur] && serverda[tur] > 0) {
+          try { _rawSet(belgi, "1"); } catch (e) {}
+          return;
+        }
+
+        /* Mahalliy ma'lumot bormi */
+        var bor = false;
+        try {
+          var m = localStorage.getItem(kalit);
+          bor = !!(m && Object.keys(_yozuvlarga(kalit, m)).length);
+        } catch (e) {}
+        if (!bor) return;
+
+        yozuvNavbatga(kalit);
+        try { _rawSet(belgi, "1"); } catch (e) {}
+        console.log("Ko'chirilmoqda: " + tur);
+      });
     }).catch(function () {});
   }
-
-  /* Yozuv sinxronini ishga tushiradi: avval ko'chirish (bir marta),
-     keyin serverdan o'qish, so'ng har daqiqada tekshirib turish. */
-  var _yozuvBoshlandi = false;
-  function yozuvBoshla() {
-    if (_yozuvBoshlandi) return;
-    _yozuvBoshlandi = true;
-    try {
-      yozuvKochir();
-      setTimeout(function () { yozuvlarniOl(false); }, 1500);
-      setInterval(function () { yozuvlarniOl(false); }, 60 * 1000);
-      document.addEventListener("visibilitychange", function () {
-        if (document.visibilityState === "visible") setTimeout(function () { yozuvlarniOl(false); }, 600);
-      });
-      /* Ilova yopilayotganda kutib turgan o'zgarish darhol ketsin */
-      window.addEventListener("pagehide", function () {
-        try { clearTimeout(_yuborishTimer); yozuvlarniYubor(); } catch (e) {}
-      });
-    } catch (e) { console.warn("yozuvBoshla:", e); }
-  }
-
-  /* Konsoldan tekshirish uchun */
-  window.intizomYozuv = {
-    yubor: function () { Object.keys(YOZUV_TURLARI).forEach(yozuvNavbatga); yozuvlarniYubor(); },
-    ol:    function () { return yozuvlarniOl(true); },
-    hisob: function () { return sb.rpc("yozuv_hisob").then(function (r) { console.log(r.data); return r.data; }); }
-  };
 
   function pullThenStart(urinish) {
     urinish = urinish || 1;
