@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "23";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "24";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -248,23 +248,37 @@
     return 0;
   }
 
-  /* Eski va yangi ro'yxatni solishtirib, tushib qolganlarini belgilaymiz */
+  /* Tuzilma ichidagi barcha yozuvlarni yig'adi (ichma-ich ham) */
+  function _yozuvlarniYig(x, chiq, chuqur) {
+    chiq = chiq || {};
+    if (chuqur > 6) return chiq;
+    if (Array.isArray(x)) {
+      x.forEach(function (i) {
+        if (i && typeof i === "object" && !Array.isArray(i)) chiq[_belgi(i)] = 1;
+        else _yozuvlarniYig(i, chiq, (chuqur || 0) + 1);
+      });
+    } else if (x && typeof x === "object") {
+      Object.keys(x).forEach(function (k) { _yozuvlarniYig(x[k], chiq, (chuqur || 0) + 1); });
+    }
+    return chiq;
+  }
+
+  /* Eski va yangi holatni solishtirib, tushib qolgan yozuvlarni belgilaymiz.
+     Reja kabi ichma-ich tuzilmalarda ham ishlaydi. */
   function ochirishlarniYoz(kalit, eskiMatn, yangiMatn) {
     try {
       var a, b;
       try { a = JSON.parse(eskiMatn); b = JSON.parse(yangiMatn); } catch (e) { return; }
-      if (!Array.isArray(a) || !Array.isArray(b)) return;
-      if (b.length >= a.length) return;          // o'chirish bo'lmagan
+      if (!a || typeof a !== "object") return;
 
-      var bor = {};
-      b.forEach(function (x) { bor[_belgi(x)] = 1; });
+      var eskiYozuv = _yozuvlarniYig(a, {}, 0);
+      var yangiYozuv = _yozuvlarniYig(b, {}, 0);
 
       var och = ochirilganOl();
       if (!och[kalit]) och[kalit] = {};
       var vaqt = hozir(), oz = false;
-      a.forEach(function (x) {
-        var bl = _belgi(x);
-        if (!bor[bl]) { och[kalit][bl] = vaqt; oz = true; }
+      Object.keys(eskiYozuv).forEach(function (bl) {
+        if (!yangiYozuv[bl]) { och[kalit][bl] = vaqt; oz = true; }
       });
       if (!oz) return;
 
@@ -312,12 +326,31 @@
     return chiq;
   }
 
-  /* Sana bo'yicha yozuvlar (kayfiyat, suv, namoz): kalitlar qo'shiladi,
-     ikkalasida ham bor kalitda yangi tomon ustun turadi. */
-  function _obyektQosh(yangi, eski) {
+  /* Obyektlarni ICHMA-ICH qo'shadi.
+     Reja {shablon:[], bugun:{"2026-09-06":[...]}} ko'rinishida
+     saqlanadi. Ilgari faqat yuqori qavat qo'shilardi va 'bugun'
+     bitta kalit sanalib, bir tomonning butun kunlari ikkinchisini
+     almashtirib yuborardi. Endi har kun, har yozuv alohida. */
+  function _obyektQosh(yangi, eski, ochirilgan) {
     var chiq = {};
     Object.keys(eski || {}).forEach(function (k) { chiq[k] = eski[k]; });
-    Object.keys(yangi || {}).forEach(function (k) { chiq[k] = yangi[k]; });
+
+    Object.keys(yangi || {}).forEach(function (k) {
+      var y = yangi[k], e = (eski || {})[k];
+
+      if (e === undefined) { chiq[k] = y; return; }
+
+      if (Array.isArray(y) && Array.isArray(e)) {
+        chiq[k] = _royxatQosh(y, e, ochirilgan);
+        return;
+      }
+      if (y && e && typeof y === "object" && typeof e === "object" &&
+          !Array.isArray(y) && !Array.isArray(e)) {
+        chiq[k] = _obyektQosh(y, e, ochirilgan);
+        return;
+      }
+      chiq[k] = y;   /* oddiy qiymat \u2014 yangi tomon ustun */
+    });
     return chiq;
   }
 
@@ -334,7 +367,7 @@
     }
     if (a && b && typeof a === "object" && typeof b === "object" &&
         !Array.isArray(a) && !Array.isArray(b)) {
-      try { return JSON.stringify(_obyektQosh(a, b)); } catch (e) { return null; }
+      try { return JSON.stringify(_obyektQosh(a, b, ochirilgan)); } catch (e) { return null; }
     }
     return null;
   }
