@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "51";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "52";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -940,11 +940,21 @@
   }
 
   /* --- Serverdan olib, mahalliy nusxaga qo'shish --- */
+  /* Serverdagi funksiya yozuvlarni "yangilangan > p_since" sharti
+     bilan tanlaydi. SQL da har qanday qiymatning NULL bilan
+     solishtiruvi ROST bo'lmaydi \u2014 ya'ni p_since ga null
+     yuborilsa, javob DOIM bo'sh qaytadi. Ilgari to'liq o'qishda
+     aynan null yuborilardi va "farq topilmadi" deb chiqardi,
+     holbuki serverda yozuvlar bor edi.
+     Endi null o'rniga juda eski sana yuboriladi \u2014 shunda
+     hamma yozuv shartga tushadi. */
+  var ENG_ESKI = "1970-01-01T00:00:00.000Z";
+
   function yozuvlarniOl(hammasi) {
     if (!sb || !uid) return Promise.resolve(false);
-    var since = null;
+    var since = ENG_ESKI;
     if (!hammasi) {
-      try { since = localStorage.getItem(SINXRON_VAQT) || null; } catch (e) {}
+      try { since = localStorage.getItem(SINXRON_VAQT) || ENG_ESKI; } catch (e) { since = ENG_ESKI; }
     }
 
     return sb.rpc("yozuvlar_ol", { p_since: since }).then(function (r) {
