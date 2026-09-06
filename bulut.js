@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "27";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "28";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -54,6 +54,31 @@
      ============================================================ */
   var VAQT_KEY = "i_kalit_vaqt";
   var _rawSet = localStorage.setItem.bind(localStorage);
+
+  /* ------------------------------------------------------------
+     SOAT FARQI
+     Vaqt tamg'asi qurilma soatidan olinadi. Agar birovning
+     qurilmasida sana noto'g'ri bo'lsa, uning ma'lumoti doim "eng
+     yangi" bo'lib chiqib, boshqasini bosib ketardi. obuna_holat()
+     server vaqtini qaytaradi \u2014 farqni hisoblab, tuzatamiz.
+     ------------------------------------------------------------ */
+  var soatFarqi = 0;
+  try {
+    var _sf = localStorage.getItem("i_soat_farqi");
+    if (_sf) soatFarqi = parseInt(_sf, 10) || 0;
+  } catch (e) {}
+
+  function serverVaqtiBelgila(serverVaqt) {
+    if (!serverVaqt) return;
+    var s = new Date(serverVaqt).getTime();
+    if (!s) return;
+    var farq = s - Date.now();
+    /* 30 soniyagacha farq oddiy kechikish \u2014 e'tiborsiz qoldiramiz */
+    soatFarqi = Math.abs(farq) > 30000 ? farq : 0;
+    try { _rawSet("i_soat_farqi", String(soatFarqi)); } catch (e) {}
+  }
+
+  function hozir() { return Date.now() + soatFarqi; }
 
   /* Ilova yuklanayotganda o'nlab kalitni qaytadan yozadi — qiymat
      mazmunan o'sha, lekin matn sifatida biroz farq qiladi (JSON
@@ -903,6 +928,8 @@
     return sb.rpc("obuna_holat").then(function (r) {
       if (r.error || !r.data) return null;
       window.INTIZOM_OBUNA = r.data;
+      /* Server vaqtini olib, qurilma soati bilan farqini hisoblaymiz */
+      try { serverVaqtiBelgila(r.data.server_vaqt); } catch (e) {}
       try { localStorage.setItem(OB_CACHE, JSON.stringify({ t: Date.now(), d: r.data })); } catch (e) {}
       try { window.dispatchEvent(new CustomEvent("obuna-yangilandi", { detail: r.data })); } catch (e) {}
       return r.data;
