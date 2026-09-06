@@ -848,6 +848,8 @@
       <div class="sitem" onclick="openM('profil-modal')"><div class="sicon" style="background:rgba(0,200,150,.12)">👤</div><div style="flex:1"><div class="sec-title" style="margin-bottom:0;font-size:15px">Profil</div><div style="font-size:14px;color:var(--t2)">Ism, kasb, rasm</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="openHomeConfig()"><div class="sicon" style="background:rgba(139,92,246,.12)">🏠</div><div style="flex:1"><div style="font-size:15px;font-weight:700">Asosiy oynani sozlash</div><div style="font-size:14px;color:var(--t2)">Qaysi bo'limlar ko'rinsin — tanlang</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="qollanmaOch()"><div class="sicon" style="background:rgba(59,130,246,.12)">📘</div><div style="flex:1"><div style="font-size:15px;font-weight:700">Qo'llanma</div><div style="font-size:14px;color:var(--t2)">Har bo'lim nima uchun kerak</div></div><span style="color:var(--t2)">›</span></div>
+      <div class="sitem" onclick="versiyaKorsat()"><div class="sicon" style="background:rgba(148,163,184,.15)">ℹ️</div><div style="flex:1"><div style="font-size:15px;font-weight:700">Versiya</div><div id="s-versiya" style="font-size:13px;color:var(--t2)">Tekshirish uchun bosing</div></div><span style="color:var(--t2)">›</span></div>
+      <div class="sitem" onclick="zaxiraOch()"><div class="sicon" style="background:rgba(0,200,150,.14)">🔄</div><div style="flex:1"><div style="font-size:15px;font-weight:700">Ma'lumotni tiklash</div><div style="font-size:13px;color:var(--t2)">Avvalgi holatga qaytarish</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="openM('maxfiy-modal')"><div class="sicon" style="background:rgba(148,163,184,.15)">🔒</div><div style="flex:1"><div style="font-size:15px;font-weight:700">Maxfiylik siyosati</div><div style="font-size:14px;color:var(--t2)">Ma'lumotingiz qanday saqlanadi</div></div><span style="color:var(--t2)">›</span></div>
       <div class="sitem" onclick="yordamOch()"><div class="sicon" style="background:rgba(245,158,11,.12)">💬</div><div style="flex:1"><div style="font-size:15px;font-weight:700">Yordam va taklif</div><div style="font-size:14px;color:var(--t2)">Xatolik, savol yoki taklif yuborish</div></div><span style="color:var(--t2)">›</span></div>
       <div class="card" style="margin-bottom:12px">
@@ -10881,7 +10883,7 @@ function yordamYubor(){
    qo'lda ulaymiz (yuqoridagi umumiy tinglovchi ular tug'ilgunga qadar ishlagan). */
 (function(){
   try{
-    ['pro-modal','yordam-modal','maxfiy-modal','hifz-modal'].forEach(function(id){
+    ['pro-modal','yordam-modal','maxfiy-modal','hifz-modal','zaxira-modal'].forEach(function(id){
       var m=document.getElementById(id);
       if(m) m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('open'); });
     });
@@ -11431,6 +11433,44 @@ function zaxiraOch(){
 function zaxiraQaytar(n){ try{ window.intizomZaxiraQaytar(n); }catch(e){} }
 function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} }
 
+
+
+/* ==================================================================
+   VERSIYA KO'RSATKICHI  \u2014  06.09.2026
+   Qaysi qurilmada qaysi nusxa ishlayotganini bilish uchun.
+   Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
+   buni tashqaridan aniqlab bo'lmasdi.
+   ================================================================== */
+var ILOVA_VERSIYA = '21';
+
+function versiyaKorsat(){
+  var b = String(window.BULUT_VERSIYA || '?');
+  var mos = (b === ILOVA_VERSIYA);
+  var belgi = '\u2014', och = 'yo\u2018q';
+  try{
+    var v = JSON.parse(localStorage.getItem('i_kalit_vaqt') || '{}');
+    belgi = Object.keys(v).length + ' ta';
+  }catch(e){}
+  try{
+    if(localStorage.getItem('i_ochirilgan')) och = 'bor';
+  }catch(e){}
+
+  var el = document.getElementById('s-versiya');
+  if(el){
+    el.innerHTML = mos
+      ? '<span style="color:var(--g);font-weight:700">\u2705 v'+ILOVA_VERSIYA+' \u2014 yangi</span>'
+      : '<span style="color:var(--red);font-weight:700">\u26A0\uFE0F ilova v'+ILOVA_VERSIYA+', bulut v'+b+'</span>';
+  }
+
+  var xabar = mos
+    ? 'Ikkala fayl ham yangi (v'+ILOVA_VERSIYA+').\n\nSinxron belgilari: '+belgi+
+      '\nO\u2018chirish ro\u2018yxati: '+och
+    : 'FAYLLAR MOS EMAS\n\nindex.html \u2014 v'+ILOVA_VERSIYA+'\nbulut.js \u2014 v'+b+
+      '\n\nEski fayl keshda qolgan. Ilovani butunlay yopib qayta oching. '+
+      'Yordam bermasa brauzer keshini tozalang.';
+  try{ alert(xabar); }catch(e){ console.log(xabar); }
+}
+
 </script>
 <!-- ============ PRO (PAYWALL) MODALI — 04.09.2026 ============ -->
 <div class="moverlay" id="pro-modal"><div class="modal"><div class="mhandle"></div>
@@ -11595,6 +11635,21 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
 
   <div class="mactions">
     <button class="btn btn-out btn-block" onclick="closeM('hifz-modal')">Yopish</button>
+  </div>
+</div></div>
+
+<!-- ============ ZAXIRA VA TIKLASH ============ -->
+<div class="moverlay" id="zaxira-modal"><div class="modal"><div class="mhandle"></div>
+  <div class="mtitle">&#128260; Ma'lumotni tiklash</div>
+  <div style="font-size:13.5px;color:var(--t2);line-height:1.6;margin-bottom:16px">
+    Ma'lumot yo'qolgan bo'lsa, avvalgi holatga qaytarish mumkin.
+  </div>
+  <div style="font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:8px">Telefondagi nusxalar</div>
+  <div id="zax-mahalliy" style="margin-bottom:18px"></div>
+  <div style="font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:8px">Serverdagi nusxalar</div>
+  <div id="zax-bulut" style="margin-bottom:8px"><div class="empty" style="padding:14px 0">Yuklanmoqda...</div></div>
+  <div class="mactions">
+    <button class="btn btn-out btn-block" onclick="closeM('zaxira-modal')">Yopish</button>
   </div>
 </div></div>
 
