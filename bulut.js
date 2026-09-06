@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "42";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "44";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -24,11 +24,29 @@
     }
     return data;
   }
+  /* Ilgari bu yerda catch bo'sh edi: xotira to'lsa bulutdan kelgan
+     ma'lumot jimgina yozilmay qolar, foydalanuvchi esa hammasi
+     joyida deb o'ylardi. Endi bo'shatib qayta urinamiz va
+     baribir bo'lmasa ochiq aytamiz. */
   function apply(data) {
     if (!data) return;
+    var xato = [];
     Object.keys(data).forEach(function (k) {
-      try { localStorage.setItem(k, data[k]); } catch (e) {}
+      try { localStorage.setItem(k, data[k]); }
+      catch (e) { xato.push(k); }
     });
+    if (!xato.length) return;
+    try { xotiraBoshat(true); } catch (e) {}
+    var qolgan = [];
+    xato.forEach(function (k) {
+      try { localStorage.setItem(k, data[k]); } catch (e) { qolgan.push(k); }
+    });
+    if (qolgan.length) {
+      console.error("Xotiraga sig'madi:", qolgan.join(", "));
+      badgeHolat("xato");
+      try { showNotif("\u26a0\ufe0f Xotira to'ldi",
+        qolgan.length + " ta bo'lim yuklanmadi. Sozlama \u2192 Zaxira orqali nusxa oling."); } catch (e) {}
+    }
   }
 
   function loadSb() {
@@ -541,16 +559,19 @@
   }
 
   /* Bo'shatish tartibi: eng kam kerakli narsadan boshlab */
+  /* zaxira_1 ATAYLAB ro'yxatda yo'q. Ilgari u ham o'chirilardi \u2014
+     ya'ni xotira to'lgan, eng xavfli paytda tiklash nuqtasi
+     yo'qolardi. Bulutdagi tarix bor, lekin internet yo'q bo'lsa
+     u ham yordam bermaydi. */
   var BOSHATISH = [
     { kalit: "zaxira_3",  nom: "eski zaxira 3" },
     { kalit: "zaxira_2",  nom: "eski zaxira 2" },
-    { kalit: "zaxira_oxirgi", nom: "eski zaxira" },
-    { kalit: "zaxira_1",  nom: "zaxira 1" }
+    { kalit: "zaxira_oxirgi", nom: "eski zaxira" }
   ];
 
-  function xotiraBoshat() {
+  function xotiraBoshat(majburiy) {
     var oldin = xotiraHajmi();
-    if (oldin < 3.6 * 1024 * 1024) return false;   /* joy yetarli */
+    if (!majburiy && oldin < 3.6 * 1024 * 1024) return false;   /* joy yetarli */
 
     console.warn("Xotira to'lay deb qoldi:", Math.round(oldin / 1024), "KB \u2014 bo'shatilmoqda");
 
@@ -1010,7 +1031,10 @@
      ============================================================ */
 
   var RASM_BUCKET = "rasm";
-  var _rasmKesh = {};   /* yo'l -> imzolangan havola */
+  /* Imzolangan havola 12 soatga beriladi. Ilgari u muddatsiz
+     keshlanardi \u2014 uzoq ochiq turgan ilovada rasmlar buzilardi. */
+  var _rasmKesh = {};   /* yo'l -> {u:havola, t:vaqt} */
+  var RASM_KESH_MUDDAT = 10 * 60 * 60 * 1000;
 
   /* Rasmni kichraytirib, JPEG qilib siqadi.
      1 MB li surat odatda 40-60 KB ga tushadi. */
@@ -1076,14 +1100,24 @@
     if (!qiymat) return Promise.resolve("");
     if (qiymat.indexOf("rasm:") !== 0) return Promise.resolve(qiymat);
     var yol = qiymat.slice(5);
-    if (_rasmKesh[yol]) return Promise.resolve(_rasmKesh[yol]);
+    var k = _rasmKesh[yol];
+    if (k && (Date.now() - k.t) < RASM_KESH_MUDDAT) return Promise.resolve(k.u);
     if (!sb) return Promise.resolve("");
     return sb.storage.from(RASM_BUCKET).createSignedUrl(yol, 60 * 60 * 12)
       .then(function (r) {
-        if (r.error || !r.data) return "";
-        _rasmKesh[yol] = r.data.signedUrl;
+        if (r.error || !r.data) {
+          /* Ilgari xato jimgina yutilardi va rasm boshqa qurilmada
+             shunchaki ko'rinmasdi. Endi sababi konsolda ko'rinadi \u2014
+             odatda 'rasm' bucket yo'q yoki o'qish siyosati qo'yilmagan. */
+          console.warn("Rasm ochilmadi:", yol, r.error && r.error.message);
+          return "";
+        }
+        _rasmKesh[yol] = { u: r.data.signedUrl, t: Date.now() };
         return r.data.signedUrl;
-      }).catch(function () { return ""; });
+      }).catch(function (e) {
+        console.warn("Rasm ochilmadi:", yol, e && e.message);
+        return "";
+      });
   };
 
   /* <img data-rasm="rasm:..."> larni topib manzilini qo'yadi.
@@ -1094,9 +1128,14 @@
       for (var i = 0; i < el.length; i++) {
         (function (img) {
           var q = img.getAttribute("data-rasm");
-          if (!q || img.getAttribute("data-rasm-ok") === "1") return;
-          img.setAttribute("data-rasm-ok", "1");
-          window.rasmManzil(q).then(function (u) { if (u) img.src = u; });
+          if (!q || img.getAttribute("data-rasm-ok") === q) return;
+          /* Belgiga QIYMATNI yozamiz: rasm almashsa qaytadan
+             olinadi. Ilgari "1" yozilardi va yangi rasm
+             ko'rinmay qolardi. Havola olinmasa ham belgi
+             qo'yilmaydi \u2014 keyingi urinishda qayta so'raladi. */
+          window.rasmManzil(q).then(function (u) {
+            if (u) { img.src = u; img.setAttribute("data-rasm-ok", q); }
+          });
         })(el[i]);
       }
     } catch (e) {}
@@ -1357,9 +1396,40 @@
     } catch (e) {}
   }
 
+  /* Raqam bilan kirgan foydalanuvchi hisobi himoyasiz \u2014 uni bir
+     marta Telegram'ga ulashga chaqiramiz. Ulanganidan keyin server
+     tomonda uning paroli almashtirilsa, teshik butunlay yopiladi. */
+  function tgTaklif() {
+    try {
+      if (localStorage.getItem("tg_taklif") !== "1") return;
+      localStorage.removeItem("tg_taklif");
+    } catch (e) { return; }
+    setTimeout(function () {
+      var d = document.createElement("div");
+      d.style.cssText = "position:fixed;inset:0;z-index:99997;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui";
+      d.innerHTML = '<div style="width:100%;max-width:330px;background:#fff;color:#111;border-radius:20px;padding:22px;text-align:center">' +
+        '<div style="font-size:36px">\uD83D\uDD10</div>' +
+        '<div style="font-size:18px;font-weight:800;margin:8px 0 6px">Hisobingizni himoyalang</div>' +
+        '<div style="font-size:14px;color:#555;line-height:1.6;margin-bottom:18px">Raqam bilan kirish tasdiqlanmagan \u2014 raqamingizni bilgan boshqa odam ham shu hisobga kira oladi. Telegram orqali ulasangiz, bu yopiladi.</div>' +
+        '<button id="tgt-ok" style="width:100%;padding:14px;border:none;border-radius:12px;background:#229ED9;color:#fff;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:8px">Telegram orqali ulash</button>' +
+        '<button id="tgt-x" style="width:100%;padding:12px;border:none;border-radius:12px;background:transparent;color:#777;font-size:14px;cursor:pointer">Keyinroq</button>' +
+      '</div>';
+      document.body.appendChild(d);
+      d.querySelector("#tgt-x").onclick = function () { d.remove(); };
+      d.querySelector("#tgt-ok").onclick = function () {
+        sb.rpc("tg_kod_yarat").then(function (r) {
+          if (r.error || !r.data) { alert("Ulanishda xatolik."); return; }
+          window.open("https://t.me/" + BOT_NOMI + "?start=" + r.data, "_blank");
+          d.remove();
+        });
+      };
+    }, 2500);
+  }
+
   function afterAuth(user) {
     uid = user.id;
     removeGate();
+    tgTaklif();
     xotiraniHimoyala();
     kirishKalitiTozala();
     obunaYangila();
@@ -1500,7 +1570,7 @@
             'Bot ochiladi, bir tugma bilan raqamingizni tasdiqlaysiz. Parol o\'ylash shart emas.' +
           '</div>' +
           '<div style="text-align:center;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)">' +
-            '<a id="bg-qol" href="#" style="color:#93C5FD;text-decoration:none;font-size:13px">Telegramim yo\'q — qo\'lda kiritaman</a>' +
+            '<a id="bg-qol" href="#" style="color:#93C5FD;text-decoration:none;font-size:13px">Ilgari raqam bilan kirgan edim</a>' +
           '</div>' +
         '</div>' +
 
@@ -1521,6 +1591,7 @@
             'style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:15px;outline:none;margin-bottom:10px">' +
           '<input id="bg-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="90 123 45 67" ' +
             'style="width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:17px;letter-spacing:1px;outline:none">' +
+          '<div style="font-size:12px;opacity:.6;line-height:1.5;margin:10px 2px 0">Bu yo\'l faqat ilgari ro\'yxatdan o\'tganlar uchun. Yangi hisob Telegram orqali ochiladi.</div>' +
           '<div id="bg-err" style="color:#FCA5A5;font-size:13px;min-height:18px;margin:8px 2px 0"></div>' +
           '<button id="bg-go" style="width:100%;padding:15px;border:none;border-radius:12px;background:#00D4A0;color:#04231b;font-weight:800;font-size:16px;cursor:pointer">Kirish</button>' +
           '<div style="text-align:center;margin-top:14px">' +
@@ -1655,18 +1726,32 @@
       btn.disabled = true; btn.textContent = "Kirilmoqda...";
       var em = telEmail(tel);
 
+      /* XAVFSIZLIK (06.09.2026)
+         Bu yo'lda parol telefon raqamidan hisoblanadi va "tuz"
+         ochiq JavaScript'da turadi \u2014 ya'ni kim bo'lsa ham
+         istalgan raqam uchun parolni hisoblab, o'sha akkauntga
+         kira oladi. Shuning uchun:
+           \u2022 bu yerda YANGI akkaunt ochilmaydi (signUp olib tashlandi);
+           \u2022 yo'l faqat eskidan bor foydalanuvchilar uchun qoldi;
+           \u2022 kirgach ular Telegram'ga ulanishga chaqiriladi.
+         To'liq yopilishi uchun server tomonda ham bu akkauntlarning
+         paroli almashtirilishi kerak \u2014 intizom_kirish_yopish.sql. */
       telParol(tel).then(function (pw) {
-        return sb.auth.signInWithPassword({ email: em, password: pw }).then(function (r) {
-          if (r.data && r.data.user) return r;
-          return sb.auth.signUp({ email: em, password: pw, options: { data: { ism: ism, tel: tel } } });
-        });
+        return sb.auth.signInWithPassword({ email: em, password: pw });
       }).then(function (r) {
         btn.disabled = false; btn.textContent = "Kirish";
-        if (r.error) { err.textContent = tr(r.error.message); return; }
+        if (r.error) {
+          var m = (r.error.message || "").toLowerCase();
+          if (m.indexOf("invalid login") >= 0) {
+            err.innerHTML = "Bu raqam bilan hisob topilmadi.<br>Ro'yxatdan o'tish endi faqat Telegram orqali.";
+          } else { err.textContent = tr(r.error.message); }
+          return;
+        }
         if (r.data && r.data.user) {
           try {
             localStorage.setItem("foydalanuvchi_ism", ism);
             localStorage.setItem("foydalanuvchi_tel", tel);
+            localStorage.setItem("tg_taklif", "1");   /* kirgach Telegram'ga chaqiramiz */
           } catch (e) {}
           afterAuth(r.data.user);
         } else {
