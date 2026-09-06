@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "41";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "42";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -596,6 +596,28 @@
     return kb;
   };
 
+  /* BIR MARTALIK TIKLASH (v42)
+     Eski versiyalarda "serverda bu turdan bor bo'lsa ko'chirmaymiz"
+     degan xato mantiq bor edi. Natijada ikkinchi qurilmadagi
+     yozuvlar serverga umuman chiqmagan, serverdagilar esa
+     qurilmaga kelmagan \u2014 ikkalasi bir-birini ko'rmay qolgan.
+     Bir marta hamma belgini tozalaymiz: har qurilma o'zinikini
+     yuboradi va hammasini qaytadan o'qiydi. Shundan keyin
+     ikkala tomon tenglashadi. */
+  try {
+    if (localStorage.getItem("i_yozuv_tiklash_v42") !== "1") {
+      ["odat","reja","hifz","moliya","xarid","kundalik","maqsad","profil"].forEach(function (t) {
+        try { localStorage.removeItem("i_yozuv_kochdi_" + t); } catch (e) {}
+      });
+      ["i_odatlar","i_reja","i_hifz","i_trans","i_xarid","i_jurnal","i_maqsad","i_profil"].forEach(function (k) {
+        try { localStorage.removeItem("i_yozuv_holat_" + k); } catch (e) {}
+      });
+      try { localStorage.removeItem("i_yozuv_sinxron"); } catch (e) {}
+      localStorage.setItem("i_yozuv_tiklash_v42", "1");
+      console.log("Sinxron belgilari tiklandi \u2014 hamma yozuv qaytadan tenglashadi.");
+    }
+  } catch (e) {}
+
   /* Eski versiyada to'liq nusxalar saqlangan edi \u2014 ular xotirani
      behuda egallaydi. Bir marta tozalaymiz, keyingi yuborishda
      qisqa belgilar bilan qaytadan yoziladi. */
@@ -926,7 +948,10 @@
        belgidan oldin qolib ketardi. */
     if (yangiTur) {
       try { localStorage.removeItem(SINXRON_VAQT); } catch (e) {}
-      setTimeout(function () { yozuvlarniOl(true); }, 2500);
+      /* Avval o'zimiznikini yuboramiz, keyin hammasini o'qiymiz \u2014
+         shunda ikki tomon qo'shilib, hech biri yo'qolmaydi. */
+      setTimeout(function () { yozuvlarniYubor(); }, 800);
+      setTimeout(function () { yozuvlarniOl(true); }, 3500);
     }
   }
 
