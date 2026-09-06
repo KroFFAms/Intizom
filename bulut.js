@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "21";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "22";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -145,6 +145,30 @@
     });
   }
   function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(pushNow, 1200); }
+
+  /* Ikki qurilma bir vaqtda ochiq bo'lsa ham bir-birini ko'rsin:
+     har 3 daqiqada va ilovaga qaytilganda bulutni tekshiramiz. */
+  var oxirgiTekshiruv = 0;
+  function fondaTekshir() {
+    if (!sb || !uid || pulling || !sinxronTayyor) return;
+    if (Date.now() - oxirgiTekshiruv < 60000) return;   // daqiqada bir martadan tez emas
+    oxirgiTekshiruv = Date.now();
+    sb.from(TABLE).select("data, updated_at").eq("user_id", uid).maybeSingle().then(function (r) {
+      if (r.error || !r.data || !r.data.data) return;
+      var bv = 0;
+      try { bv = new Date(r.data.updated_at).getTime() || 0; } catch (e) {}
+      var b = birlashtir(r.data.data, bv);
+      if (!b.ozgardi) return;
+      apply(b.data);
+      pushNow();
+      try { showNotif("\u2601\ufe0f Yangilandi", "Boshqa qurilmadagi o'zgarish qo'shildi"); } catch (e) {}
+      setTimeout(function () { location.reload(); }, 1200);
+    }).catch(function () {});
+  }
+  setInterval(fondaTekshir, 3 * 60 * 1000);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") setTimeout(fondaTekshir, 800);
+  });
 
   function hookStorage() {
     if (hookStorage._qoyilgan) return;
@@ -410,7 +434,15 @@
         var b = birlashtir(r.data.data, bVaqt);
         apply(b.data);
         sinxronTayyor = true;
-        sessionStorage.setItem("i_bulut_hydrated", "1");
+
+        /* Cheksiz qayta yuklanishning oldini olamiz */
+        var qaytaSoni = parseInt(sessionStorage.getItem("i_reload_soni") || "0", 10);
+        if (b.ozgardi && qaytaSoni >= 2) {
+          console.warn("Bulutdan yangilik keldi, lekin qayta yuklash chegarasi tugadi.");
+          hookStorage(); pushNow(); badge();
+          return;
+        }
+        if (b.ozgardi) sessionStorage.setItem("i_reload_soni", String(qaytaSoni + 1));
 
         if (b.ozgardi) {
           /* Bulutdan yangi ma'lumot keldi — ekranni yangilaymiz */
@@ -584,7 +616,10 @@
     uid = user.id;
     removeGate();
     obunaYangila();
-    if (sessionStorage.getItem("i_bulut_hydrated") === "1") { sinxronTayyor = true; hookStorage(); badge(); return; }
+    /* Ilgari sessiyada bir marta o'qib, keyin boshqa qaytib
+       qaramasdi. Natijada qurilma o'zinikini yuborar, boshqasinikini
+       esa hech qachon olmasdi — ikkalasi bir-birini ko'rmasdi.
+       Birlashtirish endi xavfsiz, shuning uchun har safar o'qiymiz. */
     pullThenStart();
   }
 
