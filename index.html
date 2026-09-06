@@ -11440,7 +11440,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '35';
+var ILOVA_VERSIYA = '36';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
@@ -11457,6 +11457,21 @@ function versiyaKorsat(){
     }
     var _kb = Math.round(_jami/1024);
     xotira = _kb + ' KB' + (_kb > 3500 ? ' \u26A0\uFE0F to\u2018lay deb qoldi' : ' \u2705');
+  }catch(e){}
+
+  /* Eng ko'p joy egallagan bo'limlar \u2014 konsolsiz ko'rish uchun */
+  var kattalar = '';
+  try{
+    var _ro = [];
+    for(var _j=0;_j<localStorage.length;_j++){
+      var _kk = localStorage.key(_j);
+      var _vv = localStorage.getItem(_kk) || '';
+      _ro.push([_kk, Math.round((_kk.length + _vv.length) * 2 / 1024)]);
+    }
+    _ro.sort(function(a,b){ return b[1] - a[1]; });
+    kattalar = _ro.slice(0,8).filter(function(x){ return x[1] > 0; })
+                 .map(function(x){ return x[0] + ' \u2014 ' + x[1] + ' KB'; })
+                 .join('\n');
   }catch(e){}
   try{
     var v = JSON.parse(localStorage.getItem('i_kalit_vaqt') || '{}');
@@ -11500,6 +11515,7 @@ function versiyaKorsat(){
       'Sessiya: '+kalit+
       '\nServerdagi yozuv: '+yozuv+
       '\nXotira: '+xotira+
+      '\n\nENG KATTA BO\u2018LIMLAR:\n'+kattalar+
       '\n\nSinxron belgilari: '+belgi+
       '\nO\u2018chirish ro\u2018yxati: '+och
     : 'FAYLLAR MOS EMAS\n\nindex.html \u2014 v'+ILOVA_VERSIYA+'\nbulut.js \u2014 v'+b+
