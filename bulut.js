@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "24";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "27";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -189,6 +189,8 @@
           vaqtBelgila(k);
           if (k !== OCH_KEY) ochirishlarniYoz(k, eski, v);
         }
+        /* Odat va reja endi bazada alohida qator — farqini yuboramiz */
+        if (eski !== v && YOZUV_TURLARI[k]) yozuvNavbatga(k);
         scheduleSave();
       }
     };
@@ -400,6 +402,19 @@
     delete kalitlar[OCH_KEY];
 
     Object.keys(kalitlar).forEach(function (k) {
+      /* Odat va reja yozuv jadvalidan boshqariladi — eski yaxlit
+         birlashtirish ularga tegmasin, aks holda ikki tizim
+         bir-biriga xalaqit qiladi. Zaxira uchun bulutga yozilaveradi. */
+      if (YOZUV_TURLARI[k]) {
+        if (mahalliy[k] !== undefined) {
+          natija[k] = mahalliy[k];
+          if (mVaqt[k]) yangiVaqt[k] = mVaqt[k];
+        } else if (bulutData && bulutData[k] !== undefined) {
+          natija[k] = bulutData[k];
+          ozgardi = true;
+        }
+        return;
+      }
       var mQiymat = mahalliy[k];
       var bQiymat = (bulutData || {})[k];
       var mt = mVaqt[k] || 0;
@@ -442,6 +457,278 @@
     } catch (e) {}
     return { data: natija, ozgardi: ozgardi };
   }
+
+
+  /* ============================================================
+     YOZUV DARAJASIDAGI SINXRON  —  06.09.2026
+     2-BOSQICH: odat va reja endi bazada ALOHIDA QATOR bo'lib
+     yashaydi. Ilova kodiga tegilmagan — bu qatlam localStorage
+     o'zgarishini ushlab, farqini serverga yuboradi va serverdan
+     kelganini qaytarib yig'adi.
+
+     Nima uchun: butun ma'lumotni yaxlit yuborganda ikki qurilma
+     bir-birining ustiga yozardi. Endi har yozuv o'z qatorida,
+     ikki qurilma bir-biriga tegmaydi.
+     ============================================================ */
+
+  var YOZUV_TURLARI = {
+    i_odatlar: "odat",
+    i_reja:    "reja"
+  };
+  var SINXRON_VAQT = "i_yozuv_sinxron";   /* oxirgi muvaffaqiyatli o'qish vaqti */
+
+  /* --- localStorage qiymati -> yozuvlar ro'yxati --- */
+  function _yozuvlarga(kalit, matn) {
+    var chiq = {};
+    var d;
+    try { d = JSON.parse(matn || "null"); } catch (e) { return chiq; }
+    if (!d) return chiq;
+
+    if (kalit === "i_odatlar") {
+      if (!Array.isArray(d)) return chiq;
+      d.forEach(function (x) {
+        if (x && x.id !== undefined) chiq[String(x.id)] = x;
+      });
+      return chiq;
+    }
+
+    if (kalit === "i_reja") {
+      /* Eski massiv shakli ham tushuniladi */
+      if (Array.isArray(d)) {
+        d.forEach(function (x) {
+          if (x && x.id !== undefined) chiq["b:" + x.id] = { kun: x.date || null, item: x };
+        });
+        return chiq;
+      }
+      if (typeof d !== "object") return chiq;
+      Object.keys(d.bugun || {}).forEach(function (kun) {
+        (d.bugun[kun] || []).forEach(function (x) {
+          if (x && x.id !== undefined) chiq["b:" + x.id] = { kun: kun, item: x };
+        });
+      });
+      (d.shablon || []).forEach(function (x) {
+        if (x && x.id !== undefined) chiq["s:" + x.id] = { kun: null, item: x };
+      });
+      return chiq;
+    }
+    return chiq;
+  }
+
+  /* --- yozuvlar ro'yxati -> localStorage qiymati --- */
+  function _qiymatga(kalit, yozuvlar) {
+    if (kalit === "i_odatlar") {
+      var arr = [];
+      Object.keys(yozuvlar).forEach(function (id) { arr.push(yozuvlar[id]); });
+      /* Yaratilish tartibi saqlansin */
+      arr.sort(function (a, b) { return (a.id || 0) - (b.id || 0); });
+      return JSON.stringify(arr);
+    }
+
+    if (kalit === "i_reja") {
+      var o = { shablon: [], bugun: {} };
+      Object.keys(yozuvlar).forEach(function (id) {
+        var y = yozuvlar[id];
+        if (!y || !y.item) return;
+        if (id.indexOf("s:") === 0) { o.shablon.push(y.item); return; }
+        var kun = y.kun || y.item.date;
+        if (!kun) return;
+        if (!o.bugun[kun]) o.bugun[kun] = [];
+        o.bugun[kun].push(y.item);
+      });
+      Object.keys(o.bugun).forEach(function (k) {
+        o.bugun[k].sort(function (a, b) { return (a.id || 0) - (b.id || 0); });
+      });
+      return JSON.stringify(o);
+    }
+    return null;
+  }
+
+  /* Oxirgi serverga yuborilgan holat \u2014 farqni shundan hisoblaymiz */
+  var _serverHolat = {};   /* {i_odatlar: {id: JSON}, i_reja: {...}} */
+
+  function _holatOl(kalit) {
+    if (_serverHolat[kalit]) return _serverHolat[kalit];
+    try {
+      var s = JSON.parse(localStorage.getItem("i_yozuv_holat_" + kalit) || "{}");
+      _serverHolat[kalit] = s || {};
+    } catch (e) { _serverHolat[kalit] = {}; }
+    return _serverHolat[kalit];
+  }
+  function _holatYoz(kalit, holat) {
+    _serverHolat[kalit] = holat;
+    try { _rawSet("i_yozuv_holat_" + kalit, JSON.stringify(holat)); } catch (e) {}
+  }
+
+  /* --- Mahalliy o'zgarishni serverga yuborish --- */
+  var _yuborishNavbat = {};
+  var _yuborishTimer = null;
+
+  function yozuvNavbatga(kalit) {
+    if (!YOZUV_TURLARI[kalit]) return;
+    _yuborishNavbat[kalit] = 1;
+    clearTimeout(_yuborishTimer);
+    _yuborishTimer = setTimeout(yozuvlarniYubor, 1500);
+  }
+
+  function yozuvlarniYubor() {
+    if (!sb || !uid) return;
+    var kalitlar = Object.keys(_yuborishNavbat);
+    _yuborishNavbat = {};
+    kalitlar.forEach(function (kalit) {
+      try {
+        var tur = YOZUV_TURLARI[kalit];
+        var hozirgi = _yozuvlarga(kalit, localStorage.getItem(kalit));
+        var eski = _holatOl(kalit);
+
+        var yangilar = [], ochirilganlar = [];
+        Object.keys(hozirgi).forEach(function (id) {
+          var m = JSON.stringify(hozirgi[id]);
+          if (eski[id] !== m) yangilar.push({ id: id, data: hozirgi[id] });
+        });
+        Object.keys(eski).forEach(function (id) {
+          if (hozirgi[id] === undefined) ochirilganlar.push(id);
+        });
+
+        if (!yangilar.length && !ochirilganlar.length) return;
+
+        var ishlar = [];
+        if (yangilar.length) {
+          ishlar.push(sb.rpc("yozuv_saqla", { p_tur: tur, p_yozuvlar: yangilar }));
+        }
+        if (ochirilganlar.length) {
+          ishlar.push(sb.rpc("yozuv_ochir", { p_tur: tur, p_idlar: ochirilganlar }));
+        }
+
+        Promise.all(ishlar).then(function (natijalar) {
+          var xato = natijalar.some(function (r) { return r && r.error; });
+          if (xato) {
+            console.warn("Yozuv yuborilmadi, keyin qayta urinamiz");
+            _yuborishNavbat[kalit] = 1;   /* keyingi safar qayta */
+            return;
+          }
+          /* Muvaffaqiyatli \u2014 holatni yangilaymiz */
+          var yangiHolat = {};
+          Object.keys(hozirgi).forEach(function (id) {
+            yangiHolat[id] = JSON.stringify(hozirgi[id]);
+          });
+          _holatYoz(kalit, yangiHolat);
+          badgeHolat("ok");
+        }).catch(function () { _yuborishNavbat[kalit] = 1; });
+      } catch (e) { console.warn("yozuvlarniYubor:", e); }
+    });
+  }
+
+  /* --- Serverdan olib, mahalliy nusxaga qo'shish --- */
+  function yozuvlarniOl(hammasi) {
+    if (!sb || !uid) return Promise.resolve(false);
+    var since = null;
+    if (!hammasi) {
+      try { since = localStorage.getItem(SINXRON_VAQT) || null; } catch (e) {}
+    }
+
+    return sb.rpc("yozuvlar_ol", { p_since: since }).then(function (r) {
+      if (r.error || !r.data || r.data.holat !== "ok") return false;
+      var royxat = r.data.yozuvlar || [];
+      var serverVaqt = r.data.server_vaqt;
+      if (!royxat.length) {
+        try { if (serverVaqt) _rawSet(SINXRON_VAQT, serverVaqt); } catch (e) {}
+        return false;
+      }
+
+      /* Turlar bo'yicha ajratamiz */
+      var turKalit = {};
+      Object.keys(YOZUV_TURLARI).forEach(function (k) { turKalit[YOZUV_TURLARI[k]] = k; });
+
+      var ozgardi = false;
+      var guruh = {};
+      royxat.forEach(function (y) {
+        var kalit = turKalit[y.tur];
+        if (!kalit) return;
+        if (!guruh[kalit]) guruh[kalit] = [];
+        guruh[kalit].push(y);
+      });
+
+      Object.keys(guruh).forEach(function (kalit) {
+        var hozirgi = _yozuvlarga(kalit, localStorage.getItem(kalit));
+        var holat = _holatOl(kalit);
+        var oz = false;
+
+        guruh[kalit].forEach(function (y) {
+          if (y.ochirilgan) {
+            if (hozirgi[y.id] !== undefined) { delete hozirgi[y.id]; oz = true; }
+            delete holat[y.id];
+          } else {
+            var m = JSON.stringify(y.data);
+            if (JSON.stringify(hozirgi[y.id]) !== m) { hozirgi[y.id] = y.data; oz = true; }
+            holat[y.id] = m;
+          }
+        });
+
+        if (oz) {
+          var yangiQiymat = _qiymatga(kalit, hozirgi);
+          if (yangiQiymat !== null) {
+            try { _rawSet(kalit, yangiQiymat); } catch (e) {}
+            ozgardi = true;
+          }
+        }
+        _holatYoz(kalit, holat);
+      });
+
+      try { if (serverVaqt) _rawSet(SINXRON_VAQT, serverVaqt); } catch (e) {}
+
+      if (ozgardi) {
+        try { window.dispatchEvent(new CustomEvent("intizom-bulut-yangilandi")); } catch (e) {}
+      }
+      return ozgardi;
+    }).catch(function () { return false; });
+  }
+
+  /* --- Birinchi marta: mavjud ma'lumotni serverga ko'chirish --- */
+  function yozuvKochir() {
+    if (!sb || !uid) return;
+    try {
+      if (localStorage.getItem("i_yozuv_kochirildi") === "1") return;
+    } catch (e) {}
+
+    /* Serverda allaqachon bor bo'lsa ko'chirmaymiz */
+    sb.rpc("yozuv_hisob").then(function (r) {
+      var bor = r && r.data && Object.keys(r.data).length > 0;
+      if (bor) {
+        try { _rawSet("i_yozuv_kochirildi", "1"); } catch (e) {}
+        return;
+      }
+      Object.keys(YOZUV_TURLARI).forEach(function (k) { yozuvNavbatga(k); });
+      try { _rawSet("i_yozuv_kochirildi", "1"); } catch (e) {}
+      console.log("Odat va reja serverga ko'chirildi.");
+    }).catch(function () {});
+  }
+
+  /* Yozuv sinxronini ishga tushiradi: avval ko'chirish (bir marta),
+     keyin serverdan o'qish, so'ng har daqiqada tekshirib turish. */
+  var _yozuvBoshlandi = false;
+  function yozuvBoshla() {
+    if (_yozuvBoshlandi) return;
+    _yozuvBoshlandi = true;
+    try {
+      yozuvKochir();
+      setTimeout(function () { yozuvlarniOl(false); }, 1500);
+      setInterval(function () { yozuvlarniOl(false); }, 60 * 1000);
+      document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible") setTimeout(function () { yozuvlarniOl(false); }, 600);
+      });
+      /* Ilova yopilayotganda kutib turgan o'zgarish darhol ketsin */
+      window.addEventListener("pagehide", function () {
+        try { clearTimeout(_yuborishTimer); yozuvlarniYubor(); } catch (e) {}
+      });
+    } catch (e) { console.warn("yozuvBoshla:", e); }
+  }
+
+  /* Konsoldan tekshirish uchun */
+  window.intizomYozuv = {
+    yubor: function () { Object.keys(YOZUV_TURLARI).forEach(yozuvNavbatga); yozuvlarniYubor(); },
+    ol:    function () { return yozuvlarniOl(true); },
+    hisob: function () { return sb.rpc("yozuv_hisob").then(function (r) { console.log(r.data); return r.data; }); }
+  };
 
   function pullThenStart(urinish) {
     urinish = urinish || 1;
@@ -486,6 +773,7 @@
           if (typeof window.INTIZOM_YANGILA === "function") {
             try { window.INTIZOM_YANGILA(); } catch (e) {}
             hookStorage(); pushNow(); badge();
+            yozuvBoshla();
             return;
           }
           location.reload();
@@ -494,6 +782,7 @@
              yangilash shart emas; birlashgan holatni bulutga
              qaytarib yuboramiz, ikki tomon tenglashsin. */
           hookStorage(); pushNow(); badge();
+          yozuvBoshla();
         }
         return;
       }
@@ -501,6 +790,7 @@
       // --- Serverda qator YO'Q (yangi foydalanuvchi): mahalliyni yuklaymiz ---
       sinxronTayyor = true;
       hookStorage(); pushNow(); badge();
+      yozuvBoshla();
     }).catch(function (e) {
       pulling = false;
       console.warn("Bulut xatosi:", e);
@@ -654,9 +944,55 @@
   }
   window.obunaMatn = obunaMatn;
 
+  /* ------------------------------------------------------------
+     KIRISH SAQLANISHI
+     Kod faqat ro'yxatdan o'tganda so'ralishi kerak. Ilgari brauzer
+     xotirani tozalasa yoki token muddati o'tsa, qaytadan kod
+     so'ralardi. Endi kirish kalitining nusxasini o'zimiz ham
+     saqlaymiz va sessiya yo'qolsa o'shandan tiklaymiz.
+     ------------------------------------------------------------ */
+  /* Kalit "i_" bilan boshlanmaydi \u2014 shuning uchun bulutga
+     yuborilmaydi va boshqa qurilmaga o'tmaydi. Bu ataylab: kirish
+     kaliti faqat shu qurilmada qolishi kerak. */
+
+  function kirishKalitiSaqla() {
+    try {
+      sb.auth.getSession().then(function (r) {
+        var s = r && r.data && r.data.session;
+        if (s && s.refresh_token) {
+          localStorage.setItem("kirish_kaliti", s.refresh_token);
+        }
+      });
+    } catch (e) {}
+  }
+
+  /* Brauzerdan xotirani o'chirmaslikni so'raymiz.
+     iPhone va Android ishlatilmagan saytlar xotirasini o'zi
+     tozalaydi \u2014 ruxsat berilsa, tozalamaydi. */
+  function xotiraniHimoyala() {
+    try {
+      if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persisted().then(function (bor) {
+          if (bor) return;
+          navigator.storage.persist().then(function (ok) {
+            console.log(ok ? "Xotira himoyalandi." : "Xotira himoyasi berilmadi.");
+          });
+        });
+      }
+    } catch (e) {}
+  }
+
   function afterAuth(user) {
     uid = user.id;
     removeGate();
+    xotiraniHimoyala();
+    setTimeout(kirishKalitiSaqla, 500);
+    /* Token har yangilanganda zaxira nusxa ham yangilansin */
+    try {
+      sb.auth.onAuthStateChange(function (hodisa) {
+        if (hodisa === "TOKEN_REFRESHED" || hodisa === "SIGNED_IN") kirishKalitiSaqla();
+      });
+    } catch (e) {}
     obunaYangila();
     /* Ilgari sessiyada bir marta o'qib, keyin boshqa qaytib
        qaramasdi. Natijada qurilma o'zinikini yuborar, boshqasinikini
@@ -1004,15 +1340,104 @@
 
   function removeGate() { var g = document.getElementById("bulut-gate"); if (g) g.remove(); }
 
+  /* Saqlangan sessiya bormi \u2014 to'g'ridan-to'g'ri xotiradan tekshiramiz.
+     Bor bo'lsa-yu tarmoq sabab tasdiqlanmasa, kod so'ramaymiz. */
+  function _sessiyaBormi() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf("sb-") === 0 && k.indexOf("auth-token") > 0) {
+          var v = localStorage.getItem(k);
+          if (v && v.length > 20) return true;
+        }
+      }
+    } catch (e) {}
+    return false;
+  }
+
   function start() {
     loadSb().then(function () {
       sb = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true }
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: false
+        }
       });
+
       sb.auth.getSession().then(function (r) {
-        if (r.data && r.data.session && r.data.session.user) afterAuth(r.data.session.user);
-        else gate();
+        if (r.data && r.data.session && r.data.session.user) {
+          afterAuth(r.data.session.user);
+          return;
+        }
+
+        /* Sessiya topilmadi. Ilgari shu yerda darhol kod so'ralardi \u2014
+           token muddati o'tgan yoki internet sekin bo'lsa ham. Endi avval
+           yangilashga urinamiz. */
+        var zaxiraKalit = null;
+        try { zaxiraKalit = localStorage.getItem("kirish_kaliti"); } catch (e) {}
+
+        if (!_sessiyaBormi()) {
+          /* Supabase xotirasi tozalangan, lekin bizda zaxira kalit bor \u2014
+             kod so'ramasdan tiklaymiz. */
+          if (zaxiraKalit) {
+            console.log("Zaxira kalitdan tiklanmoqda...");
+            sb.auth.setSession({ access_token: "", refresh_token: zaxiraKalit })
+              .then(function (r3) {
+                if (r3 && r3.data && r3.data.session && r3.data.session.user) {
+                  console.log("Kirish tiklandi \u2014 kod so'ralmadi.");
+                  afterAuth(r3.data.session.user);
+                } else {
+                  console.warn("Zaxira kalit ishlamadi:", r3 && r3.error && r3.error.message);
+                  try { localStorage.removeItem("kirish_kaliti"); } catch (e) {}
+                  gate();
+                }
+              }).catch(function () {
+                try { localStorage.removeItem("kirish_kaliti"); } catch (e) {}
+                gate();
+              });
+            return;
+          }
+          gate(); return;
+        }
+
+        console.log("Sessiya bor, yangilanmoqda...");
+        sb.auth.refreshSession().then(function (r2) {
+          if (r2 && r2.data && r2.data.session && r2.data.session.user) {
+            console.log("Sessiya yangilandi.");
+            afterAuth(r2.data.session.user);
+            return;
+          }
+          /* Internet yo'q bo'lsa kod so'ramaymiz \u2014 ilova mahalliy
+             ma'lumot bilan ishlayversin, ulanganda o'zi tiklanadi. */
+          if (typeof navigator !== "undefined" && navigator.onLine === false) {
+            console.warn("Internet yo'q \u2014 kirish keyinga qoldirildi.");
+            removeGate();
+            window.addEventListener("online", function () { location.reload(); }, { once: true });
+            return;
+          }
+          console.warn("Sessiyani yangilab bo'lmadi:", r2 && r2.error && r2.error.message);
+          gate();
+        }).catch(function (e) {
+          if (typeof navigator !== "undefined" && navigator.onLine === false) {
+            removeGate();
+            window.addEventListener("online", function () { location.reload(); }, { once: true });
+            return;
+          }
+          console.warn("refreshSession xatosi:", e && e.message);
+          gate();
+        });
       });
+
+      /* Sessiya o'zgarishini kuzatamiz: token yangilanganda qayta kirish
+         so'ralmasin, chiqib ketilganda esa sabab konsolda ko'rinsin. */
+      try {
+        sb.auth.onAuthStateChange(function (hodisa, sessiya) {
+          if (hodisa === "TOKEN_REFRESHED") { console.log("Token yangilandi."); }
+          if (hodisa === "SIGNED_OUT") { console.warn("Sessiya tugadi (SIGNED_OUT)."); }
+        });
+      } catch (e) {}
+
     }).catch(function (e) { console.warn("Bulut ulanmadi:", e && e.message); });
   }
 
