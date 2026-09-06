@@ -200,6 +200,10 @@
         <div id="b-sana" style="font-size:14px;color:var(--t2);opacity:.8;margin-top:4px"></div>
       </div>
       <div style="display:flex;align-items:flex-start;gap:12px">
+        <div onclick="tilOyna()" style="cursor:pointer;text-align:center" title="Til / Язык / Language" data-notr="1">
+          <div style="width:44px;height:44px;border-radius:16px;background:var(--card);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:22px"><span id="til-bosh-bayroq">&#127482;&#127487;</span></div>
+          <div style="font-size:12.5px;color:var(--t2);margin-top:3px">Til</div>
+        </div>
         <div onclick="lockApp()" style="cursor:pointer;text-align:center" title="Ilovadan chiqish">
           <div style="width:44px;height:44px;border-radius:16px;background:var(--card);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:20px">&#128274;</div>
           <div style="font-size:12.5px;color:var(--t2);margin-top:3px">Chiqish</div>
@@ -908,6 +912,11 @@
       <div class="sitem" onclick="openM('parol-modal')">
         <div class="sicon" style="background:rgba(239,68,68,.12)">&#128274;</div>
         <div style="flex:1"><div style="font-size:15px;font-weight:700">Parol himoya</div><div id="parol-desc" style="font-size:14px;color:var(--t2)">O&#39;rnatilmagan</div></div>
+        <span style="color:var(--t2)">&#8250;</span>
+      </div>
+      <div class="sitem" onclick="qurilmaTenglash()">
+        <div class="sicon" style="background:rgba(0,200,150,.12)">&#128260;</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:700">Qurilmalarni tenglashtirish</div><div style="font-size:14px;color:var(--t2)">Telefon va kompyuterdagi yozuvlarni qo&#39;shish</div></div>
         <span style="color:var(--t2)">&#8250;</span>
       </div>
       <div class="sitem" onclick="openJurQulf()">
@@ -5123,6 +5132,20 @@ var _jurOchiq={};          /* id -> ochilgan matn */
 try{ var _jp=sessionStorage.getItem('jur_parol'); if(_jp)_jurParol=_jp; }catch(e){}
 
 function jurQulf(){ var q=S.g(JQ_KEY); return (q&&q.sinov&&q.tuz)?q:null; }
+
+/* Ikki qurilmadagi yozuvlarni QO'SHADI. Hech narsa o'chmaydi \u2014
+   ikkala tomonda bor yozuvlar birlashtiriladi. */
+function qurilmaTenglash(){
+  if(typeof window.intizomTenglashtir!=='function'){
+    showNotif('\u26a0\ufe0f','Bulutga ulanmagan');
+    return;
+  }
+  if(!confirm('Telefon va kompyuterdagi yozuvlar qo\'shilsinmi?\n\nHech narsa o\'chmaydi \u2014 ikkala tomonda bor yozuvlar birlashtiriladi. Bir necha soniya ketadi.')) return;
+  showNotif('\ud83d\udd04 Tenglashtirilmoqda...','Biroz kuting');
+  window.intizomTenglashtir().then(function(oz){
+    showNotif(oz?'\u2705 Tenglashtirildi':'\u2705 Hammasi joyida', oz?'Yangi yozuvlar qo\'shildi':'Farq topilmadi');
+  }).catch(function(){ showNotif('\u26a0\ufe0f','Tenglashtirib bo\'lmadi \u2014 internetni tekshiring'); });
+}
 function jurQulfDesc(){
   var el=document.getElementById('jurqulf-desc'); if(!el)return;
   el.textContent = !jurQulfBor() ? 'O\'rnatilmagan \u2014 matn ochiq saqlanadi'
@@ -11211,7 +11234,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '44';
+var KUZ_VERSIYA = '47';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -11734,7 +11757,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '44';
+var ILOVA_VERSIYA = '47';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
@@ -12212,6 +12235,8 @@ window.addEventListener('intizom-bulut-yangilandi', function(){
     var lg=til();
     var el=document.getElementById('til-desc');
     if(el) el.textContent=BAYROQ[lg]+' '+NOM[lg];
+    var bb=document.getElementById('til-bosh-bayroq');
+    if(bb) bb.textContent=BAYROQ[lg];
     ['uz','ru','en'].forEach(function(k){
       var b=document.getElementById('til-b-'+k);
       if(!b) return;
@@ -12223,12 +12248,55 @@ window.addEventListener('intizom-bulut-yangilandi', function(){
   }
   window.tilTugmalarniYangila=tilTugmalarniYangila;
 
+  /* Bosh sahifadagi bayroqcha bosilganda chiqadigan tanlov */
+  window.tilOyna=function(){
+    var joriy=til();
+    var d=document.createElement('div');
+    d.setAttribute('data-notr','1');
+    d.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;font-family:inherit';
+    d.innerHTML='<div style="width:100%;max-width:420px;background:var(--card);color:var(--text);border-radius:22px 22px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px))">'+
+      '<div style="width:40px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 16px"></div>'+
+      '<div style="font-size:18px;font-weight:800;margin-bottom:4px">Til / Язык / Language</div>'+
+      '<div style="font-size:14px;color:var(--t2);margin-bottom:16px">Ilova tilini tanlang</div>'+
+      ['uz','ru','en'].map(function(k){
+        var faol=(k===joriy);
+        return '<button data-til="'+k+'" style="width:100%;display:flex;align-items:center;gap:12px;padding:14px;margin-bottom:8px;'+
+          'border-radius:14px;border:1.5px solid '+(faol?'var(--g)':'var(--bd)')+';'+
+          'background:'+(faol?'rgba(0,200,150,.10)':'var(--bg)')+';color:var(--text);'+
+          'font-size:16px;font-weight:700;cursor:pointer;text-align:left">'+
+          '<span style="font-size:24px">'+BAYROQ[k]+'</span>'+
+          '<span style="flex:1">'+NOM[k]+'</span>'+
+          (faol?'<span style="color:var(--g);font-size:19px">&#10003;</span>':'')+
+        '</button>';
+      }).join('')+
+      '<button id="til-x" style="width:100%;padding:12px;border:none;border-radius:12px;background:transparent;color:var(--t2);font-size:15px;cursor:pointer;margin-top:4px">Yopish</button>'+
+    '</div>';
+    document.body.appendChild(d);
+    d.onclick=function(e){ if(e.target===d) d.remove(); };
+    d.querySelector('#til-x').onclick=function(){ d.remove(); };
+    var btns=d.querySelectorAll('button[data-til]');
+    for(var i=0;i<btns.length;i++){
+      btns[i].onclick=function(){
+        var k=this.getAttribute('data-til');
+        d.remove();
+        window.tilTanla(k);
+      };
+    }
+  };
+
   /* --- Sozlamadagi qator (bayroqchalar) --- */
   function tilQatorQoy(){
     if(document.getElementById('til-qator')) return;
     var jur=document.getElementById('jurqulf-desc');
     var sitem=jur?jur.closest('.sitem'):null;
-    if(!sitem||!sitem.parentNode) return;
+    if(!sitem||!sitem.parentNode){
+      /* Zaxira yo'l: sozlama sahifasidagi birinchi kartaga qo'shamiz \u2014
+         qator hech bo'lmasa bir joyda ko'rinsin. */
+      var sz=document.getElementById('page-sozlama');
+      var karta=sz?sz.querySelector('.card'):null;
+      if(!karta) return;
+      sitem={parentNode:karta, nextSibling:null};
+    }
     var d=document.createElement('div');
     d.id='til-qator'; d.className='sitem'; d.setAttribute('data-notr','1');
     d.style.cursor='default';

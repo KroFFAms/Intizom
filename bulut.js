@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "44";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "47";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -998,8 +998,56 @@
     } catch (e) { console.warn("yozuvBoshla:", e); }
   }
 
+  /* ==========================================================
+     TO'LIQ TENGLASHTIRISH
+     Oddiy sinxron faqat "oxirgi so'rovdan keyingi" yozuvlarni
+     oladi. Agar ikki qurilma bir muddat bir-birini ko'rmay
+     qolsa, eski yozuvlar hech qachon qaytib kelmaydi \u2014 har
+     qurilmada o'z bo'lagi qoladi (moliyada aynan shu bo'lgan).
+
+     Bu funksiya belgilarni tozalab, HAMMASINI qaytadan o'qiydi:
+       1) mahalliy yozuvlarni serverga yuboradi;
+       2) serverdagi hammasini qaytarib oladi.
+     Belgilar bo'sh bo'lgani uchun hech narsa "o'chirildi" deb
+     hisoblanmaydi \u2014 ikki tomon QO'SHILADI, yo'qotish yo'q.
+     ========================================================== */
+  function toliqTenglashtir() {
+    if (!sb || !uid) return Promise.resolve(false);
+    console.log("To'liq tenglashtirish boshlandi...");
+    try {
+      Object.keys(YOZUV_TURLARI).forEach(function (k) {
+        localStorage.removeItem("i_yozuv_holat_" + k);
+      });
+      _serverHolat = {};
+      localStorage.removeItem(SINXRON_VAQT);
+    } catch (e) {}
+
+    /* 1) o'zimiznikini yuboramiz */
+    Object.keys(YOZUV_TURLARI).forEach(function (k) {
+      try { if (localStorage.getItem(k)) _yuborishNavbat[k] = 1; } catch (e) {}
+    });
+    yozuvlarniYubor();
+
+    /* 2) biroz kutib, serverdagi hammasini olamiz */
+    return new Promise(function (res) {
+      setTimeout(function () {
+        yozuvlarniOl(true).then(function (ozgardi) {
+          console.log("Tenglashtirish tugadi." + (ozgardi ? " Yangi yozuvlar qo'shildi." : " Farq topilmadi."));
+          if (ozgardi) {
+            try { showNotif("\u2601\uFE0F Tenglashtirildi",
+                  "Boshqa qurilmadagi yozuvlar qo'shildi"); } catch (e) {}
+            try { if (typeof window.INTIZOM_YANGILA === "function") window.INTIZOM_YANGILA(); } catch (e) {}
+          }
+          res(ozgardi);
+        });
+      }, 3000);
+    });
+  }
+  window.intizomTenglashtir = toliqTenglashtir;
+
   /* Konsoldan tekshirish uchun */
   window.intizomYozuv = {
+    tenglashtir: toliqTenglashtir,
     yubor: function () {
       Object.keys(YOZUV_TURLARI).forEach(yozuvNavbatga);
       yozuvlarniYubor();
@@ -1141,6 +1189,152 @@
     } catch (e) {}
   };
 
+  /* ==========================================================
+     ESKI RASMLARNI KO'CHIRISH  \u2014  06.09.2026
+
+     rasmYukla() qo'shilgunga qadar suratlar to'g'ridan-to'g'ri
+     ma'lumot ichida, matn (data:image/...) ko'rinishida
+     saqlangan. Bitta avatar 1 MB dan oshadi, natijada:
+       \u2022 telefon xotirasining yarmi rasm bilan band bo'ladi;
+       \u2022 har sinxronda o'sha 1 MB butunlay qayta yuboriladi
+         \u2014 u yetib bormaydi va ikki qurilma tenglashmaydi,
+         shuning uchun har birida o'z rasmi qolib ketadi.
+
+     Bu funksiya eski rasmlarni topib Storage'ga yuklaydi va
+     o'rniga qisqa yo'l ("rasm:<...>") qoldiradi. Bir marta
+     ishlaydi. Qo'lda: intizomRasmKochir()
+     ========================================================== */
+  var RASM_KOCH = "i_rasm_kochdi_v1";
+
+  /* Tuzilma ichidagi hamma data:image matnini topadi va
+     almashtiradi. Qaytaradi: nechta almashtirildi. */
+  function _rasmlarniAlmash(x, xarita, chuqur) {
+    if (chuqur > 8) return 0;
+    var son = 0;
+    if (Array.isArray(x)) {
+      for (var i = 0; i < x.length; i++) {
+        if (typeof x[i] === "string") {
+          if (xarita[x[i]]) { x[i] = xarita[x[i]]; son++; }
+        } else if (x[i] && typeof x[i] === "object") {
+          son += _rasmlarniAlmash(x[i], xarita, (chuqur || 0) + 1);
+        }
+      }
+    } else if (x && typeof x === "object") {
+      Object.keys(x).forEach(function (k) {
+        if (typeof x[k] === "string") {
+          if (xarita[x[k]]) { x[k] = xarita[x[k]]; son++; }
+        } else if (x[k] && typeof x[k] === "object") {
+          son += _rasmlarniAlmash(x[k], xarita, (chuqur || 0) + 1);
+        }
+      });
+    }
+    return son;
+  }
+
+  /* Tuzilma ichidan data:image matnlarini yig'adi */
+  function _rasmlarniTop(x, chiq, chuqur) {
+    if (chuqur > 8) return chiq;
+    function tekshir(v) {
+      if (typeof v === "string" && v.indexOf("data:image/") === 0 && v.length > 5000) chiq[v] = 1;
+    }
+    if (Array.isArray(x)) {
+      x.forEach(function (i) {
+        if (typeof i === "string") tekshir(i);
+        else if (i && typeof i === "object") _rasmlarniTop(i, chiq, (chuqur || 0) + 1);
+      });
+    } else if (x && typeof x === "object") {
+      Object.keys(x).forEach(function (k) {
+        if (typeof x[k] === "string") tekshir(x[k]);
+        else if (x[k] && typeof x[k] === "object") _rasmlarniTop(x[k], chiq, (chuqur || 0) + 1);
+      });
+    }
+    return chiq;
+  }
+
+  function rasmKochir(majburiy) {
+    if (!sb || !uid) return Promise.resolve(0);
+    if (!majburiy) {
+      try { if (localStorage.getItem(RASM_KOCH) === "1") return Promise.resolve(0); } catch (e) {}
+    }
+
+    /* 1-qadam: hamma bo'limdan eski rasmlarni yig'amiz */
+    var kalitlar = [], barcha = {};
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!k || k.indexOf("i_") !== 0) continue;
+        var v = localStorage.getItem(k) || "";
+        if (v.indexOf("data:image/") === -1) continue;
+        var d;
+        try { d = JSON.parse(v); } catch (e) { continue; }
+        if (!d || typeof d !== "object") continue;
+        kalitlar.push(k);
+        _rasmlarniTop(d, barcha, 0);
+      }
+    } catch (e) {}
+
+    var royxat = Object.keys(barcha);
+    if (!royxat.length) {
+      try { localStorage.setItem(RASM_KOCH, "1"); } catch (e) {}
+      return Promise.resolve(0);
+    }
+
+    console.log("Eski rasm topildi: " + royxat.length + " ta \u2014 Storage'ga ko'chirilmoqda...");
+
+    /* 2-qadam: birma-bir yuklaymiz (bir vaqtda emas \u2014 tarmoqni bo'g'masin) */
+    var xarita = {}, yuklandi = 0;
+    var ish = Promise.resolve();
+    royxat.forEach(function (dataUrl) {
+      ish = ish.then(function () {
+        return window.rasmYukla(dataUrl, "eski").then(function (natija) {
+          /* rasmYukla xato bo'lsa siqilgan dataUrl qaytaradi \u2014
+             u ham foyda: 1 MB o'rniga 50 KB bo'ladi. */
+          if (natija && natija !== dataUrl) {
+            xarita[dataUrl] = natija;
+            if (natija.indexOf("rasm:") === 0) yuklandi++;
+          }
+        }).catch(function () {});
+      });
+    });
+
+    /* 3-qadam: bo'limlardagi eski matnni yangi yo'lga almashtiramiz */
+    return ish.then(function () {
+      var ozgardi = 0;
+      kalitlar.forEach(function (k) {
+        try {
+          var d = JSON.parse(localStorage.getItem(k) || "null");
+          if (!d || typeof d !== "object") return;
+          if (_rasmlarniAlmash(d, xarita, 0) > 0) {
+            /* Oddiy setItem \u2014 shunda sinxron ham xabardor bo'ladi */
+            localStorage.setItem(k, JSON.stringify(d));
+            ozgardi++;
+          }
+        } catch (e) {}
+      });
+      try { localStorage.setItem(RASM_KOCH, "1"); } catch (e) {}
+      var kb = Math.round(xotiraHajmi() / 1024);
+      console.log("Rasm ko'chirildi: " + yuklandi + "/" + royxat.length +
+                  " ta Storage'ga, " + ozgardi + " ta bo'lim yangilandi. Xotira: " + kb + " KB");
+      if (ozgardi) {
+        try { showNotif("\uD83D\uDDBC\uFE0F Rasmlar tartibga solindi",
+              yuklandi + " ta rasm bulutga ko'chirildi \u2014 endi ikkala qurilmada ham ko'rinadi"); } catch (e) {}
+        try { if (typeof window.INTIZOM_YANGILA === "function") window.INTIZOM_YANGILA(); } catch (e) {}
+      }
+      return yuklandi;
+    });
+  }
+  window.intizomRasmKochir = function () { return rasmKochir(true); };
+
+  /* Bir marta \u2014 v45 ga o'tgan har qurilmada. Rasmlar
+     ko'chirilgandan KEYIN ishlaydi: shunda profil yozuvi
+     kichkina bo'lib qoladi va serverga bemalol yetib boradi. */
+  var TENG_KEY = "i_tenglash_v45";
+  function birMartaTenglash() {
+    try { if (localStorage.getItem(TENG_KEY) === "1") return; } catch (e) {}
+    try { localStorage.setItem(TENG_KEY, "1"); } catch (e) {}
+    setTimeout(function () { toliqTenglashtir(); }, 2000);
+  }
+
   function pullThenStart(urinish) {
     urinish = urinish || 1;
     pulling = true;
@@ -1185,6 +1379,7 @@
             try { window.INTIZOM_YANGILA(); } catch (e) {}
             hookStorage(); pushNow(); badge();
             yozuvBoshla();
+            setTimeout(function () { rasmKochir().then(birMartaTenglash); }, 6000);
             return;
           }
           location.reload();
@@ -1194,6 +1389,7 @@
              qaytarib yuboramiz, ikki tomon tenglashsin. */
           hookStorage(); pushNow(); badge();
           yozuvBoshla();
+          setTimeout(function () { rasmKochir().then(birMartaTenglash); }, 6000);
         }
         return;
       }
@@ -1202,6 +1398,7 @@
       sinxronTayyor = true;
       hookStorage(); pushNow(); badge();
       yozuvBoshla();
+      setTimeout(function () { rasmKochir().then(birMartaTenglash); }, 6000);
     }).catch(function (e) {
       pulling = false;
       console.warn("Bulut xatosi:", e);
