@@ -3573,9 +3573,23 @@ function updateAvatarUI(p){
     if(id.endsWith('-i')){
       el.style.display=p.avatar?'block':'none';
       if(p.avatar){
-        if(p.avatar.indexOf('rasm:')===0 && window.rasmManzil){
-          window.rasmManzil(p.avatar).then(function(u){ if(u) el.src=u; });
-        } else el.src=p.avatar;
+        if(p.avatar.indexOf('rasm:')===0){
+          /* "rasm:..." \u2014 bu haqiqiy manzil emas, bulutdan
+             imzolangan havola olinishi kerak. bulut.js index.html
+             dan KEYIN yuklanadi, shuning uchun bu funksiya
+             birinchi marta ishlaganda window.rasmManzil hali
+             bo'lmasligi mumkin. Ilgari shunda xom yo'l to'g'ridan-
+             to'g'ri src ga tushib, brauzer uni bloklardi.
+             Endi belgi qo'yamiz \u2014 rasmlarniKorsat keyinroq
+             o'zi topib qo'yadi. */
+          el.setAttribute('data-rasm', p.avatar);
+          if(window.rasmManzil){
+            window.rasmManzil(p.avatar).then(function(u){ if(u) el.src=u; });
+          }
+        } else {
+          el.removeAttribute('data-rasm');
+          el.src=p.avatar;
+        }
       }
     }else{
       el.style.display=p.avatar?'none':'';
@@ -11242,7 +11256,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '49';
+var KUZ_VERSIYA = '50';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -11765,7 +11779,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '49';
+var ILOVA_VERSIYA = '50';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');

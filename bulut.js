@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "49";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "50";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -174,16 +174,29 @@
        bo'lsa — bu ehtimol xato. Bulutdagi to'liq nusxani
        yo'qotmaslik uchun to'xtaymiz va zaxira olamiz. */
     if (oxirgiHajm && JSON.stringify(d).length < oxirgiHajm * 0.5) {
-      console.warn("Sinxron to'xtatildi: ma'lumot keskin kamaydi.",
-                   "oldin:", oxirgiHajm, "hozir:", JSON.stringify(d).length);
-      zaxiraOl("keskin kamayish");
-      badgeHolat("xato");
-      return;
+      /* Rasm ko'chirilganda ma'lumot ATAYLAB keskin kichrayadi
+         (650 KB \u2192 15 KB). Himoya buni ma'lumot yo'qolishi deb
+         tushunib sinxronni to'xtatib qo'yardi. Ko'chirishdan
+         keyingi BIR marta bu tekshiruvni o'tkazib yuboramiz. */
+      if (_kamayishRuxsat) {
+        _kamayishRuxsat = false;
+        console.log("Ma'lumot kichraydi \u2014 rasm ko'chirilgani uchun, bu kutilgan.");
+      } else {
+        console.warn("Sinxron to'xtatildi: ma'lumot keskin kamaydi.",
+                     "oldin:", oxirgiHajm, "hozir:", JSON.stringify(d).length);
+        zaxiraOl("keskin kamayish");
+        badgeHolat("xato");
+        return;
+      }
     }
 
     var row = { user_id: uid, data: d, updated_at: new Date(hozir()).toISOString() };
     sb.from(TABLE).upsert(row, { onConflict: "user_id" }).then(function (r) {
-      if (!r.error) { oxirgiImzo = yangiImzo; oxirgiHajm = JSON.stringify(d).length; }
+      if (!r.error) {
+        oxirgiImzo = yangiImzo;
+        oxirgiHajm = JSON.stringify(d).length;
+        try { localStorage.removeItem("i_kamayish_ruxsat"); } catch (e) {}
+      }
       badgeHolat(r.error ? "xato" : "ok");
     });
   }
@@ -1313,6 +1326,10 @@
   }
 
   var _rasmYuribdi = false;
+  /* Rasm ko'chirilgach ma'lumot ataylab kichrayadi \u2014 shuni
+     kamayish himoyasiga bir marta ruxsat berish uchun. */
+  var _kamayishRuxsat = false;
+  try { if (localStorage.getItem("i_kamayish_ruxsat") === "1") _kamayishRuxsat = true; } catch (e) {}
   function rasmKochir(majburiy) {
     if (!sb || !uid) return Promise.resolve(0);
     if (_rasmYuribdi) return Promise.resolve(0);
@@ -1378,6 +1395,10 @@
       });
       try { localStorage.setItem(RASM_KOCH, "1"); } catch (e) {}
       _rasmYuribdi = false;
+      if (ozgardi) {
+        _kamayishRuxsat = true;
+        try { localStorage.setItem("i_kamayish_ruxsat", "1"); } catch (e) {}
+      }
       var kb = Math.round(xotiraHajmi() / 1024);
       console.log("Rasm ko'chirildi: " + yuklandi + "/" + royxat.length +
                   " ta Storage'ga, " + ozgardi + " ta bo'lim yangilandi. Xotira: " + kb + " KB");
