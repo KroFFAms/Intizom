@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "33";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "35";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -515,6 +515,18 @@
   };
   var SINXRON_VAQT = "i_yozuv_sinxron";   /* oxirgi muvaffaqiyatli o'qish vaqti */
 
+  /* Eski versiyada to'liq nusxalar saqlangan edi \u2014 ular xotirani
+     behuda egallaydi. Bir marta tozalaymiz, keyingi yuborishda
+     qisqa belgilar bilan qaytadan yoziladi. */
+  try {
+    if (localStorage.getItem("i_yozuv_holat_v2") !== "1") {
+      ["i_odatlar","i_reja","i_hifz","i_trans","i_xarid","i_jurnal"].forEach(function (k) {
+        try { localStorage.removeItem("i_yozuv_holat_" + k); } catch (e) {}
+      });
+      localStorage.setItem("i_yozuv_holat_v2", "1");
+    }
+  } catch (e) {}
+
   /* --- localStorage qiymati -> yozuvlar ro'yxati --- */
   function _yozuvlarga(kalit, matn) {
     var chiq = {};
@@ -622,6 +634,21 @@
     return null;
   }
 
+  /* Yozuvning qisqa belgisi. Ilgari bu yerda yozuvning TO'LIQ nusxasi
+     saqlanardi \u2014 xotira sarfi deyarli ikki barobar oshardi.
+     Xotira to'lsa Supabase yangi kirish kalitini saqlay olmaydi va
+     sessiya o'ladi (har yangilanishda kod so'ralishi shundan edi).
+     Endi faqat qisqa belgi: uzunlik + nazorat yig'indisi. */
+  function _belgiHash(x) {
+    var s;
+    try { s = JSON.stringify(x); } catch (e) { return "0"; }
+    var n = 0;
+    for (var i = 0; i < s.length; i++) {
+      n = ((n << 5) - n + s.charCodeAt(i)) | 0;
+    }
+    return s.length + ":" + (n >>> 0).toString(36);
+  }
+
   /* Oxirgi serverga yuborilgan holat \u2014 farqni shundan hisoblaymiz */
   var _serverHolat = {};   /* {i_odatlar: {id: JSON}, i_reja: {...}} */
 
@@ -661,7 +688,7 @@
 
         var yangilar = [], ochirilganlar = [];
         Object.keys(hozirgi).forEach(function (id) {
-          var m = JSON.stringify(hozirgi[id]);
+          var m = _belgiHash(hozirgi[id]);
           if (eski[id] !== m) yangilar.push({ id: id, data: hozirgi[id] });
         });
         Object.keys(eski).forEach(function (id) {
@@ -688,7 +715,7 @@
           /* Muvaffaqiyatli \u2014 holatni yangilaymiz */
           var yangiHolat = {};
           Object.keys(hozirgi).forEach(function (id) {
-            yangiHolat[id] = JSON.stringify(hozirgi[id]);
+            yangiHolat[id] = _belgiHash(hozirgi[id]);
           });
           _holatYoz(kalit, yangiHolat);
           badgeHolat("ok");
@@ -737,8 +764,8 @@
             if (hozirgi[y.id] !== undefined) { delete hozirgi[y.id]; oz = true; }
             delete holat[y.id];
           } else {
-            var m = JSON.stringify(y.data);
-            if (JSON.stringify(hozirgi[y.id]) !== m) { hozirgi[y.id] = y.data; oz = true; }
+            var m = _belgiHash(y.data);
+            if (_belgiHash(hozirgi[y.id]) !== m) { hozirgi[y.id] = y.data; oz = true; }
             holat[y.id] = m;
           }
         });
@@ -767,37 +794,47 @@
      Belgi HAR TUR uchun alohida. Ilgari bitta umumiy belgi bor edi:
      odat va reja ko'chgach belgi qo'yilar, keyin qo'shilgan turlar
      (yodlash, moliya, xarid, kundalik) hech qachon ko'chmasdi. */
+  /* --- Birinchi marta: mavjud ma'lumotni serverga ko'chirish ---
+     MUHIM (06.09.2026): ilgari "serverda bu turdan bor bo'lsa
+     ko'chirmaymiz" degan shart bor edi. Natijada ikkinchi
+     qurilmadagi yozuvlar hech qachon serverga chiqmasdi \u2014
+     birinchi qurilma yuborgan bo'lsa, ikkinchisi jim turardi.
+     Endi har qurilma o'zidagini bir marta yuboradi. Bir xil
+     yozuv qayta yuborilsa zarari yo'q: id bo'yicha ustiga
+     yoziladi, nusxa ko'paymaydi. */
   function yozuvKochir() {
     if (!sb || !uid) return;
 
-    sb.rpc("yozuv_hisob").then(function (r) {
-      var serverda = (r && r.data) ? r.data : {};
+    var yangiTur = false;
 
-      Object.keys(YOZUV_TURLARI).forEach(function (kalit) {
-        var tur = YOZUV_TURLARI[kalit];
-        var belgi = "i_yozuv_kochdi_" + tur;
+    Object.keys(YOZUV_TURLARI).forEach(function (kalit) {
+      var tur = YOZUV_TURLARI[kalit];
+      var belgi = "i_yozuv_kochdi_" + tur;
 
-        try { if (localStorage.getItem(belgi) === "1") return; } catch (e) {}
+      try { if (localStorage.getItem(belgi) === "1") return; } catch (e) {}
 
-        /* Serverda shu turdan allaqachon bor bo'lsa \u2014 ko'chirmaymiz */
-        if (serverda[tur] && serverda[tur] > 0) {
-          try { _rawSet(belgi, "1"); } catch (e) {}
-          return;
-        }
+      var bor = false;
+      try {
+        var m = localStorage.getItem(kalit);
+        bor = !!(m && Object.keys(_yozuvlarga(kalit, m)).length);
+      } catch (e) {}
 
-        /* Mahalliy ma'lumot bormi */
-        var bor = false;
-        try {
-          var m = localStorage.getItem(kalit);
-          bor = !!(m && Object.keys(_yozuvlarga(kalit, m)).length);
-        } catch (e) {}
-        if (!bor) return;
+      try { _rawSet(belgi, "1"); } catch (e) {}
+      yangiTur = true;
 
-        yozuvNavbatga(kalit);
-        try { _rawSet(belgi, "1"); } catch (e) {}
-        console.log("Ko'chirilmoqda: " + tur);
-      });
-    }).catch(function () {});
+      if (!bor) return;
+      yozuvNavbatga(kalit);
+      console.log("Ko'chirilmoqda: " + tur);
+    });
+
+    /* Yangi tur qo'shilgan bo'lsa \u2014 TO'LIQ o'qiymiz.
+       "Oxirgi so'rovdan keyingi" o'qish yetmaydi: boshqa qurilma
+       o'sha yozuvni ilgariroq yuborgan bo'lishi mumkin va u
+       belgidan oldin qolib ketardi. */
+    if (yangiTur) {
+      try { localStorage.removeItem(SINXRON_VAQT); } catch (e) {}
+      setTimeout(function () { yozuvlarniOl(true); }, 2500);
+    }
   }
 
   /* Yozuv sinxronini ishga tushiradi: avval ko'chirish (bir marta),
