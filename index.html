@@ -4008,6 +4008,7 @@ function renderBosh(){
   setEl('b-sana', sanaUz(new Date(),'toliq'));
   updateAvatarUI(p);
   try{ odatlarniAvtoYangila(); }catch(e){}
+  try{ odatStreakYangila(); }catch(e){}
   try{ kataklarniYangila(); }catch(e){}
   const rd=state.reja,todayR=(rd.bugun[today]||[]);
   const doneR=todayR.filter(r=>r.done).length;
@@ -4170,19 +4171,16 @@ function odatlarniAvtoYangila(){
   od.forEach(function(o){
     if(!o.manba || !ODAT_MANBA[o.manba]) return;
     o.hist = o.hist||{};
-    var st=0, uzildi=false;
     for(var i=0;i<90;i++){
       var d=new Date(); d.setDate(d.getDate()-i);
       var k=kunKal(d);
       var bor=odatManbaKun(o.manba,k);
       if(bor){ if(o.hist[k]!==true){ o.hist[k]=true; ozgardi=true; } }
       else    { if(o.hist[k]){ delete o.hist[k]; ozgardi=true; } }
-      if(!uzildi){
-        if(bor) st++;
-        else if(i>0) uzildi=true;   /* bugun hali bo'lmasa uzilmagan hisoblanadi */
-      }
     }
-    if(o.streak!==st){ o.streak=st; ozgardi=true; }
+    /* Ketma-ketlik bir joyda hisoblanadi: dam kuni qoidasi
+       manbali odatlarga ham tegishli. */
+    if(streakHisobla(o)) ozgardi = true;
   });
   if(ozgardi){ try{ S.s('i_odatlar', od); }catch(e){} }
   return ozgardi;
@@ -4296,6 +4294,37 @@ function openOdatDetal(id){
         '<div style="font-size:11.5px;color:var(--t2);margin-top:2px">jami kun</div></div>'+
     '</div>'+
 
+    /* Bosqich \u2014 keyingi nishon qancha qolganini ko'rsatadi */
+    (function(){
+      var s = o.streak||0, keyingi = null;
+      BOSQICHLAR.forEach(function(b){ if(keyingi===null && s < b) keyingi = b; });
+      if(!keyingi) return '';
+      var f = Math.round(s/keyingi*100);
+      return '<div style="background:var(--bg);border-radius:var(--r-sm);padding:13px;margin-bottom:16px">'+
+        '<div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:8px">'+
+          '<span style="color:var(--t2)">Keyingi bosqich</span>'+
+          '<span style="font-weight:800">'+s+' / '+keyingi+' kun</span></div>'+
+        '<div style="background:var(--bd);border-radius:3px;height:6px">'+
+          '<div style="background:var(--brass);height:6px;border-radius:3px;width:'+f+'%"></div></div>'+
+        '<div style="font-size:12.5px;color:var(--t2);margin-top:7px">Yana '+(keyingi-s)+' kun</div>'+
+      '</div>';
+    })()+
+
+    /* Dam kuni */
+    (function(){
+      var q = damQolgan(o);
+      var ishlatilgan = Object.keys(o.dam||{}).filter(function(k){
+        return k.slice(0,7)===bugun.slice(0,7) && o.dam[k];
+      });
+      return '<div style="background:var(--bg);border-radius:var(--r-sm);padding:13px;margin-bottom:16px">'+
+        '<div style="font-size:13.5px;font-weight:700;margin-bottom:5px">Dam kuni: '+q+' / '+DAM_LIMIT+'</div>'+
+        '<div style="font-size:12.5px;color:var(--t2);line-height:1.55">'+
+          'Oyiga '+DAM_LIMIT+' kun o\'tkazib yuborsangiz ham ketma-ketlik uzilmaydi. '+
+          'Kasal bo\'lgan yoki safarda bo\'lgan kun uchun.'+
+          (ishlatilgan.length ? '<br>Bu oy ishlatilgan: '+ishlatilgan.map(function(k){return sanaUz(new Date(k),'oy');}).join(', ') : '')+
+        '</div></div>';
+    })()+
+
     /* Kalendar */
     '<div style="font-size:12.5px;color:var(--t2);font-weight:700;margin-bottom:8px">OXIRGI 8 HAFTA</div>'+
     katak+
@@ -4340,6 +4369,102 @@ function addOdat(){
   document.getElementById('od-name').value='';document.getElementById('od-icon').value='';document.getElementById('od-time').value='';
   renderOdat();
 }
+/* ==================================================================
+   KETMA-KETLIK \u2014 HAQIQIY HISOB VA DAM KUNI      07.09.2026
+
+   MUAMMO 1: streak uzilmasdi.
+   Ilgari o.streak shunchaki hisoblagich edi: belgilaganda +1,
+   bekor qilganda \u22121. Kun o'tkazib yuborsangiz ham raqam
+   turaverardi. Ya'ni "8 kunlik ketma-ketlik" degan yozuv
+   ketma-ketlikni emas, jami belgilashlarni ko'rsatardi \u2014
+   ilovaning eng muhim raqami yolg'on edi.
+   Endi u har safar TARIXDAN qayta hisoblanadi.
+
+   MUAMMO 2: bitta o'tkazilgan kun hammasini o'ldirardi.
+   23 kun yiqqan odam kasal bo'lib bir kun o'tkazsa, nolga
+   tushardi. Amalda ko'pchilik shundan keyin butunlay tashlaydi
+   \u2014 "baribir yo'qoldi" deb. Bu yumshoqlik masalasi emas,
+   hisob-kitob: seriyasini saqlab qolgan odam davom etadi.
+
+   Shuning uchun DAM KUNI: har odatga oyiga 2 ta. O'tkazilgan
+   kun ustini yopadi, lekin bajarilgan deb SANALMAYDI \u2014 ya'ni
+   jami kun soni oshmaydi, faqat zanjir uzilmaydi.
+   ================================================================== */
+var DAM_LIMIT = 2;          /* oyiga, har odatga */
+var BOSQICHLAR = [7, 30, 100, 365];
+
+function _kunOldin(kunStr, necha){
+  var d = new Date(kunStr + 'T12:00:00');
+  d.setDate(d.getDate() - necha);
+  return kunKal(d);
+}
+
+/* Bitta odatning ketma-ketligini tarixdan hisoblaydi.
+   Kerak bo'lsa dam kunini ishlatadi va uni yozib qo'yadi. */
+function streakHisobla(o){
+  o.hist = o.hist || {};
+  o.dam  = o.dam  || {};
+  var bugun = bugunKun();
+
+  /* Shu oyda nechta dam kuni ishlatilgan */
+  function damIshlatilgan(oyKalit){
+    var s = 0;
+    Object.keys(o.dam).forEach(function(k){ if(k.slice(0,7)===oyKalit && o.dam[k]) s++; });
+    return s;
+  }
+
+  var streak = 0, i = 0, ozgardi = false;
+  while (i < 400) {
+    var k = _kunOldin(bugun, i);
+    if (o.hist[k]) { streak++; i++; continue; }
+
+    /* Bugun hali belgilanmagan bo'lsa \u2014 zanjir uzilmagan */
+    if (i === 0) { i++; continue; }
+
+    if (o.dam[k]) { i++; continue; }          /* allaqachon dam kuni */
+
+    var oyK = k.slice(0,7);
+    if (damIshlatilgan(oyK) < DAM_LIMIT && streak > 0) {
+      o.dam[k] = true; ozgardi = true;        /* dam kunini sarflaymiz */
+      i++; continue;
+    }
+    break;                                     /* zanjir uzildi */
+  }
+
+  if (o.streak !== streak) { o.streak = streak; ozgardi = true; }
+  return ozgardi;
+}
+
+/* Hamma odatning ketma-ketligini yangilaydi va yangi
+   bosqichga yetganini xabar qiladi. */
+function odatStreakYangila(xabarBer){
+  var od = state.odatlar || [], ozgardi = false, yangiBosqich = [];
+  od.forEach(function(o){
+    if (streakHisobla(o)) ozgardi = true;
+    var eng = 0;
+    BOSQICHLAR.forEach(function(b){ if ((o.streak||0) >= b) eng = b; });
+    if (eng && (o.bosqich || 0) < eng) {
+      o.bosqich = eng; ozgardi = true;
+      yangiBosqich.push({nom: o.name, kun: eng});
+    }
+  });
+  if (ozgardi) { try { S.s('i_odatlar', od); } catch(e){} }
+
+  if (xabarBer !== false) {
+    yangiBosqich.forEach(function(b){
+      try { showNotif('\uD83C\uDFAF ' + b.kun + ' kun', esc(b.nom)); } catch(e){}
+    });
+  }
+  return ozgardi;
+}
+
+/* Shu oyda qancha dam kuni qolgan */
+function damQolgan(o){
+  var oyK = bugunKun().slice(0,7), s = 0;
+  Object.keys(o.dam || {}).forEach(function(k){ if(k.slice(0,7)===oyK && o.dam[k]) s++; });
+  return Math.max(0, DAM_LIMIT - s);
+}
+
 function toggleOdat(id){
   const today=bugunKun();
   const o=state.odatlar.find(o=>o.id===id);if(!o)return;
@@ -4350,9 +4475,14 @@ function toggleOdat(id){
     return;
   }
   if(!o.hist)o.hist={};
-  if(o.hist[today]){delete o.hist[today];o.streak=Math.max(0,(o.streak||1)-1);}
-  else{o.hist[today]=true;o.streak=(o.streak||0)+1;}
-  S.s('i_odatlar',state.odatlar);renderOdat();
+  if(o.hist[today]) delete o.hist[today];
+  else o.hist[today]=true;
+  /* Streak endi tarixdan qayta hisoblanadi \u2014 qo'lda
+     +1/\u22121 qilinmaydi. */
+  streakHisobla(o);
+  odatStreakYangila();
+  S.s('i_odatlar',state.odatlar);
+  renderOdat(); try{ renderBosh(); }catch(e){}
 }
 function delOdat(id){
   const o=state.odatlar.find(o=>o.id===id);if(!o)return;
@@ -4370,6 +4500,7 @@ function showOdatTab(tab,el){
 }
 function renderOdat(){
   try{ odatlarniAvtoYangila(); }catch(e){}
+  try{ odatStreakYangila(); }catch(e){}
   const today=bugunKun();
   const done=state.odatlar.filter(o=>o.hist&&o.hist[today]).length;
   const total=state.odatlar.length;
@@ -6057,6 +6188,38 @@ window.intizomTest = function(){
   var bosh = odatStat({hist:{}});
   t('odat bo\'sh jami', bosh.jami, 0);
   t('odat bo\'sh eng',  bosh.eng, 0);
+
+  /* ---------- streakHisobla ---------- */
+  function odatYasa(kunlar){
+    var hh={}; kunlar.forEach(function(k){ hh['2026-09-'+k]=true; });
+    return {hist:hh, dam:{}, streak:0};
+  }
+  /* bugun = 2026-09-14 deb faraz qilinadi (bugunKun stub) */
+
+  var a1 = odatYasa(['10','11','12','13','14']);
+  streakHisobla(a1);
+  t('streak 5 kun ketma-ket', a1.streak, 5);
+
+  /* bugun belgilanmagan \u2014 zanjir uzilmaydi */
+  var a2 = odatYasa(['10','11','12','13']);
+  streakHisobla(a2);
+  t('bugun bo\'sh, zanjir tirik', a2.streak, 4);
+
+  /* 12-kun o'tkazilgan \u2014 dam kuni yopadi */
+  var a3 = odatYasa(['09','10','11','13','14']);
+  streakHisobla(a3);
+  t('bitta uzilish dam bilan yopiladi', a3.streak, 5);
+  t('dam kuni yozildi', !!a3.dam['2026-09-12'], true);
+
+  /* uchta uzilish \u2014 limit 2 ta, uchinchisida uziladi */
+  var a4 = odatYasa(['05','07','09','11','13','14']);
+  streakHisobla(a4);
+  t('limitdan oshsa uziladi', a4.streak, 4);   /* 14,13,(12 dam),11,(10 dam),09 -> keyin 08 uzadi */
+
+  /* umuman belgilanmagan */
+  var a5 = odatYasa([]);
+  streakHisobla(a5);
+  t('bo\'sh odat streak 0', a5.streak, 0);
 
   /* ---------- _nomKalit (takrorlanishni topish) ---------- */
   t('nom bir xil', _nomKalit("Namoz o'qish") === _nomKalit('namoz oqish'), true);
@@ -12762,7 +12925,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '88';
+var KUZ_VERSIYA = '89';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -13285,7 +13448,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '88';
+var ILOVA_VERSIYA = '89';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
