@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "69";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "70";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -1422,6 +1422,30 @@
     });
   }
   window.intizomRasmKochir = function () { return rasmKochir(true); };
+
+  /* ==========================================================
+     O'CHIRISHNI TO'G'RI HISOBLASH UCHUN
+
+     Yozuv sinxroni o'chirilganni shunday topadi: "belgida bor
+     edi, hozir yo'q \u2014 demak o'chirilgan". Agar belgi bo'sh
+     bo'lsa (to'liq tenglashtirishdan keyin shunday bo'ladi),
+     hech narsa o'chirilgan hisoblanmaydi va server eski
+     yozuvlarni saqlab qolaveradi \u2014 keyin ular qaytib keladi.
+
+     Bu funksiya belgini HOZIRGI holatdan qayta quradi. Ro'yxatni
+     ommaviy almashtirishdan OLDIN chaqiriladi: shunda o'chgan
+     yozuvlar haqiqatan o'chirilgan deb tan olinadi.
+     ========================================================== */
+  window.intizomHolatTikla = function (kalit) {
+    if (!YOZUV_TURLARI[kalit]) return false;
+    try {
+      var hozirgi = _yozuvlarga(kalit, localStorage.getItem(kalit));
+      var holat = {};
+      Object.keys(hozirgi).forEach(function (id) { holat[id] = _belgiHash(hozirgi[id]); });
+      _holatYoz(kalit, holat);
+      return true;
+    } catch (e) { return false; }
+  };
 
   /* Zaxira yo'l: himoya noto'g'ri ishlab qolsa, konsoldan
      majburan yuborish uchun \u2014 intizomMajburiyYubor() */
