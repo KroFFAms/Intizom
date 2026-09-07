@@ -143,6 +143,10 @@
     <span class="nav-ico" style="display:flex;align-items:center;justify-content:center;height:24px"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 13l2 2 4-4"/></svg></span>
     <span>Reja</span>
   </button>
+  <button class="nav-item" id="nav-moliya" onclick="gotoPage('moliya',this)">
+    <span class="nav-ico" style="display:flex;align-items:center;justify-content:center;height:24px"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.2"/></svg></span>
+    <span>Moliya</span>
+  </button>
   <button class="nav-item" id="nav-din" onclick="gotoPage('din',this)">
     <span class="nav-ico" style="display:flex;align-items:center;justify-content:center;height:24px"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4a8 8 0 100 16 6 6 0 010-16z"/></svg></span>
     <span>Din</span>
@@ -260,7 +264,7 @@
       <div data-hw="xarid" onclick="openM('xarid-modal');renderXaridList()" class="htile"><div class="hticon" style="color:#DE7831"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="20" r="1.4" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.4" fill="currentColor" stroke="none"/><path d="M3 4h2l2.4 11h10l1.8-8H6.2"/></svg></div><div class="htlbl">Xarid</div><div class="htsub" data-hs="xarid"></div></div>
       <div data-hw="eslatma" onclick="openM('eslatma-modal');renderEslatmalar()" class="htile"><div class="hticon" style="color:#64748B"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4"/></svg></div><div class="htlbl">Eslatma</div><div class="htsub" data-hs="eslatma"></div></div>
       <div data-hw="kundalik" onclick="gotoPage('jurnal',null)" class="htile"><div class="hticon" style="color:#1FA4BB"><span style="font-size:22px;line-height:1">&#128214;</span></div><div class="htlbl">Kundalik</div><div class="htsub" data-hs="kundalik"></div></div>
-      <div data-hw="moliya" onclick="gotoPage('moliya',null)" class="htile"><div class="hticon" style="color:#1E8C8C"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.2"/></svg></div><div class="htlbl">Moliya</div><div class="htsub" data-hs="moliya"></div></div>
+      <div data-hw="moliya" onclick="gotoPage('moliya',document.getElementById('nav-moliya'))" class="htile"><div class="hticon" style="color:#1E8C8C"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.2"/></svg></div><div class="htlbl">Moliya</div><div class="htsub" data-hs="moliya"></div></div>
     </div>
     <div class="hsec" data-hsec="osish">O'sish</div>
     <div class="hgrid" data-hgrid="osish">
@@ -11564,7 +11568,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '66';
+var KUZ_VERSIYA = '67';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -12087,7 +12091,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '66';
+var ILOVA_VERSIYA = '67';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
