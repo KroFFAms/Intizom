@@ -5644,6 +5644,36 @@ function bogliqliklar(kunlar){
   return natija.slice(0,3);
 }
 
+/* Kunni yopish tugmalari. Har biri bo'limning O'Z funksiyasini
+   chaqiradi \u2014 mantiq ikki joyda takrorlanmasin. */
+function _kunOdat(id){ try{ toggleOdat(id); }catch(e){} renderHisobot('kun'); }
+function _kunReja(id){
+  try{
+    var r=(state.reja.bugun[bugunKun()]||[]).find(function(x){return String(x.id)===String(id);});
+    if(r) toggleReja(r.id);
+  }catch(e){}
+  renderHisobot('kun');
+}
+function _kunNamoz(id){ try{ toggleNamoz(id); }catch(e){} renderHisobot('kun'); }
+function _kunSuv(){
+  /* addSuv() renderSuvModal() ni chaqiradi \u2014 oyna yopiq
+     bo'lsa u hech narsa qilmaydi, lekin xato bermasligi uchun
+     o'rab qo'yamiz. */
+  try{ addSuv(250); }catch(e){ console.warn(e); }
+  try{ renderBosh(); }catch(e){}
+  renderHisobot('kun');
+}
+function _kunMood(emoji, label, val){
+  try{
+    var md = S.g('i_mood')||{};
+    md[bugunKun()] = {val:val, emoji:emoji, label:label, note:'',
+      time:new Date().toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'})};
+    S.s('i_mood', md);
+    showNotif('\u2705 Saqlandi', emoji+' '+label);
+  }catch(e){}
+  renderHisobot('kun');
+}
+
 function renderHisobot(period){
   period=period||'kun';
   const el=document.getElementById('hisobot-content');
@@ -5651,6 +5681,7 @@ function renderHisobot(period){
 
   if(period==='kun'){
     var d = _kunHisobot();
+    var bugun = bugunKun();
     var soat = new Date().getHours();
     var sarlavha = soat<12 ? 'Kun endi boshlandi'
                  : soat<18 ? 'Kunning yarmi o\'tdi'
@@ -5676,12 +5707,103 @@ function renderHisobot(period){
       '</div></div>';
     }
 
-    if(d.qoldi.length){
-      chiq += '<div class="card"><div class="sec-title" style="color:var(--t2)">Qoldi</div>' +
-        d.qoldi.map(function(x){
-          return '<div style="display:flex;gap:11px;padding:9px 0;font-size:14.5px;line-height:1.5;color:var(--t2)">' +
-                 '<span style="font-size:17px;flex-shrink:0;opacity:.6">'+x[0]+'</span><span>'+x[1]+'</span></div>';
-        }).join('') + '</div>';
+    /* ---- KUNNI YOPISH ----
+       Ilgari bu ekran faqat KO'RSATARDI. Qolgan ishni belgilash
+       uchun olti xil bo'limga kirish kerak edi \u2014 kechqurun
+       hech kim buni qilmaydi.
+       Endi hammasi shu yerda: bosasiz, tamom. */
+    var yopish = '';
+
+    /* Odat */
+    try{
+      var odQ = (state.odatlar||[]).filter(function(o){return !(o.hist&&o.hist[bugun]);});
+      if(odQ.length){
+        yopish += '<div style="font-size:13px;color:var(--t2);margin:14px 0 8px;font-weight:700">Odatlar</div>' +
+          odQ.map(function(o){
+            var avto = o.manba && ODAT_MANBA[o.manba];
+            return '<button '+(avto?'disabled':'onclick="_kunOdat('+o.id+')"')+
+              ' style="width:100%;display:flex;align-items:center;gap:11px;padding:12px;margin-bottom:7px;'+
+              'border:1px solid var(--bd);border-radius:var(--r-sm);background:var(--bg);'+
+              'font-size:14.5px;font-family:inherit;color:var(--text);text-align:left;'+
+              'cursor:'+(avto?'default':'pointer')+';opacity:'+(avto?'.55':'1')+'">'+
+              '<span style="font-size:18px">'+(o.icon||'\u2B50')+'</span>'+
+              '<span style="flex:1">'+esc(o.name)+'</span>'+
+              (avto?'<span style="font-size:12px;color:var(--t2)">'+esc(ODAT_MANBA[o.manba])+'</span>'
+                   :'<span style="color:var(--g);font-weight:800;font-size:18px">+</span>')+
+            '</button>';
+          }).join('');
+      }
+    }catch(e){}
+
+    /* Reja */
+    try{
+      var rjQ = ((state.reja&&state.reja.bugun&&state.reja.bugun[bugun])||[]).filter(function(r){return !r.done;});
+      if(rjQ.length){
+        yopish += '<div style="font-size:13px;color:var(--t2);margin:14px 0 8px;font-weight:700">Reja</div>' +
+          rjQ.map(function(r){
+            return '<button onclick="_kunReja(\''+r.id+'\')" style="width:100%;display:flex;align-items:center;gap:11px;'+
+              'padding:12px;margin-bottom:7px;border:1px solid var(--bd);border-radius:var(--r-sm);'+
+              'background:var(--bg);font-size:14.5px;font-family:inherit;color:var(--text);text-align:left;cursor:pointer">'+
+              '<span style="font-size:18px">'+(r.icon||'\uD83D\uDCCB')+'</span>'+
+              '<span style="flex:1">'+esc(r.name)+'<span style="color:var(--t2);font-size:13px"> \u00b7 '+esc(r.start||'')+'</span></span>'+
+              '<span style="color:var(--g);font-weight:800;font-size:18px">+</span></button>';
+          }).join('');
+      }
+    }catch(e){}
+
+    /* Namoz */
+    try{
+      var nzB = (state.din&&state.din.namoz&&state.din.namoz[bugun])||{};
+      var nzQ = NAMOZLAR_LIST.filter(function(x){return x.id!=='tahajjud' && !nzB[x.id];});
+      if(nzQ.length){
+        yopish += '<div style="font-size:13px;color:var(--t2);margin:14px 0 8px;font-weight:700">Namoz</div>' +
+          '<div style="display:flex;gap:7px;flex-wrap:wrap">' +
+          nzQ.map(function(x){
+            return '<button onclick="_kunNamoz(\''+x.id+'\')" style="flex:1;min-width:88px;padding:11px 8px;'+
+              'border:1px solid var(--bd);border-radius:var(--r-sm);background:var(--bg);'+
+              'font-size:13.5px;font-weight:700;font-family:inherit;color:var(--text);cursor:pointer">'+
+              x.icon+'<br>'+x.nom+'</button>';
+          }).join('') + '</div>';
+      }
+    }catch(e){}
+
+    /* Suv */
+    try{
+      var svB = Math.round(((S.g('i_suv')||{})[bugun]||0)/250);
+      if(svB < 8){
+        yopish += '<div style="font-size:13px;color:var(--t2);margin:14px 0 8px;font-weight:700">Suv \u00b7 '+svB+'/8</div>' +
+          '<button onclick="_kunSuv()" style="width:100%;padding:12px;border:1px solid var(--bd);'+
+          'border-radius:var(--r-sm);background:var(--bg);font-size:14.5px;font-weight:700;'+
+          'font-family:inherit;color:var(--text);cursor:pointer">\uD83D\uDCA7 Bir stakan qo\'shish</button>';
+      }
+    }catch(e){}
+
+    /* Kayfiyat */
+    try{
+      if(!(S.g('i_mood')||{})[bugun]){
+        var KF = [['\uD83D\uDE04','Zo\'r',5],['\uD83D\uDE0A','Yaxshi',4],['\uD83D\uDE10','O\'rtacha',3],['\uD83D\uDE14','Charchadim',2],['\uD83D\uDE1E','Yomon',1]];
+        yopish += '<div style="font-size:13px;color:var(--t2);margin:14px 0 8px;font-weight:700">Bugun kayfiyatingiz</div>' +
+          '<div style="display:flex;gap:7px">' +
+          KF.map(function(k){
+            return '<button onclick="_kunMood(\''+k[0]+'\',\''+k[1]+'\','+k[2]+')" '+
+              'style="flex:1;padding:11px 4px;border:1px solid var(--bd);border-radius:var(--r-sm);'+
+              'background:var(--bg);cursor:pointer;font-family:inherit">'+
+              '<div style="font-size:21px">'+k[0]+'</div>'+
+              '<div style="font-size:11px;color:var(--t2);margin-top:3px">'+k[1]+'</div></button>';
+          }).join('') + '</div>';
+      }
+    }catch(e){}
+
+    if(yopish){
+      chiq += '<div class="card" style="margin-top:12px">' +
+        '<div class="sec-title">Kunni yopish</div>' +
+        '<div style="font-size:13.5px;color:var(--t2);line-height:1.5;margin-bottom:4px">Qolganini shu yerdan belgilang \u2014 bo\'limlarga kirish shart emas.</div>' +
+        yopish + '</div>';
+    }else if(d.qildim.length){
+      chiq += '<div class="card" style="margin-top:12px;text-align:center">' +
+        '<div style="font-size:30px">\u2705</div>' +
+        '<div style="font-size:16px;font-weight:800;margin-top:6px">Kun yopildi</div>' +
+        '<div style="font-size:14px;color:var(--t2);margin-top:3px">Hammasi bajarildi.</div></div>';
     }
 
     el.innerHTML = chiq;
@@ -12023,7 +12145,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '76';
+var KUZ_VERSIYA = '77';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -12546,7 +12668,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '76';
+var ILOVA_VERSIYA = '77';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
