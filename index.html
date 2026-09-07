@@ -1714,6 +1714,16 @@
     <div class="igroup"><label class="ilabel">Nomi</label><input class="inp" id="od-name" placeholder="Masalan: Suv ichish"></div>
     <div class="igroup"><label class="ilabel">Emoji</label><input class="inp" id="od-icon" placeholder="💧" maxlength="2"></div>
     <div class="igroup"><label class="ilabel">Vaqt</label><input class="inp" type="time" id="od-time"></div>
+    <div class="igroup"><label class="ilabel">O&#39;zi belgilansinmi?</label>
+      <select class="sel" id="od-manba">
+        <option value="">Yo&#39;q &mdash; qo&#39;lda belgilayman</option>
+        <option value="namoz">Namoz &mdash; besh vaqt to&#39;liq bo&#39;lsa</option>
+        <option value="sport">Sport &mdash; mashq yozilsa</option>
+        <option value="suv">Suv &mdash; 8 stakan to&#39;lsa</option>
+        <option value="kundalik">Kundalik &mdash; yozuv qo&#39;shilsa</option>
+      </select>
+      <div style="font-size:12.5px;color:var(--t2);line-height:1.5;margin-top:6px">Manba tanlansa, bu odat o&#39;sha bo&#39;limdan avtomatik belgilanadi &mdash; ikki marta belgilash shart emas.</div>
+    </div>
     <div class="igroup"><label class="ilabel">Rang</label>
       <select class="sel" id="od-color">
         <option value="linear-gradient(135deg,#1E8C8C,#166B6B)">🟢 Yashil</option>
@@ -3972,6 +3982,7 @@ function renderBosh(){
   setEl('b-ism',p.name+(p.job?' · '+p.job:''));
   setEl('b-sana', sanaUz(new Date(),'toliq'));
   updateAvatarUI(p);
+  try{ odatlarniAvtoYangila(); }catch(e){}
   try{ kataklarniYangila(); }catch(e){}
   const rd=state.reja,todayR=(rd.bugun[today]||[]);
   const doneR=todayR.filter(r=>r.done).length;
@@ -4080,10 +4091,83 @@ function _takrorTekshir(nom, qayerga){
     'Baribir qo\'shilsinmi?');
 }
 
+/* ==================================================================
+   ODATNI BOSHQA BO'LIMDAN AVTOMATIK BELGILASH      07.09.2026
+
+   Namoz Din bo'limida, sport Sport bo'limida belgilanadi. Agar
+   o'sha ish yana Odat ro'yxatida ham tursa, uni IKKI MARTA
+   belgilash kerak bo'ladi \u2014 hech kim buni qilmaydi va
+   natijada ikkala raqam ham noto'g'ri chiqadi, streak esa
+   bekordan uziladi.
+
+   Endi odatga "manba" biriktirish mumkin. Manbali odat qo'lda
+   belgilanmaydi: uning tarixi o'sha bo'limdan hisoblanadi,
+   ketma-ketlik ham shu tarixdan qayta chiqariladi.
+   ================================================================== */
+var ODAT_MANBA = {
+  namoz:    'Din bo\'limidan',
+  sport:    'Sport bo\'limidan',
+  suv:      'Suv hisobidan',
+  kundalik: 'Kundalik yozuvidan'
+};
+
+function odatManbaKun(manba, kun){
+  try{
+    if(manba==='namoz'){
+      var nz=(state.din&&state.din.namoz&&state.din.namoz[kun])||{};
+      return Object.keys(nz).length>=6;
+    }
+    if(manba==='suv'){
+      var sv=(S.g('i_suv')||{})[kun]||0;
+      return Math.round(sv/250)>=8;
+    }
+    if(manba==='sport'){
+      var sp=S.g('i_sport')||[];
+      for(var i=0;i<sp.length;i++){ if(String(sp[i].date||'').slice(0,10)===kun) return true; }
+      return false;
+    }
+    if(manba==='kundalik'){
+      var ju=getJurnalData();
+      for(var j=0;j<ju.length;j++){ if(String(ju[j].date||'').slice(0,10)===kun) return true; }
+      return false;
+    }
+  }catch(e){}
+  return false;
+}
+
+/* Manbali odatlarning tarixi va ketma-ketligini qayta hisoblaydi.
+   Oxirgi 90 kun yetarli \u2014 undan uzun ketma-ketlik kamdan-kam. */
+function odatlarniAvtoYangila(){
+  var od = state.odatlar||[], ozgardi=false, bugun=bugunKun();
+  od.forEach(function(o){
+    if(!o.manba || !ODAT_MANBA[o.manba]) return;
+    o.hist = o.hist||{};
+    var st=0, uzildi=false;
+    for(var i=0;i<90;i++){
+      var d=new Date(); d.setDate(d.getDate()-i);
+      var k=kunKal(d);
+      var bor=odatManbaKun(o.manba,k);
+      if(bor){ if(o.hist[k]!==true){ o.hist[k]=true; ozgardi=true; } }
+      else    { if(o.hist[k]){ delete o.hist[k]; ozgardi=true; } }
+      if(!uzildi){
+        if(bor) st++;
+        else if(i>0) uzildi=true;   /* bugun hali bo'lmasa uzilmagan hisoblanadi */
+      }
+    }
+    if(o.streak!==st){ o.streak=st; ozgardi=true; }
+  });
+  if(ozgardi){ try{ S.s('i_odatlar', od); }catch(e){} }
+  return ozgardi;
+}
+
 function addOdat(){
   const name=document.getElementById('od-name').value.trim();if(!name)return;
   if(!_takrorTekshir(name,'odat')) return;
-  state.odatlar.push({id:Date.now(),name,icon:document.getElementById('od-icon').value||'⭐',color:document.getElementById('od-color').value,time:document.getElementById('od-time').value,streak:0,hist:{}});
+  var _mnEl=document.getElementById('od-manba');
+  var _mn=(_mnEl&&_mnEl.value)||'';
+  state.odatlar.push({id:Date.now(),name,icon:document.getElementById('od-icon').value||'⭐',color:document.getElementById('od-color').value,time:document.getElementById('od-time').value,manba:_mn,streak:0,hist:{}});
+  if(_mn){ try{ odatlarniAvtoYangila(); }catch(e){} }
+  if(_mnEl) _mnEl.value='';
   S.s('i_odatlar',state.odatlar);closeM('odat-modal');
   document.getElementById('od-name').value='';document.getElementById('od-icon').value='';document.getElementById('od-time').value='';
   renderOdat();
@@ -4091,6 +4175,12 @@ function addOdat(){
 function toggleOdat(id){
   const today=bugunKun();
   const o=state.odatlar.find(o=>o.id===id);if(!o)return;
+  if(o.manba && ODAT_MANBA[o.manba]){
+    /* Manbali odat qo'lda belgilanmaydi \u2014 aks holda ikki
+       manba bir-biriga zid javob beradi. */
+    showNotif('\u2139\uFE0F O\'zi belgilanadi', o.name+' \u2014 '+ODAT_MANBA[o.manba]);
+    return;
+  }
   if(!o.hist)o.hist={};
   if(o.hist[today]){delete o.hist[today];o.streak=Math.max(0,(o.streak||1)-1);}
   else{o.hist[today]=true;o.streak=(o.streak||0)+1;}
@@ -4111,6 +4201,7 @@ function showOdatTab(tab,el){
   if(tab==='stat')renderOdatStat();
 }
 function renderOdat(){
+  try{ odatlarniAvtoYangila(); }catch(e){}
   const today=bugunKun();
   const done=state.odatlar.filter(o=>o.hist&&o.hist[today]).length;
   const total=state.odatlar.length;
@@ -4127,11 +4218,12 @@ function renderOdat(){
         '<div style="flex:1;min-width:0">'+
           '<div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(o.name)+'</div>'+
           '<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">'+
-            '<span style="font-size:14px;color:#F97316;font-weight:700;background:rgba(255,107,53,.1);padding:2px 8px;border-radius:8px">🔥 '+(o.streak||0)+' kun</span>'+
+            '<span style="font-size:14px;color:var(--brass);font-weight:700;background:rgba(185,143,53,.12);padding:2px 8px;border-radius:8px">🔥 '+(o.streak||0)+' kun</span>'+
             (o.time?'<span style="font-size:13.5px;color:var(--t2);background:var(--bd);padding:2px 8px;border-radius:8px">⏰ '+o.time+'</span>':'')+
+            ((o.manba&&ODAT_MANBA[o.manba])?'<span style="font-size:13px;color:var(--g);background:rgba(30,140,140,.12);padding:2px 8px;border-radius:8px">&#8635; '+esc(ODAT_MANBA[o.manba])+'</span>':'')+
           '</div>'+
           '<div style="height:4px;background:var(--bd);border-radius:2px;margin-top:8px;overflow:hidden">'+
-            '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,var(--g),#249DDB);border-radius:2px;transition:width .5s"></div>'+
+            '<div style="height:100%;width:'+pct+'%;background:var(--g);border-radius:2px;transition:width .5s"></div>'+
           '</div>'+
         '</div>'+
         '<div style="display:flex;flex-direction:column;gap:6px">'+
@@ -11622,7 +11714,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '68';
+var KUZ_VERSIYA = '69';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -12145,7 +12237,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '68';
+var ILOVA_VERSIYA = '69';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
@@ -12396,6 +12488,28 @@ window.addEventListener('intizom-bulut-yangilandi', function(){
     ru:{
       /* --- pastki menyu va bo'limlar --- */
       "Bosh":"Главная","Odat":"Привычки","Reja":"План","Moliya":"Финансы","Din":"Религия",
+
+      "Yuklanmoqda":"Загрузка","Qo'shish":"Добавить","+ Qo'shish":"+ Добавить","Turi":"Тип",
+      "Barchasi":"Все","Bajardim!":"Готово!","Tiklash":"Восстановить","Boshqa":"Другое",
+      "Emoji":"Эмодзи","Kasb":"Профессия","Foydalanuvchi":"Пользователь","Shablon":"Шаблон",
+      "Orzu":"Мечта","Jarayonda":"В процессе","Bajarildi":"Выполнено","Sifat":"Качество",
+      "Tarix":"История","Kaloriya":"Калории","soat":"ч","marta":"раз","Rang":"Цвет",
+      "Umumiy kaloriya":"Всего калорий","Boshlanish":"Начало","Tugash":"Конец",
+      "Holat":"Статус","Yaratish":"Создать","Kimga":"Кому","Vazifa":"Задание",
+      "Yangi vazifa":"Новое задание","Yangi challenge":"Новый челлендж","Yangi sana":"Новая дата",
+      "Yangi yozuv":"Новая запись","Matn":"Текст","Yozuvlar":"Записи","Ulash":"Подключить",
+      "Gapiring...":"Говорите...","Juz bosing":"Нажмите джуз","Topilmadi":"Не найдено",
+      "Ma'lumot topilmadi":"Данные не найдены","Nusxa yo'q":"Копий нет","Intizom":"Интизом",
+      "Goya":"Идея","Ilm":"Знание","Kulgili":"Смешное","Shukr":"Благодарность",
+      "Xayrli tong":"Доброе утро","Xayrli kun":"Добрый день","Xayrli oqshom":"Добрый вечер",
+      "Xayrli kecha":"Доброй ночи","Kunlik ish":"Ежедневное","O'sish":"Развитие",
+      "Bo'sh vaqt":"Свободное время","Ketma-ketlik":"Серия","kunlik ketma-ketlik":"дней подряд",
+      "reja":"план","odat":"привычки","namoz":"намаз","kun":"дн.","bugun yozildi":"записано сегодня",
+      "belgilanmagan":"не отмечено","tugadi":"готово","hali yo'q":"пока нет","reja yo'q":"нет плана",
+      "Odat va rejani yangilash":"Обновить привычки и план",
+      "Din bo'limidan":"из раздела Религия","Sport bo'limidan":"из раздела Спорт",
+      "Suv hisobidan":"из счётчика воды","Kundalik yozuvidan":"из записи дневника",
+      "O'zi belgilansinmi?":"Отмечать автоматически?","Ikki joyda turibdi:":"В двух местах:",
       "Sozlama":"Настройки","Profil":"Профиль","Qo'llanma":"Руководство","Panel":"Панель",
       "Statistika":"Статистика","Tranzaksiyalar":"Операции","Jamg'arma":"Накопления",
       "Ism, kasb, rasm":"Имя, профессия, фото","Har bo'lim nima uchun kerak":"Для чего нужен каждый раздел",
@@ -12455,6 +12569,28 @@ window.addEventListener('intizom-bulut-yangilandi', function(){
     },
     en:{
       "Bosh":"Home","Odat":"Habits","Reja":"Plan","Moliya":"Finance","Din":"Faith",
+
+      "Yuklanmoqda":"Loading","Qo'shish":"Add","+ Qo'shish":"+ Add","Turi":"Type",
+      "Barchasi":"All","Bajardim!":"Done!","Tiklash":"Restore","Boshqa":"Other",
+      "Emoji":"Emoji","Kasb":"Job","Foydalanuvchi":"User","Shablon":"Template",
+      "Orzu":"Wish","Jarayonda":"In progress","Bajarildi":"Completed","Sifat":"Quality",
+      "Tarix":"History","Kaloriya":"Calories","soat":"h","marta":"times","Rang":"Colour",
+      "Umumiy kaloriya":"Total calories","Boshlanish":"Start","Tugash":"End",
+      "Holat":"Status","Yaratish":"Create","Kimga":"To","Vazifa":"Task",
+      "Yangi vazifa":"New task","Yangi challenge":"New challenge","Yangi sana":"New date",
+      "Yangi yozuv":"New entry","Matn":"Text","Yozuvlar":"Entries","Ulash":"Connect",
+      "Gapiring...":"Speak...","Juz bosing":"Tap a juz","Topilmadi":"Not found",
+      "Ma'lumot topilmadi":"No data found","Nusxa yo'q":"No backups","Intizom":"Intizom",
+      "Goya":"Idea","Ilm":"Knowledge","Kulgili":"Funny","Shukr":"Gratitude",
+      "Xayrli tong":"Good morning","Xayrli kun":"Good afternoon","Xayrli oqshom":"Good evening",
+      "Xayrli kecha":"Good night","Kunlik ish":"Daily","O'sish":"Growth",
+      "Bo'sh vaqt":"Leisure","Ketma-ketlik":"Streak","kunlik ketma-ketlik":"day streak",
+      "reja":"plan","odat":"habits","namoz":"prayers","kun":"d","bugun yozildi":"written today",
+      "belgilanmagan":"not set","tugadi":"done","hali yo'q":"none yet","reja yo'q":"no plan",
+      "Odat va rejani yangilash":"Reset habits and plan",
+      "Din bo'limidan":"from Faith","Sport bo'limidan":"from Sport",
+      "Suv hisobidan":"from water count","Kundalik yozuvidan":"from journal entry",
+      "O'zi belgilansinmi?":"Mark automatically?","Ikki joyda turibdi:":"In two places:",
       "Sozlama":"Settings","Profil":"Profile","Qo'llanma":"Guide","Panel":"Overview",
       "Statistika":"Statistics","Tranzaksiyalar":"Transactions","Jamg'arma":"Savings",
       "Ism, kasb, rasm":"Name, job, photo","Har bo'lim nima uchun kerak":"What each section is for",
