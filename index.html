@@ -202,6 +202,7 @@
         </div>
       </div>
     </div>
+    <div id="hafta-yakun-strip"></div>
     <div class="hero" onclick="gotoPage('hisobot',null)" style="cursor:pointer" title="Bugun nima qildim">
       <div class="hero-halqa"><span id="b-foiz">0%</span></div>
       <div style="flex:1;min-width:0">
@@ -3818,6 +3819,45 @@ function guruhSarlavhalari(){
   }
 }
 
+/* Yakshanba kechqurun haftani yopishga chaqiradi. Bir marta:
+   yopilgach yoki yopib qo'yilgach shu haftada qaytmaydi. */
+function haftaYakunStrip(){
+  var el = document.getElementById('hafta-yakun-strip');
+  if(!el) return;
+  el.innerHTML = '';
+  var d = new Date();
+  if(d.getDay() !== 0 || d.getHours() < 18) return;   /* faqat yakshanba, 18:00 dan keyin */
+
+  var belgi = kunKal(d);
+  try{ if(localStorage.getItem('i_hafta_yopildi') === belgi) return; }catch(e){}
+
+  el.innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px;background:var(--card);'+
+    'border:1px solid var(--bd);border-left:3px solid var(--brass);border-radius:var(--r-md);'+
+    'padding:13px 15px;margin-bottom:12px">'+
+      '<div style="flex:1">'+
+        '<div style="font-size:14.5px;font-weight:800">Hafta yakunlanmoqda</div>'+
+        '<div style="font-size:13px;color:var(--t2);margin-top:2px">Nima qilganingizni ko\'rib chiqing</div>'+
+      '</div>'+
+      '<button onclick="haftaYakunOch()" style="padding:9px 14px;border:none;border-radius:999px;'+
+        'background:var(--lojuvard);color:#fff;font-size:13.5px;font-weight:700;'+
+        'font-family:inherit;cursor:pointer;white-space:nowrap">Ko\'rish</button>'+
+      '<button onclick="haftaYakunYop()" aria-label="Yopish" style="width:28px;height:28px;border:none;'+
+        'border-radius:50%;background:var(--bg);color:var(--t2);font-size:15px;cursor:pointer">&times;</button>'+
+    '</div>';
+}
+function haftaYakunYop(){
+  try{ localStorage.setItem('i_hafta_yopildi', kunKal(new Date())); }catch(e){}
+  haftaYakunStrip();
+}
+function haftaYakunOch(){
+  haftaYakunYop();
+  try{ gotoPage('hisobot', null); setTimeout(function(){
+    var t = document.querySelectorAll('#page-hisobot .topbar-tab');
+    if(t[1]) t[1].click();
+  }, 120); }catch(e){}
+}
+
 function kataklarniYangila(){
   var bugun = bugunKun();
   /* kalit -> [matn, holat, ulush]
@@ -3927,6 +3967,7 @@ function kataklarniYangila(){
 
   /* --- Ekranga yozamiz --- */
   try{ guruhSarlavhalari(); }catch(e){}
+  try{ haftaYakunStrip(); }catch(e){}
   var hammasi = document.querySelectorAll('.htsub[data-hs]');
   for(var i=0;i<hammasi.length;i++){
     var el = hammasi[i];
@@ -5674,6 +5715,64 @@ function _kunMood(emoji, label, val){
   renderHisobot('kun');
 }
 
+/* ==================================================================
+   HAFTALIK YAKUN                   07.09.2026
+
+   Odam 30 kun yozadi \u2014 keyin hech narsa bo'lmaydi. Intizom
+   ilovasida RITM bo'lishi kerak: hafta boshlanadi, yuriladi,
+   yakshanba kechqurun yopiladi. Yopilmagan hafta \u2014 tugamagan
+   ish, u to'planib boradi va odam charchaydi.
+
+   Bu qism haftani yig'adi va o'tgan hafta bilan taqqoslaydi.
+   Maqtov yo'q: faqat "shu hafta shunday, o'tganida bunday".
+   ================================================================== */
+function _haftaKunlari(ofset){
+  /* ofset 0 \u2014 shu hafta, 1 \u2014 o'tgan hafta.
+     Hafta dushanbadan boshlanadi. */
+  var b = new Date();
+  var d = b.getDay(); if(d===0) d=7;          /* yakshanba = 7 */
+  b.setDate(b.getDate() - (d-1) - 7*(ofset||0));
+  var chiq = [];
+  for(var i=0;i<7;i++){ var x=new Date(b); x.setDate(b.getDate()+i); chiq.push(kunKal(x)); }
+  return chiq;
+}
+
+function _haftaKesim(kunlar){
+  var k = {odatB:0, odatJ:0, rejaB:0, rejaJ:0, namoz:0, sport:0, suvKun:0,
+           kundalik:0, eng:null, engB:-1};
+  var od = state.odatlar||[];
+  kunlar.forEach(function(kun){
+    var kelajak = kun > bugunKun();
+    if(kelajak) return;
+    var b = 0;
+    od.forEach(function(o){ if(o.hist&&o.hist[kun]){ k.odatB++; b++; } });
+    k.odatJ += od.length;
+
+    var rj = (state.reja&&state.reja.bugun&&state.reja.bugun[kun])||[];
+    k.rejaJ += rj.length;
+    k.rejaB += rj.filter(function(r){return r.done;}).length;
+
+    try{ k.namoz += Object.keys((state.din&&state.din.namoz&&state.din.namoz[kun])||{}).length; }catch(e){}
+    try{ var sp=S.g('i_sport')||{}; if(sp.bugun&&sp.bugun[kun]&&sp.bugun[kun].length) k.sport++; }catch(e){}
+    try{ if(Math.round(((S.g('i_suv')||{})[kun]||0)/250)>=8) k.suvKun++; }catch(e){}
+    try{ k.kundalik += getJurnalData().filter(function(j){return String(j.date||'').slice(0,10)===kun;}).length; }catch(e){}
+
+    if(od.length && b > k.engB){ k.engB = b; k.eng = kun; }
+  });
+  k.odatF = k.odatJ ? Math.round(k.odatB/k.odatJ*100) : 0;
+  k.rejaF = k.rejaJ ? Math.round(k.rejaB/k.rejaJ*100) : 0;
+  return k;
+}
+
+function _haftaFarq(a, b){
+  if(!b) return '';
+  var f = a - b;
+  if(f === 0) return '<span style="color:var(--t2)">o\'tgan hafta bilan bir xil</span>';
+  return '<span style="color:'+(f>0?'var(--g)':'var(--red)')+';font-weight:700">'+
+         (f>0?'\u25B2 +':'\u25BC ')+f+'</span>'+
+         '<span style="color:var(--t2)"> o\'tgan haftaga nisbatan</span>';
+}
+
 function renderHisobot(period){
   period=period||'kun';
   const el=document.getElementById('hisobot-content');
@@ -5814,6 +5913,39 @@ function renderHisobot(period){
   const dates=Array.from({length:days},(_,i)=>{const d=new Date(now);d.setDate(d.getDate()-days+1+i);return kunKal(d);});
   var _bog = [];
   try{ _bog = bogliqliklar(dates); }catch(e){}
+
+  /* Haftalik yakun \u2014 faqat "hafta" tabida */
+  var _yakun = '';
+  if(period==='hafta'){
+    try{
+      var hb = _haftaKesim(_haftaKunlari(0));
+      var ho = _haftaKesim(_haftaKunlari(1));
+      var kunNom = ['Yakshanba','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'];
+      var engMatn = hb.eng ? kunNom[new Date(hb.eng).getDay()]+' \u2014 '+hb.engB+' ta odat' : '\u2014';
+      _yakun =
+        '<div class="card" style="margin-bottom:12px">'+
+          '<div class="sec-title">Shu hafta</div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
+            '<div><div style="font-size:13px;color:var(--t2)">Odatlar</div>'+
+              '<div style="font-size:22px;font-weight:800">'+hb.odatF+'%</div>'+
+              '<div style="font-size:12.5px">'+_haftaFarq(hb.odatF, ho.odatF)+'</div></div>'+
+            '<div><div style="font-size:13px;color:var(--t2)">Reja</div>'+
+              '<div style="font-size:22px;font-weight:800">'+hb.rejaF+'%</div>'+
+              '<div style="font-size:12.5px">'+_haftaFarq(hb.rejaF, ho.rejaF)+'</div></div>'+
+          '</div>'+
+          '<div style="border-top:1px solid var(--bd);margin-top:14px;padding-top:12px;'+
+               'display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;color:var(--t2)">'+
+            '<span>\uD83D\uDD4C <b style="color:var(--text)">'+hb.namoz+'</b>/42 namoz</span>'+
+            '<span>\uD83C\uDFC3 <b style="color:var(--text)">'+hb.sport+'</b> kun mashq</span>'+
+            '<span>\uD83D\uDCA7 <b style="color:var(--text)">'+hb.suvKun+'</b> kun to\'liq</span>'+
+            '<span>\uD83D\uDCD3 <b style="color:var(--text)">'+hb.kundalik+'</b> yozuv</span>'+
+          '</div>'+
+          '<div style="border-top:1px solid var(--bd);margin-top:12px;padding-top:10px;font-size:13.5px;color:var(--t2)">'+
+            'Eng kuchli kun: <b style="color:var(--text)">'+engMatn+'</b>'+
+          '</div>'+
+        '</div>';
+    }catch(e){}
+  }
   const dinD=state.din||{namoz:{},quron:{done:[],history:[]}};
   let totalNamoz=0;
   dates.forEach(d=>{totalNamoz+=Object.keys((dinD.namoz&&dinD.namoz[d])||{}).length;});
@@ -5833,7 +5965,7 @@ function renderHisobot(period){
   const ball=Math.round((namozPct+rejaPct+(habitStats.length?habitStats.reduce((s,h)=>s+h.pct,0)/habitStats.length:0))/3);
   const ballColor=ball>=80?'var(--g)':ball>=50?'var(--ora)':'var(--red)';
 
-  el.innerHTML=
+  el.innerHTML= _yakun +
   '<div style="background:linear-gradient(135deg,rgba(30,140,140,.22),rgba(30,140,140,.09));border:1px solid rgba(30,140,140,.22);border-radius:20px;padding:20px;margin-bottom:14px;color:var(--text);box-shadow:var(--shadow-lg)">'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'+
       '<div>'+
@@ -12145,7 +12277,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '77';
+var KUZ_VERSIYA = '78';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -12668,7 +12800,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '77';
+var ILOVA_VERSIYA = '78';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
