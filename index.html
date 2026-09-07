@@ -904,6 +904,11 @@
         <div style="flex:1"><div style="font-size:15px;font-weight:700">Parol himoya</div><div id="parol-desc" style="font-size:14px;color:var(--t2)">O&#39;rnatilmagan</div></div>
         <span style="color:var(--t2)">&#8250;</span>
       </div>
+      <div class="sitem" onclick="openTgEslatma()">
+        <div class="sicon" style="background:rgba(34,158,217,.14)">&#128276;</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:700">Telegram eslatmalari</div><div id="tgesl-desc" style="font-size:14px;color:var(--t2)">Ilova yopiq bo&#39;lganda ham xabar keladi</div></div>
+        <span style="color:var(--t2)">&#8250;</span>
+      </div>
       <div class="sitem" onclick="namunaniQayta()">
         <div class="sicon" style="background:rgba(30,140,140,.14)">&#128260;</div>
         <div style="flex:1"><div style="font-size:15px;font-weight:700">Odat va rejani yangilash</div><div style="font-size:14px;color:var(--t2)">Namunaviy 5 ta odat va kun taqsimotini qo&#39;yish</div></div>
@@ -6120,6 +6125,79 @@ try{ var _jp=sessionStorage.getItem('jur_parol'); if(_jp)_jurParol=_jp; }catch(e
    Bu tugma ularni yangi ro'yxatga almashtiradi. Ataylab
    qo'lda: hech narsa o'z-o'zidan o'chmaydi.
    ================================================================== */
+/* ==================================================================
+   TELEGRAM ESLATMALARI \u2014 sozlash            07.09.2026
+
+   Ilovadagi eslatmalar faqat ilova ochiq bo'lgandagina ishlaydi.
+   Telegram esa yopiq bo'lsa ham yetadi. Sozlama serverda
+   (eslatma_sozlama jadvali) saqlanadi, chunki xabarni server
+   yuboradi \u2014 qurilma emas.
+   ================================================================== */
+function tgEslatmaOl(){
+  if(!window.intizomSb) return Promise.resolve(null);
+  return window.intizomSb.from('eslatma_sozlama').select('*').maybeSingle()
+    .then(function(r){ return r.data || null; })
+    .catch(function(){ return null; });
+}
+
+function openTgEslatma(){
+  if(!window.intizomSb){ showNotif('\u26a0\ufe0f','Bulutga ulanmagan'); return; }
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;font-family:inherit';
+  d.innerHTML='<div style="width:100%;max-width:440px;background:var(--card);color:var(--text);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom,0px));max-height:88vh;overflow:auto">'+
+    '<div style="width:40px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 16px"></div>'+
+    '<div style="font-size:19px;font-weight:800">Telegram eslatmalari</div>'+
+    '<div style="font-size:13.5px;color:var(--t2);line-height:1.6;margin:4px 0 18px">Ilova yopiq bo\'lganda ham botdan xabar keladi. Ertalab \u2014 bugun nima borligi, kechqurun \u2014 nima qolgani.</div>'+
+    '<div id="tgesl-ich" style="font-size:14px;color:var(--t2)">Yuklanmoqda...</div>'+
+    '<button id="tgesl-x" class="btn btn-out btn-block" style="margin-top:16px">Yopish</button>'+
+  '</div>';
+  document.body.appendChild(d);
+  d.querySelector('#tgesl-x').onclick=function(){ d.remove(); };
+  d.onclick=function(e){ if(e.target===d) d.remove(); };
+
+  tgEslatmaOl().then(function(s){
+    s = s || {yoqilgan:true, ertalab:7, kechqurun:21, hafta_yakun:true};
+    var ich=d.querySelector('#tgesl-ich');
+    function soatTanlov(id, qiymat){
+      var o='';
+      for(var i=4;i<=23;i++) o+='<option value="'+i+'"'+(i===qiymat?' selected':'')+'>'+String(i).padStart(2,'0')+':00</option>';
+      return '<select class="sel" id="'+id+'">'+o+'</select>';
+    }
+    ich.innerHTML=
+      '<label style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--bd);cursor:pointer">'+
+        '<input type="checkbox" id="tgesl-on"'+(s.yoqilgan?' checked':'')+' style="width:20px;height:20px;accent-color:var(--g)">'+
+        '<span style="flex:1;font-size:15px;font-weight:700;color:var(--text)">Eslatmalar yoqilgan</span></label>'+
+      '<div style="padding:14px 0;border-bottom:1px solid var(--bd)">'+
+        '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:7px">Ertalab</div>'+
+        soatTanlov('tgesl-ert', s.ertalab)+'</div>'+
+      '<div style="padding:14px 0;border-bottom:1px solid var(--bd)">'+
+        '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:7px">Kechqurun</div>'+
+        soatTanlov('tgesl-kech', s.kechqurun)+'</div>'+
+      '<label style="display:flex;align-items:center;gap:12px;padding:14px 0;cursor:pointer">'+
+        '<input type="checkbox" id="tgesl-hafta"'+(s.hafta_yakun?' checked':'')+' style="width:20px;height:20px;accent-color:var(--g)">'+
+        '<span style="flex:1;font-size:14px;color:var(--text)">Yakshanba kuni haftalik yakun</span></label>'+
+      '<button id="tgesl-saqla" class="btn btn-g btn-block" style="margin-top:8px">Saqlash</button>';
+
+    d.querySelector('#tgesl-saqla').onclick=function(){
+      var yangi={
+        yoqilgan:   d.querySelector('#tgesl-on').checked,
+        ertalab:    +d.querySelector('#tgesl-ert').value,
+        kechqurun:  +d.querySelector('#tgesl-kech').value,
+        hafta_yakun:d.querySelector('#tgesl-hafta').checked
+      };
+      window.intizomSb.from('eslatma_sozlama')
+        .upsert(Object.assign({user_id: window.intizomUid}, yangi))
+        .then(function(r){
+          if(r.error){ showNotif('\u26a0\ufe0f','Saqlanmadi'); console.warn(r.error); return; }
+          d.remove();
+          showNotif('\u2705 Saqlandi', yangi.yoqilgan
+            ? String(yangi.ertalab).padStart(2,'0')+':00 va '+String(yangi.kechqurun).padStart(2,'0')+':00 da xabar keladi'
+            : 'Eslatmalar o\'chirildi');
+        });
+    };
+  });
+}
+
 function namunaniQayta(){
   var eskiOdat = (state.odatlar||[]).map(function(o){return o.name;});
   var bugun = bugunKun();
@@ -12277,7 +12355,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '78';
+var KUZ_VERSIYA = '79';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -12800,7 +12878,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '78';
+var ILOVA_VERSIYA = '79';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');

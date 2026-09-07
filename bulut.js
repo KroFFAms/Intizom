@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "78";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "79";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -1750,6 +1750,10 @@
 
   function afterAuth(user) {
     uid = user.id;
+    /* Ilova tomonga ochib qo'yamiz: eslatma sozlamasi kabi
+       jadvallarga to'g'ridan-to'g'ri murojaat qilish uchun. */
+    window.intizomSb = sb;
+    window.intizomUid = uid;
     removeGate();
     tgTaklif();
     /* Rasm ko'chirish va tenglashtirish pullThenStart ning
