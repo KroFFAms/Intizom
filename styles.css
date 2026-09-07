@@ -3,34 +3,82 @@
    bloklamaydigan <link> orqali keladi. Shrift kelmasa ham ilova
    ko'rinishi buzilmasin uchun quyida to'liq zaxira ro'yxati bor. */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* ==========================================================
+   VIZUAL TIZIM
+
+   Ilgari: mayin yashil gradientlar, hamma narsa bir xil
+   18px radiusli oq kartochka, har birining ostida bir xil
+   yumshoq soya. Bu tanlov emas, standart edi — soya hech
+   narsa bildirmasdi, radius ierarxiya ko'rsatmasdi, rang
+   esa faqat bezak edi.
+
+   Endi:
+     • Soya balandlikni bildiradi. Sahifada yotgan narsada
+       soya yo'q — faqat ingichka chegara. Soya faqat
+       ustida SUZIB turgan narsada: modal, pastki menyu, FAB.
+     • Radius o'lchamga bog'liq: kichik boshqaruv 12,
+       kartochka 16, tugma-tabletka to'liq yumaloq.
+     • Rang ma'no bildiradi. Yashil — harakat va bajarilish.
+       Guruch rangi FAQAT ketma-ketlik uchun: kunlar yig'ilgani
+       sari ekrandagi yagona iliq nuqta o'sha bo'ladi.
+     • Raqamlar tabular — 0/7 dan 0/8 ga o'tganda sakramaydi.
+   ========================================================== */
 :root{
-  /* Brend — yagona to'q rang, ko'z shunga tushadi */
-  --g:#00C896; --gd:#00A87E; --g2:#00E5B0;
-  /* Sarlavha paneli — brend yashilining to'q tuslari.
-     Ilgari deyarli qora ko'k edi: brendga begona rang. */
-  --navy:#10382F; --nl:#17493E; --nl2:#215F50;
-  /* Fon va matn */
-  --bg:#F1F6F3; --card:#FFF; --text:#12332B; --t2:#5C7A72; --bd:#DFE9E4;
-  /* Aksentlar — 62% to'yinganlik, brenddan orqada turadi */
-  --red:#D85B5B; --ora:#CF9431; --pur:#8B67DB; --blu:#5989D8;
---shadow:0 3px 16px rgba(0,0,0,.06); --shadow-lg:0 6px 28px rgba(0,0,0,.09);
+  /* Harakat va bajarilish. Ilgari #00C896 edi — neon,
+     charchatadigan. Bu to'qroq va ishonchliroq. */
+  --g:#0E9F77; --gd:#0A7D5D; --g2:#37BC95;
+
+  /* Ketma-ketlik rangi — boshqa hech qayerda ishlatilmaydi */
+  --brass:#A87D28;
+
+  --navy:#123028; --nl:#17493E; --nl2:#215F50;
+
+  /* Fon — sovuq yashil emas, betaraf qog'oz tusi.
+     Rangli narsa ko'proq ajralib tursin uchun. */
+  --bg:#F2F2EE; --card:#FFFFFF; --text:#15211E; --t2:#6B7C75; --bd:#E4E4DD;
+
+  --red:#C6564F; --ora:#B98526; --pur:#7B5BC4; --blu:#4C79C4;
+
+  /* Balandlik pog'onalari */
+  --shadow:none;
+  --shadow-lg:0 10px 34px rgba(18,48,40,.13);
+  --shadow-nav:0 -1px 0 var(--bd);
+
+  /* Radius pog'onalari */
+  --r-sm:12px; --r-md:16px; --r-lg:22px;
 }
-.dark{--bg:#0A0F14;--card:#101A17;--text:#EAF3EF;--t2:#8FA9A1;--bd:#1E2B27;--navy:#0C231D;--nl:#123128;--nl2:#1A4034}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15.5px;line-height:1.55;min-height:100vh;padding-bottom:90px;transition:background .3s,color .3s}
+.dark{--bg:#0C1211;--card:#141C1A;--text:#E8EDEA;--t2:#8A9C96;--bd:#232E2B;--navy:#0F1917;--nl:#152420;--nl2:#1D332C;--brass:#C79B3F;--shadow-nav:0 -1px 0 var(--bd)}
+
+body{
+  font-family:'Manrope','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);color:var(--text);
+  font-size:15px;line-height:1.5;font-weight:450;
+  letter-spacing:-.005em;
+  min-height:100vh;padding-bottom:90px;
+  transition:background .3s,color .3s;
+  -webkit-font-smoothing:antialiased;
+}
+/* Raqamlar bir xil kenglikda — hisoblagichlar sakramaydi */
+b,strong,.htsub,.hero-qator,.hero-halqa,input[type=number]{font-variant-numeric:tabular-nums}
 
 /* TOPBAR */
-.topbar{background:linear-gradient(150deg,rgba(0,200,150,.30),rgba(0,200,150,.12) 60%,var(--card));color:var(--text);padding:52px 20px 18px;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.06);margin:-16px -16px 14px}
+/* Gradient bezak edi — hech narsa bildirmasdi. Endi tekis
+   maydon va pastida bitta ingichka chiziq: sarlavha qayerda
+   tugashini ko'rsatadi, boshqa hech narsa da'vo qilmaydi. */
+.topbar{background:var(--card);color:var(--text);padding:50px 20px 16px;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--bd);margin:-16px -16px 16px}
 /* Oq naqsh olib tashlandi — yorug' fonda ko'rinmaydi */
 .topbar-inner{display:flex;align-items:center;justify-content:space-between;position:relative}
-.topbar h2{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.topbar h2{font-size:25px;font-weight:800;letter-spacing:-.028em;line-height:1.15}
+.topbar-inner{flex-wrap:wrap}
+.topbar-inner>span{width:100%;order:9;margin-top:2px;font-weight:500}
 .topbar-tabs{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;position:relative}
-.topbar-tab{background:var(--bg);border:1px solid var(--bd);color:var(--t2);padding:8px 16px;border-radius:20px;font-size:14px;font-weight:500;cursor:pointer;transition:all .25s}
-.topbar-tab.active{background:var(--g);color:#fff;border-color:var(--g);box-shadow:0 3px 10px rgba(0,200,150,.3)}
+.topbar-tab{background:transparent;border:1px solid var(--bd);color:var(--t2);padding:7px 15px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;transition:background .18s,color .18s,border-color .18s}
+.topbar-tab.active{background:var(--text);color:var(--card);border-color:var(--text)}
 .icon-btn{background:var(--bg);border:1px solid var(--bd);color:var(--text);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
 
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bd);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 20px rgba(0,0,0,.06)}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 0 7px;cursor:pointer;color:var(--t2);font-size:10.5px;font-weight:600;gap:2px;border:none;background:none;transition:all .2s}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bd);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 0 7px;cursor:pointer;color:var(--t2);font-size:10.5px;font-weight:600;gap:3px;border:none;background:none;transition:color .2s}
 .nav-item.active{color:var(--g)}
 .nav-item svg{width:20px;height:20px;transition:transform .2s}
 .nav-item:active svg{transform:scale(.85)}
@@ -45,20 +93,21 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Hel
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 /* CARDS */
-.card{background:var(--card);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.8);transition:transform .15s}
+.card{background:var(--card);border-radius:var(--r-md);padding:18px;margin-bottom:14px;border:1px solid var(--bd);transition:transform .15s}
 .dark .card{border-color:var(--bd)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
 .grid2 .card{margin-bottom:0}
-.sec-title{font-size:18px;font-weight:800;margin-bottom:14px;color:var(--text);letter-spacing:-.2px}
+.sec-title{font-size:16.5px;font-weight:800;margin-bottom:13px;color:var(--text);letter-spacing:-.022em}
 
 /* BTNS */
-.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:14px;font-size:15.5px;font-weight:700;border:none;cursor:pointer;transition:all .2s;font-family:inherit}
-.btn-g{background:linear-gradient(135deg,var(--g),var(--gd));color:#fff;box-shadow:0 4px 15px rgba(0,200,150,.35)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:var(--r-sm);font-size:15px;font-weight:700;border:none;cursor:pointer;transition:background .18s,opacity .18s;font-family:inherit;letter-spacing:-.01em}
+.btn-g{background:var(--g);color:#fff}
+.btn-g:active{background:var(--gd)}
 .btn-out{background:var(--card);color:var(--text);border:1.5px solid var(--bd)}
 .btn-red{background:linear-gradient(135deg,var(--red),#C24E4E);color:#fff}
 .btn:active{transform:scale(.97)}
 .btn-block{width:100%;justify-content:center}
-.fab{position:fixed;bottom:92px;right:20px;width:56px;height:56px;border-radius:28px;background:linear-gradient(135deg,var(--g),var(--gd));color:#fff;border:none;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(0,200,150,.5);cursor:pointer;z-index:150;transition:all .2s}
+.fab{position:fixed;bottom:92px;right:20px;width:54px;height:54px;border-radius:50%;background:var(--g);color:#fff;border:none;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(14,159,119,.32);cursor:pointer;z-index:150;transition:transform .18s,background .18s}
 .fab:active{transform:scale(.92)}
 
 /* HERO */
@@ -88,7 +137,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Hel
 
 /* FINANCE */
 .fcards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.fcard{background:var(--card);border-radius:18px;padding:16px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.8)}
+.fcard{background:var(--card);border-radius:var(--r-md);padding:16px;border:1px solid var(--bd)}
 .dark .fcard{border-color:var(--bd)}
 .ficon{width:40px;height:40px;border-radius:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:center}
 .titem{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--bd)}
@@ -98,12 +147,13 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Hel
 /* MODAL */
 .moverlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:300;display:none;align-items:flex-end}
 .moverlay.open{display:flex;animation:fadeIn .2s ease}
-.modal{background:var(--card);border-radius:28px 28px 0 0;padding:24px 20px 32px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.2)}
+.modal{background:var(--card);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:24px 20px 32px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
 .mhandle{width:40px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 20px}
 .mtitle{font-size:22px;font-weight:800;margin-bottom:18px;color:var(--text);letter-spacing:-.5px}
 .igroup{margin-bottom:16px}
 .ilabel{font-size:14px;color:var(--t2);margin-bottom:8px;display:block;font-weight:600}
-.inp{width:100%;padding:14px 16px;border:2px solid var(--bd);border-radius:14px;font-size:16px;outline:none;background:var(--bg);color:var(--text);transition:border-color .2s;font-family:inherit}
+.inp{width:100%;padding:13px 15px;border:1px solid var(--bd);border-radius:var(--r-sm);font-size:16px;outline:none;background:var(--bg);color:var(--text);transition:border-color .18s,background .18s;font-family:inherit}
+.inp:focus{border-color:var(--g);background:var(--card)}
 .inp:focus{border-color:var(--g);background:var(--card)}
 .sel{width:100%;padding:13px 16px;border:2px solid var(--bd);border-radius:14px;font-size:15px;outline:none;background:var(--bg);color:var(--text);-webkit-appearance:none;font-family:inherit}
 .mactions{display:flex;gap:10px;margin-top:20px}
@@ -155,12 +205,71 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Hel
 .m-x:active{transform:scale(.9)}
 
 /* ASOSIY OYNA — bir xil ikonka to'ri */
-.hgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}
-.htile{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:18px 5px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:transform .12s}
+/* ==========================================================
+   BOSH SAHIFA TUZILISHI
+
+   Ilgari 23 ta katak bitta uzluksiz to'rda turardi. Teng
+   ko'ringan 23 ta tanlov — bu tanlash emas, charchash:
+   odam bittasini tanlash o'rniga ilovani yopadi.
+   Endi ular to'rt guruhga bo'lingan va har guruh nomi bor.
+   ========================================================== */
+/* Ilgari bu ALL-CAPS "eyebrow" edi — har qanday shablonda
+   uchraydigan belgi. Oddiy, o'qiladigan sarlavhaga aylandi. */
+.hsec{
+  font-size:14px;font-weight:800;letter-spacing:-.018em;
+  color:var(--text);margin:22px 2px 10px;
+}
+.hsec:first-of-type{margin-top:4px}
+.hgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:4px}
+
+/* --- Kun kartasi: to'rtta bir xil quticha o'rniga bitta o'lchov --- */
+.hero{
+  display:flex;align-items:center;gap:17px;
+  background:var(--card);border:1px solid var(--bd);border-radius:var(--r-md);
+  padding:17px 18px;position:relative;z-index:1;
+}
+.hero-halqa{
+  flex-shrink:0;width:72px;height:72px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;font-weight:800;color:var(--text);
+  background:conic-gradient(var(--g) calc(var(--kun,0)*360deg), var(--bd) 0);
+  position:relative;
+}
+.hero-halqa::before{
+  content:"";position:absolute;inset:7px;border-radius:50%;background:var(--card);
+}
+.hero-halqa span{position:relative;z-index:1}
+.hero-sarlavha{font-size:16px;font-weight:800;color:var(--text);margin-bottom:5px;letter-spacing:-.022em}
+.hero-qator{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px;color:var(--t2)}
+.hero-qator b{color:var(--text);font-weight:800}
+.hero-streak{font-size:13px;color:var(--t2);margin-top:6px}
+.hero-streak b{color:var(--brass);font-weight:800}
+.htile{background:var(--card);border:1px solid var(--bd);border-radius:var(--r-md);padding:14px 6px 13px;text-align:center;cursor:pointer;transition:transform .12s,opacity .25s,border-color .18s}
 .htile:active{transform:scale(.94)}
-.hticon{display:flex;justify-content:center;align-items:center;height:28px}
-.hticon svg{width:25px;height:25px}
-.htlbl{font-size:12.5px;font-weight:700;color:var(--text);margin-top:8px;line-height:1.3;word-break:break-word}
+
+/* Belgi endi o'z rangidagi yumaloq maydonda turadi.
+   Ilgari oq kartada ingichka chiziqli belgi bor edi, xolos —
+   26 ta katak bir xil oq kvadrat bo'lib ko'rinardi. Rang
+   endi katakning o'ziga tegadi, faqat belgiga emas. */
+.hticon{
+  position:relative;
+  width:46px;height:46px;margin:0 auto;
+  display:flex;justify-content:center;align-items:center;
+  border-radius:15px;
+  background:color-mix(in srgb, currentColor 13%, transparent);
+}
+.hticon svg{width:24px;height:24px}
+
+/* Bajarilish halqasi — raqamni o'qimasdan ham ko'rinadi.
+   --p qiymatini kataklarniYangila() beradi (0 dan 1 gacha). */
+.htile[style*="--p"] .hticon::before{
+  content:"";position:absolute;inset:-4px;border-radius:19px;
+  background:conic-gradient(currentColor calc(var(--p,0)*360deg), transparent 0);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 3px));
+          mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 3px));
+  opacity:.85;
+}
+.htlbl{font-size:12.5px;font-weight:700;color:var(--text);margin-top:9px;line-height:1.25;word-break:break-word;letter-spacing:-.012em}
 
 /* Katak holati — katak nima ahvolda ekanini o'zi aytadi.
    Ilgari hammasi bir xil oq karta edi va ma'nosini bilish
@@ -172,13 +281,26 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Hel
 
 /* Bajarilgan katak so'nadi — ko'z bajarilmaganiga tushadi.
    Kun davomida ekran o'zi o'zgarib boradi. */
-.htile.bajarildi{opacity:.42;box-shadow:none}
+.htile.bajarildi{opacity:.5;background:transparent;border-color:transparent}
 .htile.bajarildi .hticon{filter:grayscale(1)}
+.htile.bajarildi .hticon::after{
+  content:"\2713";position:absolute;right:-3px;bottom:-3px;
+  width:17px;height:17px;border-radius:50%;
+  background:var(--g);color:#fff;font-size:11px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px var(--card);
+}
 .htile.bajarildi .htsub{color:var(--t2)}
 
 /* Tegilmagan, lekin bugun kerak bo'lgani biroz ajralib tursin */
-.htile.kutmoqda{border-color:rgba(0,200,150,.45)}
-.hstrip{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px 14px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+.htile.kutmoqda{border-color:rgba(0,200,150,.40);background:linear-gradient(180deg,rgba(0,200,150,.045),transparent 60%)}
+.htsub{letter-spacing:.2px}
+
+/* Keng ekranda kataklar cho'zilib ketmasin */
+@media (min-width:820px){
+  .hgrid{grid-template-columns:repeat(6,1fr)}
+}
+.hstrip{background:var(--card);border:1px solid var(--bd);border-radius:var(--r-md);padding:12px 14px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:12px}
 
 /* QULF EKRANI — to'liq ekran, markazda (pastki "sheet" emas) */
 #parol-kirish-modal{align-items:center;justify-content:center;background:var(--bg);backdrop-filter:none;padding:20px}
