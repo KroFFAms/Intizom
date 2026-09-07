@@ -75,7 +75,10 @@ button, .htile, .sitem, .nav-item, .topbar-tab, .item, .card, label,
 
 body{
   touch-action: manipulation;
-  font-family:'Manrope','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  /* Onest — lotin va kirill birga o'ylab ishlangan: o'zbek,
+     rus va ingliz matni bir xil sifatda chiqadi. Manrope
+     zaxirada qoladi — Onest yuklanmasa u ishlaydi. */
+  font-family:'Onest','Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   background:var(--bg);color:var(--text);
   font-size:15px;line-height:1.5;font-weight:450;
   letter-spacing:-.005em;
