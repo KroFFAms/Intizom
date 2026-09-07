@@ -913,6 +913,11 @@
         <div style="flex:1"><div style="font-size:15px;font-weight:700">Parol himoya</div><div id="parol-desc" style="font-size:14px;color:var(--t2)">O&#39;rnatilmagan</div></div>
         <span style="color:var(--t2)">&#8250;</span>
       </div>
+      <div class="sitem" onclick="namunaniQayta()">
+        <div class="sicon" style="background:rgba(30,140,140,.14)">&#128260;</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:700">Odat va rejani yangilash</div><div style="font-size:14px;color:var(--t2)">Namunaviy 5 ta odat va kun taqsimotini qo&#39;yish</div></div>
+        <span style="color:var(--t2)">&#8250;</span>
+      </div>
       <div class="sitem" onclick="qurilmaTenglash()">
         <div class="sicon" style="background:rgba(30,140,140,.12)">&#128260;</div>
         <div style="flex:1"><div style="font-size:15px;font-weight:700">Qurilmalarni tenglashtirish</div><div style="font-size:14px;color:var(--t2)">Yozuvlarni faqat qo&#39;shadi &mdash; hech narsa o&#39;chmaydi</div></div>
@@ -5457,6 +5462,55 @@ var JQ_KEY='i_jur_qulf';   /* {v:1,tuz:"<b64>",sinov:"<shifr>"} \u2014 sinxronla
 var _jurParol=null;        /* faqat xotirada va sessiyada */
 var _jurOchiq={};          /* id -> ochilgan matn */
 try{ var _jp=sessionStorage.getItem('jur_parol'); if(_jp)_jurParol=_jp; }catch(e){}
+
+/* ==================================================================
+   NAMUNAVIY RO'YXATNI QAYTA YUKLASH        07.09.2026
+
+   Boshlang'ich odat va reja faqat YANGI hisobga tushadi
+   (i_inited3 belgisi bilan qo'riqlanadi). Eskidan foydalanib
+   kelayotganlarda avvalgi namuna qolib ketgan — IELTS, arab
+   tili, bomdod namoz kabi, ustiga soxta streaklar bilan.
+
+   Bu tugma ularni yangi ro'yxatga almashtiradi. Ataylab
+   qo'lda: hech narsa o'z-o'zidan o'chmaydi.
+   ================================================================== */
+function namunaniQayta(){
+  var eskiOdat = (state.odatlar||[]).map(function(o){return o.name;});
+  var bugun = bugunKun();
+  var eskiReja = ((state.reja&&state.reja.bugun&&state.reja.bugun[bugun])||[]).map(function(r){return r.name;});
+
+  var xabar = 'Odat va bugungi reja yangi ro\'yxatga almashtiriladi.\n\n';
+  if(eskiOdat.length) xabar += 'O\'chadigan odatlar (' + eskiOdat.length + '):\n' + eskiOdat.join(', ') + '\n\n';
+  if(eskiReja.length) xabar += 'O\'chadigan bugungi reja (' + eskiReja.length + '):\n' + eskiReja.join(', ') + '\n\n';
+  xabar += 'Ketma-ketliklar ham noldan boshlanadi.\n\nDavom etilsinmi?';
+  if(!confirm(xabar)) return;
+
+  state.odatlar = [
+    {id:Date.now()+1,name:"Vaqtli uyg\'onish",icon:'🌅',color:'linear-gradient(135deg,#B98F35,#8E6B22)',time:'04:00',streak:0,hist:{}},
+    {id:Date.now()+2,name:'1 stakan suv ichish',icon:'💧',color:'linear-gradient(135deg,#1E8C8C,#166B6B)',time:'',streak:0,hist:{}},
+    {id:Date.now()+3,name:"20 varaq kitob o\'qish",icon:'📚',color:'linear-gradient(135deg,#1B3A6B,#2C5490)',time:'21:00',streak:0,hist:{}},
+    {id:Date.now()+4,name:'20 daqiqa mashq',icon:'🏃',color:'linear-gradient(135deg,#1E8C8C,#45AEAE)',time:'07:00',streak:0,hist:{}},
+    {id:Date.now()+5,name:'Kunni ehson bilan boshlash',icon:'🤲',color:'linear-gradient(135deg,#8E3B2F,#B98F35)',time:'',streak:0,hist:{}}
+  ];
+  S.s('i_odatlar', state.odatlar);
+
+  var r = rejaObyekt();
+  r.shablon = [];
+  r.bugun[bugun] = [
+    {id:Date.now()+11,name:"Uyg\'onish",start:'04:00',end:'04:30',icon:'🌅',color:'#B98F35',signal:-1,done:false},
+    {id:Date.now()+12,name:'Ishga borish',start:'08:00',end:'08:30',icon:'🚗',color:'#6A7385',signal:10,done:false},
+    {id:Date.now()+13,name:'Hisobot tayyorlash',start:'08:30',end:'09:00',icon:'📊',color:'#1B3A6B',signal:5,done:false},
+    {id:Date.now()+14,name:'Hujjatlarni tikish',start:'09:00',end:'10:00',icon:'📄',color:'#5B4A8C',signal:-1,done:false},
+    {id:Date.now()+15,name:'Ish',start:'10:00',end:'18:00',icon:'💼',color:'#1E8C8C',signal:-1,done:false},
+    {id:Date.now()+16,name:'Farzandlar bilan vaqt',start:'18:00',end:'20:00',icon:'👨‍👩‍👧',color:'#8E3B2F',signal:10,done:false},
+    {id:Date.now()+17,name:'Uyqu',start:'22:00',end:'22:30',icon:'🌙',color:'#1B3A6B',signal:15,done:false}
+  ];
+  state.reja = r;
+  S.s('i_reja', r);
+
+  try{ renderOdat(); renderReja(); renderBosh(); }catch(e){}
+  showNotif('\u2705 Yangilandi','5 ta odat va kun taqsimoti qo\'yildi');
+}
 
 function jurQulf(){ var q=S.g(JQ_KEY); return (q&&q.sinov&&q.tuz)?q:null; }
 
@@ -11568,7 +11622,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '67';
+var KUZ_VERSIYA = '68';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -12091,7 +12145,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '67';
+var ILOVA_VERSIYA = '68';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
