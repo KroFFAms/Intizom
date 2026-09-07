@@ -2786,7 +2786,7 @@ var QOL_BOLIM = [
   { emo:'\uD83D\uDCCB', nom:'Reja', matn:'<b>Bugun tugaydigan ishlar.</b> Bankka borish, onaga qo\'ng\'iroq, hujjat tayyorlash \u2014 bajarilsa tamom, ertaga ro\'yxat bo\'shab qoladi.<br><br><b>Farqi oddiy:</b> ish har kuni takrorlansa \u2014 Odat. Faqat bugunga tegishli bo\'lsa \u2014 Reja.' },
   { emo:'\uD83C\uDF19', nom:'Namoz', matn:'Besh vaqt namozni belgilash. Vaqtlari shahringizga qarab ko\'rsatiladi.' },
   { emo:'\uD83D\uDCB3', nom:'Moliya', matn:'Kirim-chiqim. Har kuni yozib borsangiz, oy oxirida puling qayerga ketganini ko\'rasiz. Oylik xulosa o\'zi hisoblanadi.' },
-  { emo:'\uD83D\uDCD6', nom:'Kundalik', matn:'Kun haqidagi shaxsiy yozuvlaringiz. <b>Bu bo\'lim hech kimga ko\'rinmaydi</b> — oila guruhida ham, hech qayerda ham.' },
+  { emo:'\uD83D\uDCD6', nom:'Kundalik', matn:'Kun haqidagi shaxsiy yozuvlaringiz. Oila guruhida ham, boshqa foydalanuvchilarga ham <b>ko\'rinmaydi</b>.<br><br>Butunlay yopiq bo\'lishi uchun Sozlama → <b>Kundalik qulfi</b> dan parol qo\'ying: shunda matn telefoningizda shifrlanadi va uni hech kim, jumladan ilova egasi ham o\'qiy olmaydi.' },
   { emo:'\uD83D\uDE0A', nom:'Kayfiyat', matn:'Kun kayfiyatini belgilaysiz. Vaqt o\'tib qaysi kunlar og\'ir kechganini va nima sabab bo\'lganini ko\'rasiz.' },
   { emo:'\uD83D\uDCA7', nom:'Suv', matn:'Kuniga qancha suv ichganingiz. Bir bosish = bir stakan.' },
   { emo:'\uD83C\uDF4E', nom:'Ratsion', matn:'Ovqat va kaloriya. Kunlik normangiz vazn, bo\'y, yosh va maqsadingizdan hisoblanadi — avval Sport bo\'limidan vazningizni kiriting.' },
@@ -2809,7 +2809,7 @@ var QOL_GURUH = [
   ['\u2705', 'Topshiriqlar',
    'Guruhga umumiy vazifa qo\'yasiz yoki bittasiga biriktirasiz. Bajargan odam belgilaydi.'],
   ['\uD83D\uDD10', 'Nima ko\'rinadi?',
-   '<b>Ko\'rinadi:</b> bajarilgan odat va reja soni, namoz soni, ball va streak.<br><b>Ko\'rinmaydi:</b> kundalik yozuvlaringiz, kayfiyatingiz, eslatma va moliyangiz. Ular guruhga umuman yuborilmaydi.']
+   '<b>Ko\'rinadi:</b> bajarilgan odat va reja soni, namoz soni, ball va streak.<br><b>Ko\'rinmaydi:</b> kundalik yozuvlaringiz, kayfiyatingiz, eslatma va moliyangiz — guruh a\'zolari bularni hech qachon ko\'rmaydi.']
 ];
 
 var QOL_SAVOL = [
@@ -12925,7 +12925,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '89';
+var KUZ_VERSIYA = '92';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -13448,7 +13448,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '89';
+var ILOVA_VERSIYA = '92';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
@@ -14164,55 +14164,77 @@ window.addEventListener('intizom-bulut-yangilandi', function(){
   <div class="mtitle">Maxfiylik siyosati</div>
   <div style="font-size:15px;line-height:1.75;color:var(--text);max-height:60vh;overflow-y:auto;padding-right:4px">
 
-    <div style="color:var(--t2);font-size:14px;margin-bottom:14px">Oxirgi yangilanish: 05.09.2026</div>
+    <div style="color:var(--t2);font-size:14px;margin-bottom:14px">Oxirgi yangilanish: 07.09.2026</div>
 
     <b>Qisqacha</b><br>
-    Ma'lumotlaringiz asosan o'z telefoningizda saqlanadi. Biz uni sotmaymiz,
-    reklama uchun ishlatmaymiz va uchinchi shaxsga bermaymiz.<br><br>
+    Ma&#39;lumotingiz sotilmaydi, reklama uchun ishlatilmaydi va uchinchi
+    shaxsga berilmaydi. Boshqa foydalanuvchilar sizning yozuvlaringizni
+    ko&#39;ra olmaydi.<br><br>
 
-    <b>Nima saqlanadi</b><br>
-    Telefoningizda: odatlar, rejalar, namoz, kundalik, moliya, sog'liq
-    yozuvlari, sozlamalar. Bular brauzer xotirasida turadi.<br><br>
+    <b>Qayerda saqlanadi</b><br>
+    Ma&#39;lumot telefoningizda saqlanadi. Bulut hisobiga kirsangiz &mdash;
+    nusxasi serverda ham turadi, telefoningiz yo&#39;qolsa qaytarib olishingiz
+    uchun. Kirmasangiz hech narsa serverga ketmaydi.<br><br>
 
-    Bulut hisobiga kirsangiz, shu ma'lumot nusxasi serverda ham saqlanadi —
-    telefoningiz yo'qolsa qaytarib olishingiz uchun. Kirmasangiz, hech narsa
-    serverga ketmaydi.<br><br>
+    <b>Kundalik qulfi</b><br>
+    Kundalik &mdash; eng shaxsiy bo&#39;lim. Sozlama &rarr; Kundalik qulfi dan
+    parol qo&#39;ysangiz, matn telefoningizda shifrlanadi va serverga faqat
+    shifrlangan ko&#39;rinishda boradi. Kalit sizda, bizda yo&#39;q &mdash; uni
+    hech kim, jumladan ilova egasi ham o&#39;qiy olmaydi. Parolni unutsangiz
+    tiklab bo&#39;lmaydi.<br><br>
 
-    <b>Kundalik va maxfiy qutida</b><br>
-    Bu ikkisi telefoningizda <b>shifrlangan</b> holda saqlanadi. Kalit —
-    sizning parolingiz, u bizda yo'q. Ya'ni biz ham o'qiy olmaymiz.
-    Parolni unutsangiz tiklab bo'lmaydi.<br><br>
+    <b>Boshqa bo&#39;limlar</b><br>
+    Odat, reja, namoz, moliya va qolgan yozuvlar serverda oddiy ko&#39;rinishda
+    saqlanadi &mdash; shunda ilova ular ustida hisob-kitob qila oladi va
+    Telegram eslatmalarini yubora oladi. Ular ham faqat sizga
+    ko&#39;rinadi.<br><br>
 
-    <b>Oila bo'limi</b><br>
-    Guruhga qo'shilsangiz, a'zolar bir-birining <b>faqat sonlarini</b>
-    ko'radi: nechta odat bajarildi, nechta namoz o'qildi, ball, streak.
-    Kundalik, kayfiyat, moliya, dori — bular guruhga <b>umuman
-    yuborilmaydi</b>. Guruhdan chiqsangiz, sonlaringiz ham o'chadi.<br><br>
+    <b>Yo&#39;lda</b><br>
+    Telefon bilan server orasidagi barcha aloqa HTTPS orqali shifrlanadi.
+    Bir xil Wi-Fi dagi begona odam hech narsani o&#39;qiy olmaydi.<br><br>
 
-    <b>Sun'iy intellekt</b><br>
+    <b>Zaxira nusxalar</b><br>
+    Xato yuz berganda tiklash uchun ma&#39;lumotingizning oxirgi 20 ta nusxasi
+    serverda saqlanadi.<br><br>
+
+    <b>Oila bo&#39;limi</b><br>
+    Guruh a&#39;zolari bir-birining <b>faqat sonlarini</b> ko&#39;radi:
+    nechta odat bajarildi, nechta namoz o&#39;qildi, ball, ketma-ketlik.
+    Kundalik, kayfiyat, moliya va dori &mdash; bularni guruh a&#39;zolari
+    ko&#39;rmaydi. Guruhdan chiqsangiz sonlaringiz ham o&#39;chadi.<br><br>
+
+    <b>Telegram eslatmalari</b><br>
+    Yoqilgan bo&#39;lsa, bot kuniga ikki marta xabar yuboradi. Xabarda faqat
+    sonlar bo&#39;ladi &mdash; nechta bajarildi, nechta qoldi. Kundalik matningiz
+    yoki summalaringiz botga yuborilmaydi.<br><br>
+
+    <b>PIN qulf</b><br>
+    Ilovani 4 xonali kod bilan yopish mumkin. Kod telefoningizdan chiqmaydi
+    va serverga yuborilmaydi.<br><br>
+
+    <b>Sun&#39;iy intellekt</b><br>
     AI reja, kaloriya skaneri va kitob tavsiyasidan foydalansangiz,
-    so'rovingiz Anthropic (Claude) serveriga yuboriladi. Faqat o'sha
-    so'rovga kerakli ma'lumot ketadi, butun arxivingiz emas.<br><br>
+    so&#39;rovingiz Anthropic (Claude) serveriga yuboriladi. Faqat o&#39;sha
+    so&#39;rovga kerakli ma&#39;lumot ketadi, butun arxivingiz emas.<br><br>
 
-    <b>Xato va statistika</b><br>
-    Ilova buzilsa, xato xabari va brauzer turi bizga yuboriladi — tuzatish
-    uchun. Shuningdek ilova ochilgani sanaladi. Bularda <b>sizning
-    matningiz bo'lmaydi</b> va shaxsingiz aniqlanmaydi.<br><br>
+    <b>Xato hisobotlari</b><br>
+    Ilova buzilsa, xato xabari, ilova versiyasi va brauzer turi yuboriladi
+    &mdash; tuzatish uchun. Bularda sizning matningiz bo&#39;lmaydi.<br><br>
 
-    <b>To'lov</b><br>
-    To'lov to'lov tizimi orqali amalga oshiriladi. Karta ma'lumotlaringiz
+    <b>To&#39;lov</b><br>
+    To&#39;lov to&#39;lov tizimi orqali amalga oshiriladi. Karta ma&#39;lumotlaringiz
     bizga kelmaydi va bizda saqlanmaydi.<br><br>
 
     <b>Sizning huquqingiz</b><br>
-    Ma'lumotingizni istagan vaqtda Sozlama &rarr; Zaxira orqali yuklab
-    olishingiz yoki butunlay o'chirishingiz mumkin. Hisobingizni
-    o'chirishni so'rasangiz, serverdagi nusxa ham o'chiriladi.<br><br>
+    Ma&#39;lumotingizni istagan vaqtda Sozlama &rarr; Zaxira orqali yuklab
+    olishingiz yoki o&#39;chirishingiz mumkin. Hisobingizni o&#39;chirishni
+    so&#39;rasangiz, serverdagi nusxa va zaxiralari ham o&#39;chiriladi.<br><br>
 
     <b>Bolalar</b><br>
-    Ilova 13 yoshdan kichik bolalar uchun mo'ljallanmagan. Farzandingiz
-    foydalanayotgan bo'lsa, ota-ona sifatida siz javobgarsiz.<br><br>
+    Ilova 13 yoshdan kichik bolalar uchun mo&#39;ljallanmagan. Farzandingiz
+    foydalanayotgan bo&#39;lsa, ota-ona sifatida siz javobgarsiz.<br><br>
 
-    <b>Bog'lanish</b><br>
+    <b>Bog&#39;lanish</b><br>
     Savol yoki shikoyat bo'lsa: Sozlama &rarr; Yordam va taklif.
 
   </div>
