@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "79";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "80";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -1754,6 +1754,12 @@
        jadvallarga to'g'ridan-to'g'ri murojaat qilish uchun. */
     window.intizomSb = sb;
     window.intizomUid = uid;
+    /* Kirish tasdiqlangan zahoti zaxira kalitni yozib qo'yamiz */
+    try {
+      sb.auth.getSession().then(function (r) {
+        if (r && r.data && r.data.session) _kalitSaqla(r.data.session);
+      });
+    } catch (e) {}
     removeGate();
     tgTaklif();
     /* Rasm ko'chirish va tenglashtirish pullThenStart ning
@@ -2132,6 +2138,64 @@
 
   /* Saqlangan sessiya bormi \u2014 to'g'ridan-to'g'ri xotiradan tekshiramiz.
      Bor bo'lsa-yu tarmoq sabab tasdiqlanmasa, kod so'ramaymiz. */
+  /* ==========================================================
+     ZAXIRA KIRISH KALITI          07.09.2026
+
+     Supabase sessiyani o'z kalitida (sb-...-auth-token)
+     saqlaydi. Agar o'sha kalit yo'qolsa \u2014 brauzer tozalasa,
+     xotira to'lganda yozilmay qolsa, yoki ilova yangilanganda
+     \u2014 foydalanuvchidan yana Telegram kodi so'raladi.
+
+     Bu qabul qilib bo'lmaydi: kod FAQAT ro'yxatdan o'tishda
+     so'ralishi kerak.
+
+     Shuning uchun yangilanish kalitini alohida joyda ham
+     saqlaymiz va Supabase'niki yo'qolganda o'shandan tiklaymiz.
+
+     DIQQAT \u2014 nozik joy: Supabase yangilanish kalitini har
+     ishlatganda ALMASHTIRADI. Bitta kalit ikki marta ishlatilsa
+     server 400 "already used" qaytaradi va sessiyani butunlay
+     bekor qiladi. Shuning uchun zaxira kalit FAQAT Supabase'ning
+     o'z kaliti YO'Q bo'lganda ishlatiladi \u2014 ya'ni kutubxona
+     bilan bir vaqtda hech qachon emas. */
+  function _kalitSaqla(sessiya) {
+    if (!sessiya || !sessiya.refresh_token) return;
+    try {
+      localStorage.setItem("kirish_kaliti", JSON.stringify({
+        r: sessiya.refresh_token,
+        a: sessiya.access_token || "",
+        v: Date.now()
+      }));
+    } catch (e) {}
+  }
+
+  function _kalitOl() {
+    try {
+      var s = JSON.parse(localStorage.getItem("kirish_kaliti") || "null");
+      if (s && s.r) return s;
+    } catch (e) {}
+    return null;
+  }
+
+  /* Supabase kaliti yo'q, zaxira bor \u2014 sessiyani tiklaymiz */
+  function _zaxiradanTikla() {
+    var z = _kalitOl();
+    if (!z || !sb) return Promise.resolve(null);
+    console.log("Supabase kaliti yo'q \u2014 zaxiradan tiklanmoqda...");
+    return sb.auth.setSession({ access_token: z.a || "", refresh_token: z.r })
+      .then(function (s) {
+        if (s.error || !s.data || !s.data.user) {
+          console.warn("Zaxira kalit ishlamadi:", s.error && s.error.message);
+          try { localStorage.removeItem("kirish_kaliti"); } catch (e) {}
+          return null;
+        }
+        console.log("Sessiya zaxiradan tiklandi \u2014 kod so'ralmadi.");
+        _kalitSaqla(s.data.session);
+        return s.data.user;
+      })
+      .catch(function () { return null; });
+  }
+
   function _sessiyaBormi() {
     try {
       for (var i = 0; i < localStorage.length; i++) {
@@ -2170,7 +2234,13 @@
            400 (Bad Request) aynan shundan edi.
 
            To'g'ri yo'l: kutubxona o'zi yangilaydi, biz kutamiz. */
-        if (!_sessiyaBormi()) { gate(); return; }
+        if (!_sessiyaBormi()) {
+          /* Supabase'niki yo'q. Kodni so'rashdan OLDIN zaxirani sinaymiz. */
+          _zaxiradanTikla().then(function (u) {
+            if (u) afterAuth(u); else gate();
+          });
+          return;
+        }
 
         console.log("Sessiya bor \u2014 yangilanishini kutamiz...");
         var urinish = 0;
@@ -2202,7 +2272,11 @@
          so'ralmasin, chiqib ketilganda esa sabab konsolda ko'rinsin. */
       try {
         sb.auth.onAuthStateChange(function (hodisa, sessiya) {
-          if (hodisa === "TOKEN_REFRESHED") { console.log("Token yangilandi."); }
+          if (hodisa === "TOKEN_REFRESHED") {
+            console.log("Token yangilandi.");
+            _kalitSaqla(sessiya);
+          }
+          if (hodisa === "SIGNED_IN") { _kalitSaqla(sessiya); }
           if (hodisa === "SIGNED_OUT") { console.warn("Sessiya tugadi (SIGNED_OUT)."); }
         });
       } catch (e) {}
