@@ -1710,6 +1710,10 @@
     <div class="igroup"><label class="ilabel">Nomi</label><input class="inp" id="od-name" placeholder="Masalan: Suv ichish"></div>
     <div class="igroup"><label class="ilabel">Emoji</label><input class="inp" id="od-icon" placeholder="💧" maxlength="2"></div>
     <div class="igroup"><label class="ilabel">Vaqt</label><input class="inp" type="time" id="od-time"></div>
+    <div class="igroup"><label class="ilabel">Nima uchun? (ixtiyoriy)</label>
+      <input class="inp" id="od-sabab" placeholder="Masalan: kun davomida boshim tiniq bo&#39;lsin" maxlength="120">
+      <div style="font-size:12.5px;color:var(--t2);line-height:1.5;margin-top:6px">Bir oydan keyin sabab esdan chiqadi va odat tashlanadi. Yozib qo&#39;ysangiz, har safar ko&#39;rasiz.</div>
+    </div>
     <div class="igroup"><label class="ilabel">O&#39;zi belgilansinmi?</label>
       <select class="sel" id="od-manba">
         <option value="">Yo&#39;q &mdash; qo&#39;lda belgilayman</option>
@@ -4184,12 +4188,152 @@ function odatlarniAvtoYangila(){
   return ozgardi;
 }
 
+/* ==================================================================
+   ODAT TAFSILOTI                   07.09.2026
+
+   Ilgari odat haqida faqat bitta raqam bor edi: joriy streak.
+   Undan "shu oy qanday ketdim" degan savolga javob chiqmasdi.
+   Qaysi kunlar uzilgani, eng uzun seriya qancha bo'lgani,
+   umuman necha kun bajarilgani \u2014 hech biri ko'rinmasdi.
+
+   Endi odat nomini bossangiz to'liq manzara ochiladi:
+   oxirgi 8 haftalik kalendar, uchta raqam va odatning SABABI.
+   Sabab muhim: bir oydan keyin nima uchun boshlaganingiz
+   esdan chiqadi va aynan shunda odat tashlanadi.
+   ================================================================== */
+function odatStat(o){
+  var hist = o.hist || {};
+  var kunlar = Object.keys(hist).filter(function(k){return hist[k];}).sort();
+  var jami = kunlar.length;
+
+  /* Eng uzun ketma-ketlik */
+  var eng = 0, joriy = 0, oldingi = null;
+  kunlar.forEach(function(k){
+    if(oldingi){
+      var farq = Math.round((new Date(k) - new Date(oldingi)) / 86400000);
+      joriy = (farq === 1) ? joriy + 1 : 1;
+    } else joriy = 1;
+    if(joriy > eng) eng = joriy;
+    oldingi = k;
+  });
+
+  /* Birinchi kundan beri qancha foiz */
+  var foiz = 0;
+  if(kunlar.length){
+    var kun1 = new Date(kunlar[0]);
+    var otgan = Math.round((new Date(bugunKun()) - kun1) / 86400000) + 1;
+    foiz = Math.min(100, Math.round(jami / Math.max(1, otgan) * 100));
+  }
+  return {jami:jami, eng:eng, foiz:foiz, birinchi:kunlar[0] || null};
+}
+
+function openOdatDetal(id){
+  var o = (state.odatlar||[]).find(function(x){return x.id===id;});
+  if(!o) return;
+  var st = odatStat(o);
+  var bugun = bugunKun();
+
+  /* 8 haftalik kalendar: ustun = hafta, qator = hafta kuni.
+     Dushanbadan boshlanadi. */
+  var HAFTA = 8;
+  var oxirgi = new Date();
+  var d = oxirgi.getDay(); if(d===0) d=7;
+  oxirgi.setDate(oxirgi.getDate() + (7-d));        /* shu haftaning yakshanbasi */
+
+  var katak = '';
+  var kunNom = ['D','S','C','P','J','S','Y'];
+  for(var qator=0; qator<7; qator++){
+    katak += '<div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">' +
+      '<span style="width:14px;font-size:10.5px;color:var(--t2);flex-shrink:0">'+kunNom[qator]+'</span>';
+    for(var h2=HAFTA-1; h2>=0; h2--){
+      var kd = new Date(oxirgi);
+      kd.setDate(oxirgi.getDate() - h2*7 - (6-qator));
+      var k = kunKal(kd);
+      var kelajak = k > bugun;
+      var bor = !!(o.hist && o.hist[k]);
+      var bg = kelajak ? 'transparent' : (bor ? o.color : 'var(--bd)');
+      var chek = (k===bugun) ? ';box-shadow:0 0 0 1.5px var(--text)' : '';
+      katak += '<div title="'+k+'" style="flex:1;aspect-ratio:1;border-radius:4px;background:'+bg+
+               ';opacity:'+(kelajak?'.25':'1')+chek+'"></div>';
+    }
+    katak += '</div>';
+  }
+
+  var el = document.createElement('div');
+  el.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;font-family:inherit';
+  el.innerHTML =
+   '<div style="width:100%;max-width:440px;background:var(--card);color:var(--text);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow:auto">'+
+    '<div style="width:40px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 16px"></div>'+
+
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">'+
+      '<div style="width:48px;height:48px;border-radius:14px;background:'+o.color+';display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">'+o.icon+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:18px;font-weight:800">'+esc(o.name)+'</div>'+
+        (o.time?'<div style="font-size:13px;color:var(--t2)">\u23F0 '+esc(o.time)+'</div>':'')+
+      '</div></div>'+
+
+    /* Sabab */
+    '<div style="background:var(--bg);border-radius:var(--r-sm);padding:13px;margin-bottom:16px">'+
+      '<div style="font-size:12.5px;color:var(--t2);font-weight:700;margin-bottom:6px">NIMA UCHUN</div>'+
+      '<div id="od-sabab-korinish" style="font-size:14.5px;line-height:1.55">'+
+        (o.sabab ? esc(o.sabab)
+                 : '<span style="color:var(--t2)">Sabab yozilmagan. Bir oydan keyin nima uchun boshlaganingiz esdan chiqadi.</span>')+
+      '</div>'+
+      '<button onclick="odatSababTahrir('+o.id+')" style="margin-top:9px;padding:7px 13px;border:1px solid var(--bd);border-radius:999px;background:var(--card);color:var(--text);font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">'+
+        (o.sabab?'O\'zgartirish':'Sabab yozish')+'</button>'+
+    '</div>'+
+
+    /* Uchta raqam */
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">'+
+      '<div style="text-align:center;background:var(--bg);border-radius:var(--r-sm);padding:12px 6px">'+
+        '<div style="font-size:21px;font-weight:800;color:var(--brass)">'+(o.streak||0)+'</div>'+
+        '<div style="font-size:11.5px;color:var(--t2);margin-top:2px">hozirgi seriya</div></div>'+
+      '<div style="text-align:center;background:var(--bg);border-radius:var(--r-sm);padding:12px 6px">'+
+        '<div style="font-size:21px;font-weight:800">'+st.eng+'</div>'+
+        '<div style="font-size:11.5px;color:var(--t2);margin-top:2px">eng uzun</div></div>'+
+      '<div style="text-align:center;background:var(--bg);border-radius:var(--r-sm);padding:12px 6px">'+
+        '<div style="font-size:21px;font-weight:800">'+st.jami+'</div>'+
+        '<div style="font-size:11.5px;color:var(--t2);margin-top:2px">jami kun</div></div>'+
+    '</div>'+
+
+    /* Kalendar */
+    '<div style="font-size:12.5px;color:var(--t2);font-weight:700;margin-bottom:8px">OXIRGI 8 HAFTA</div>'+
+    katak+
+    (st.birinchi
+      ? '<div style="font-size:12.5px;color:var(--t2);margin-top:10px;line-height:1.5">Birinchi kun: '+sanaUz(new Date(st.birinchi),'ozun')+' \u00b7 o\'shandan beri kunlarning <b style="color:var(--text)">'+st.foiz+'%</b> ida bajarilgan</div>'
+      : '<div style="font-size:12.5px;color:var(--t2);margin-top:10px">Hali bir marta ham belgilanmagan.</div>')+
+
+    '<button id="od-detal-x" class="btn btn-out btn-block" style="margin-top:18px">Yopish</button>'+
+   '</div>';
+
+  document.body.appendChild(el);
+  el.querySelector('#od-detal-x').onclick=function(){ el.remove(); };
+  el.onclick=function(e){ if(e.target===el) el.remove(); };
+  el._odatId = id;
+  window._odatDetalEl = el;
+}
+
+function odatSababTahrir(id){
+  var o = (state.odatlar||[]).find(function(x){return x.id===id;});
+  if(!o) return;
+  var j = prompt('Nima uchun bu odat?\n\nMasalan: kun davomida boshim tiniq bo\'lsin',
+                 o.sabab || '');
+  if(j === null) return;
+  o.sabab = String(j).trim().slice(0,120);
+  S.s('i_odatlar', state.odatlar);
+  var el = window._odatDetalEl;
+  if(el){ el.remove(); openOdatDetal(id); }
+  try{ renderOdat(); }catch(e){}
+}
+
 function addOdat(){
   const name=document.getElementById('od-name').value.trim();if(!name)return;
   if(!_takrorTekshir(name,'odat')) return;
   var _mnEl=document.getElementById('od-manba');
   var _mn=(_mnEl&&_mnEl.value)||'';
-  state.odatlar.push({id:Date.now(),name,icon:document.getElementById('od-icon').value||'⭐',color:document.getElementById('od-color').value,time:document.getElementById('od-time').value,manba:_mn,streak:0,hist:{}});
+  var _sbEl=document.getElementById('od-sabab');
+  state.odatlar.push({id:Date.now(),name,icon:document.getElementById('od-icon').value||'⭐',color:document.getElementById('od-color').value,time:document.getElementById('od-time').value,manba:_mn,sabab:((_sbEl&&_sbEl.value)||'').trim(),streak:0,hist:{}});
+  if(_sbEl) _sbEl.value='';
   if(_mn){ try{ odatlarniAvtoYangila(); }catch(e){} }
   if(_mnEl) _mnEl.value='';
   S.s('i_odatlar',state.odatlar);closeM('odat-modal');
@@ -4239,7 +4383,7 @@ function renderOdat(){
     return '<div class="hcard'+(isDone?' done':'')+'">'+
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">'+
         '<div class="hicon" style="background:'+o.color+'"><span style="font-size:24px">'+o.icon+'</span></div>'+
-        '<div style="flex:1;min-width:0">'+
+        '<div style="flex:1;min-width:0;cursor:pointer" onclick="openOdatDetal('+o.id+')">'+
           '<div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(o.name)+'</div>'+
           '<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">'+
             '<span style="font-size:14px;color:var(--brass);font-weight:700;background:rgba(185,143,53,.12);padding:2px 8px;border-radius:8px">🔥 '+(o.streak||0)+' kun</span>'+
@@ -4466,7 +4610,18 @@ function changeOy(d){
   state.finM+=d;
   if(state.finM>11){state.finM=0;state.finY++;}
   if(state.finM<0){state.finM=11;state.finY--;}
+
+  /* XATO TUZATILDI (07.09.2026): bu yerda faqat renderMoliya()
+     chaqirilardi. Statistika yorlig'ida turib oyni almashtirsangiz
+     sarlavha yangilanar, lekin statistikaning O'ZI eski oyda
+     qolib ketardi \u2014 "Dekabr 2026" yozilib, ostida sentabr
+     hisobi turardi. Endi ochiq yorliq qaysi bo'lsa, o'sha
+     qayta chiziladi. */
   renderMoliya();
+  try{
+    var st = document.getElementById('mol-stat');
+    if(st && st.style.display !== 'none') renderMoliyaStat();
+  }catch(e){}
 }
 function setFT(t){
   document.getElementById('f-type').value=t;
@@ -4573,26 +4728,54 @@ function showMoliyaTab(tab,el){
      Jamg'armadan     balans +, jamg'arma \u2212
    ================================================================== */
 
-/* Jamg'arma \u2014 BUTUN tarix bo'yicha, oyga bog'liq emas */
-function jamgarmaJami(){
-  var t = transRoyxat(), q = 0;
-  t.forEach(function(x){
-    if(x.type==='jamgarma') q += x.amt;
-    else if(x.type==='jamgarma_olish') q -= x.amt;
+/* ------------------------------------------------------------------
+   HISOB MANTIG'I \u2014 TOZA FUNKSIYALAR
+
+   Bu uchtasi ekranga tegmaydi, faqat son qaytaradi. Shuning
+   uchun ularni sinash mumkin: intizomTest() ularni tekshiradi.
+
+   Nega muhim: bugungi "jamg'arma noto'g'ri jamlanadi" xatosi
+   oylab yashirinib yotdi, chunki ekranda raqam CHIQARDI \u2014 faqat
+   noto'g'ri raqam. Ekranni ko'z bilan ko'rish mumkin, hisobni
+   yo'q. Endi hisob alohida turadi va sinaladi.
+   ------------------------------------------------------------------ */
+
+/* Bitta oyning kesimi. list \u2014 tranzaksiyalar massivi. */
+function moliyaKesim(list, m, y){
+  var k = {kirim:0, chiqim:0, jamQo:0, jamOl:0, soni:0};
+  (list||[]).forEach(function(t){
+    if(t.m!==m || t.y!==y) return;
+    var s = Number(t.amt)||0;
+    if(t.type==='daromad')             k.kirim += s;
+    else if(t.type==='xarajat')      { k.chiqim += s; k.soni++; }
+    else if(t.type==='jamgarma')       k.jamQo += s;
+    else if(t.type==='jamgarma_olish') k.jamOl += s;
+  });
+  /* Qo'ldagi pul: jamg'armaga o'tkazilgani bu yerda YO'Q,
+     olingani esa qaytib qo'shiladi. */
+  k.bal = k.kirim - k.chiqim - k.jamQo + k.jamOl;
+  return k;
+}
+
+/* Jamg'arma \u2014 butun tarix bo'yicha, oyga bog'liq emas.
+   Qo'shilgani MINUS olingani. */
+function jamgarmaHisob(list){
+  var q = 0;
+  (list||[]).forEach(function(x){
+    if(x.type==='jamgarma') q += Number(x.amt)||0;
+    else if(x.type==='jamgarma_olish') q -= Number(x.amt)||0;
   });
   return q;
 }
 
+function jamgarmaJami(){ return jamgarmaHisob(transRoyxat()); }
+
 function renderMoliya(){
   document.getElementById('mol-oy').textContent=MONTHS[state.finM]+' '+state.finY;
-  const monthly=transRoyxat().filter(t=>t.m===state.finM&&t.y===state.finY);
-  const inc=monthly.filter(t=>t.type==='daromad').reduce((s,t)=>s+t.amt,0);
-  const exp=monthly.filter(t=>t.type==='xarajat').reduce((s,t)=>s+t.amt,0);
-  const jamQo=monthly.filter(t=>t.type==='jamgarma').reduce((s,t)=>s+t.amt,0);
-  const jamOl=monthly.filter(t=>t.type==='jamgarma_olish').reduce((s,t)=>s+t.amt,0);
-  /* Qo'ldagi pul: jamg'armaga o'tkazilgani bu yerda yo'q,
-     olingani esa qaytib qo'shiladi. */
-  const bal = inc - exp - jamQo + jamOl;
+  const hamma=transRoyxat();
+  const monthly=hamma.filter(t=>t.m===state.finM&&t.y===state.finY);
+  const K=moliyaKesim(hamma, state.finM, state.finY);
+  const inc=K.kirim, exp=K.chiqim, jamQo=K.jamQo, jamOl=K.jamOl, bal=K.bal;
   document.getElementById('mol-inc').textContent=fmt(inc);
   document.getElementById('mol-exp').textContent=fmt(exp);
   document.getElementById('mol-bal').textContent=fmt(bal);
@@ -4638,19 +4821,9 @@ function renderMoliya(){
    Endi hammasiga javob bor.
    ================================================================== */
 
-/* Bitta oyning kesimi */
-function _oyKesim(hamma, m, y){
-  var k = {kirim:0, chiqim:0, jamQo:0, jamOl:0, soni:0};
-  hamma.forEach(function(t){
-    if(t.m!==m || t.y!==y) return;
-    if(t.type==='daromad')             k.kirim += t.amt;
-    else if(t.type==='xarajat')      { k.chiqim += t.amt; k.soni++; }
-    else if(t.type==='jamgarma')       k.jamQo += t.amt;
-    else if(t.type==='jamgarma_olish') k.jamOl += t.amt;
-  });
-  k.bal = k.kirim - k.chiqim - k.jamQo + k.jamOl;
-  return k;
-}
+/* Statistika ham bir xil hisobdan foydalanadi \u2014 ikki joyda
+   ikki xil formula bo'lsa, ular albatta bir kun ajralib ketadi. */
+function _oyKesim(hamma, m, y){ return moliyaKesim(hamma, m, y); }
 
 /* Foizli o'zgarish yorlig'i. Xarajatda o'sish yomon,
    daromadda yaxshi \u2014 shuning uchun rang teskari. */
@@ -5778,6 +5951,125 @@ function _haftaFarq(a, b){
          '<span style="color:var(--t2)"> o\'tgan haftaga nisbatan</span>';
 }
 
+/* Pulni odam o'qiydigan qilib yozadi. Ilgari 3 500 000 so'm
+   ekranda "3500K" bo'lib chiqardi \u2014 o'qib darrov tushunib
+   bo'lmasdi. O'zbekchada pul "ming" va "million" bilan aytiladi. */
+function pulQisqa(n){
+  n = Number(n) || 0;
+  var manfiy = n < 0; n = Math.abs(n);
+  var chiq;
+  if (n >= 1000000) {
+    var mln = n / 1000000;
+    chiq = (mln >= 10 ? String(Math.round(mln))
+                      : String(Math.round(mln*10)/10).replace('.', ',')) + ' mln';
+  } else if (n >= 1000) {
+    chiq = Math.round(n/1000) + ' ming';
+  } else {
+    chiq = String(Math.round(n));
+  }
+  return (manfiy ? '\u2212' : '') + chiq;
+}
+
+/* ==================================================================
+   AVTOMATIK TEST                   07.09.2026
+
+   13 000 qator kodda birorta test yo'q edi. Natijasi: har
+   o'zgarishdan keyin men tuzataman, foydalanuvchi sinaydi,
+   xato chiqadi, qaytadan tuzataman. Bu og'riqli va sekin.
+
+   Yomoni \u2014 hisob xatolari KO'RINMAYDI. Ekran raqam chiqaradi,
+   faqat noto'g'ri raqam. Jamg'arma noto'g'ri jamlanishi aynan
+   shunday oylab yashirinib yotdi.
+
+   Bu yerdagi testlar ekranga tegmaydi va haqiqiy ma'lumotga
+   ham tegmaydi \u2014 faqat toza funksiyalarga o'ylab topilgan
+   son berib, javobini tekshiradi.
+
+   Ishlatish: konsolda  intizomTest()
+   ================================================================== */
+window.intizomTest = function(){
+  var otdi = 0, yiqildi = [];
+
+  function t(nom, olindi, kutilgan){
+    var a = JSON.stringify(olindi), b = JSON.stringify(kutilgan);
+    if (a === b) { otdi++; }
+    else { yiqildi.push(nom + '\n    olindi:   ' + a + '\n    kutilgan: ' + b); }
+  }
+
+  /* ---------- pulQisqa ---------- */
+  t('pulQisqa 0',          pulQisqa(0),        '0');
+  t('pulQisqa 850',        pulQisqa(850),      '850');
+  t('pulQisqa 450 ming',   pulQisqa(450000),   '450 ming');
+  t('pulQisqa 999 ming',   pulQisqa(999000),   '999 ming');
+  t('pulQisqa 1 mln',      pulQisqa(1000000),  '1 mln');
+  t('pulQisqa 3,5 mln',    pulQisqa(3500000),  '3,5 mln');
+  t('pulQisqa 12 mln',     pulQisqa(12400000), '12 mln');
+  t('pulQisqa manfiy',     pulQisqa(-200000),  '\u2212200 ming');
+
+  /* ---------- moliyaKesim ---------- */
+  var T = [
+    {type:'daromad',        amt:5000000, m:8, y:2026},
+    {type:'xarajat',        amt:600000,  m:8, y:2026, name:'Oziq-ovqat'},
+    {type:'xarajat',        amt:900000,  m:8, y:2026, name:'Ijara'},
+    {type:'jamgarma',       amt:1000000, m:8, y:2026},
+    {type:'jamgarma_olish', amt:200000,  m:8, y:2026},
+    {type:'daromad',        amt:4000000, m:7, y:2026},   /* boshqa oy */
+  ];
+  var K = moliyaKesim(T, 8, 2026);
+  t('kesim kirim',   K.kirim,  5000000);
+  t('kesim chiqim',  K.chiqim, 1500000);
+  t('kesim soni',    K.soni,   2);
+  t('kesim jamQo',   K.jamQo,  1000000);
+  t('kesim jamOl',   K.jamOl,  200000);
+  /* 5 000 000 \u2212 1 500 000 \u2212 1 000 000 + 200 000 */
+  t('kesim balans',  K.bal,    2700000);
+  t('kesim bo\'sh oy', moliyaKesim(T, 0, 2026).bal, 0);
+
+  /* ---------- jamgarmaHisob ---------- */
+  t('jamgarma jami', jamgarmaHisob(T), 800000);
+  t('jamgarma bo\'sh', jamgarmaHisob([]), 0);
+
+  /* PULNING SAQLANISHI \u2014 eng muhim tekshiruv.
+     Oy qoldig'i + shu oyda jamg'armaga qo'shilgan \u2212 olingan
+     kirim minus chiqimga TENG bo'lishi shart. Aks holda pul
+     yo'qoladi yoki ikkilanadi. */
+  t('pul saqlanadi', K.bal + K.jamQo - K.jamOl, K.kirim - K.chiqim);
+
+  /* ---------- odatStat ---------- */
+  var hist = {};
+  ['01','02','03','04','05','08','09','10','11','12','13','14']
+    .forEach(function(d){ hist['2026-09-'+d] = true; });
+  var st = odatStat({hist:hist});
+  t('odat jami kun', st.jami, 12);
+  t('odat eng uzun', st.eng, 7);          /* 08\u201314 */
+  t('odat birinchi', st.birinchi, '2026-09-01');
+  var bosh = odatStat({hist:{}});
+  t('odat bo\'sh jami', bosh.jami, 0);
+  t('odat bo\'sh eng',  bosh.eng, 0);
+
+  /* ---------- _nomKalit (takrorlanishni topish) ---------- */
+  t('nom bir xil', _nomKalit("Namoz o'qish") === _nomKalit('namoz oqish'), true);
+  t('nom farqli',  _nomKalit('Kitob') === _nomKalit('Sport'), false);
+
+  /* ---------- _taqqosla (bog'lanish) ---------- */
+  t('dalil kam rad etiladi',
+    _taqqosla([1,1,1],[0,0,0,0,0,0]), null);
+  var r = _taqqosla([1,1,1,1,1,1],[0,0,0,0,0]);
+  t('dalil yetarli qabul', r !== null, true);
+  t('taqqoslash farqi', r ? Math.round(r.farq*100) : null, 100);
+
+  /* ---------- Natija ---------- */
+  var jami = otdi + yiqildi.length;
+  if (yiqildi.length === 0) {
+    console.log('%c\u2705 ' + otdi + '/' + jami + ' test o\'tdi', 'color:#0E9F77;font-weight:bold;font-size:14px');
+  } else {
+    console.log('%c\u274C ' + yiqildi.length + '/' + jami + ' test yiqildi',
+                'color:#C6564F;font-weight:bold;font-size:14px');
+    yiqildi.forEach(function(x){ console.log('  ' + x); });
+  }
+  return { otdi: otdi, yiqildi: yiqildi.length, jami: jami };
+};
+
 function renderHisobot(period){
   period=period||'kun';
   const el=document.getElementById('hisobot-content');
@@ -5965,7 +6257,12 @@ function renderHisobot(period){
   const mT=transRoyxat().filter(t=>t.m===now.getMonth()&&t.y===now.getFullYear());
   const totInc=mT.filter(t=>t.type==='daromad').reduce((s,t)=>s+(t.amt||t.amount||0),0);
   const totExp=mT.filter(t=>t.type==='xarajat').reduce((s,t)=>s+(t.amt||t.amount||0),0);
-  const totSav=mT.filter(t=>t.type==='jamgarma').reduce((s,t)=>s+(t.amt||t.amount||0),0);
+  /* XATO TUZATILDI (07.09.2026): faqat jamg'armaga QO'SHILGANI
+     sanalardi, OLINGANI hisobga olinmasdi \u2014 500 000 qo'yib
+     200 000 olsangiz ham "500 000" ko'rinardi. */
+  const savQo=mT.filter(t=>t.type==='jamgarma').reduce((s,t)=>s+(t.amt||t.amount||0),0);
+  const savOl=mT.filter(t=>t.type==='jamgarma_olish').reduce((s,t)=>s+(t.amt||t.amount||0),0);
+  const totSav=savQo-savOl;
   const quronDone=(dinD.quron&&dinD.quron.done)?dinD.quron.done.length:0;
   const ball=Math.round((namozPct+rejaPct+(habitStats.length?habitStats.reduce((s,h)=>s+h.pct,0)/habitStats.length:0))/3);
   const ballColor=ball>=80?'var(--g)':ball>=50?'var(--ora)':'var(--red)';
@@ -6008,9 +6305,9 @@ function renderHisobot(period){
   '<div class="card">'+
     '<div class="sec-title">&#128179; '+(MONTHS[now.getMonth()]||'')+' moliya</div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+
-      '<div style="text-align:center;padding:10px;background:rgba(30,140,140,0.08);border-radius:12px"><div style="font-size:15px;font-weight:800;color:var(--g)">'+Math.round(totInc/1000)+'K</div><div style="font-size:12.5px;color:var(--t2);margin-top:3px">Daromad</div></div>'+
-      '<div style="text-align:center;padding:10px;background:rgba(244,63,94,0.08);border-radius:12px"><div style="font-size:15px;font-weight:800;color:var(--red)">'+Math.round(totExp/1000)+'K</div><div style="font-size:12.5px;color:var(--t2);margin-top:3px">Xarajat</div></div>'+
-      '<div style="text-align:center;padding:10px;background:rgba(139,92,246,0.08);border-radius:12px"><div style="font-size:15px;font-weight:800;color:var(--pur)">'+Math.round(totSav/1000)+'K</div><div style="font-size:12.5px;color:var(--t2);margin-top:3px">Jamg\'arma</div></div>'+
+      '<div style="text-align:center;padding:10px;background:rgba(30,140,140,0.08);border-radius:12px"><div style="font-size:15px;font-weight:800;color:var(--g)">'+pulQisqa(totInc)+'</div><div style="font-size:12.5px;color:var(--t2);margin-top:3px">Daromad</div></div>'+
+      '<div style="text-align:center;padding:10px;background:rgba(244,63,94,0.08);border-radius:12px"><div style="font-size:15px;font-weight:800;color:var(--red)">'+pulQisqa(totExp)+'</div><div style="font-size:12.5px;color:var(--t2);margin-top:3px">Xarajat</div></div>'+
+      '<div style="text-align:center;padding:10px;background:rgba(139,92,246,0.08);border-radius:12px"><div style="font-size:15px;font-weight:800;color:var(--pur)">'+pulQisqa(totSav)+'</div><div style="font-size:12.5px;color:var(--t2);margin-top:3px">Jamg\'arma</div></div>'+
     '</div>'+
   '</div>'+
 
@@ -10710,6 +11007,41 @@ function addZikr(id, amount){
   renderZikrlar();
 }
 
+/* Zikrni QO'LDA kiritish. Ilgari faqat "+1" bor edi \u2014
+   1000 ta zikr uchun ming marta bosish kerak bo'lardi.
+   Odam tasbeh bilan sanaydi, keyin bu yerga yozadi. */
+function zikrQol(id){
+  var z = ZIKRLAR.find(function(x){return x.id===id;});
+  if(!z) return;
+  var counts = getZikrCounts();
+  var hozir = counts[id] || 0;
+
+  var j = prompt(
+    (z.tarjima||'Zikr') + '\n\n' +
+    'Hozir: ' + hozir + ' ta\n\n' +
+    'Nechta qo\'shilsin?\n' +
+    '(kamaytirish uchun minus bilan: -50)',
+    ''
+  );
+  if(j === null) return;
+  j = String(j).replace(/\s/g,'').replace(',', '.');
+  var son = parseInt(j, 10);
+  if(!isFinite(son) || son === 0){
+    if(j !== '') showNotif('\u26a0\ufe0f','Raqam kiriting');
+    return;
+  }
+  var yangi = hozir + son;
+  if(yangi < 0) yangi = 0;
+  if(yangi > 1000000){ showNotif('\u26a0\ufe0f','Juda katta son'); return; }
+
+  var today = bugunKun();
+  counts[id] = yangi;
+  S.s('i_zikr_'+today, counts);
+  if(son > 0) addBall(1, 'Zikr');
+  renderZikrlar();
+  showNotif('\u2705 '+yangi+' ta', z.tarjima||'');
+}
+
 function resetZikr(id){
   var today = bugunKun();
   var counts = getZikrCounts();
@@ -10738,21 +11070,25 @@ function renderZikrlar(){
     var pct = Math.min(100, Math.round(count/z.maqsad*100));
     var done = count >= z.maqsad;
     return '<div style="background:var(--card);border-radius:18px;padding:16px;margin-bottom:10px;border:1.5px solid '+(done?z.rang+'44':'var(--bd)')+';box-shadow:var(--shadow)">' +
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
-        '<div style="width:40px;height:40px;border-radius:12px;background:'+z.rang+'22;display:flex;align-items:center;justify-content:center;font-size:20px">'+z.emoji+'</div>' +
-        '<div style="flex:1">' +
-          '<div style="font-family:Amiri,serif;font-size:18px;color:var(--text);text-align:right;direction:rtl;margin-bottom:2px">'+z.arab+'</div>' +
-          '<div style="font-size:13.5px;color:var(--t2)">'+z.tarjima+'</div>' +
+      /* Yozuvlar kattalashtirildi: arabcha 18 \u2192 26, tarjima
+         13.5 \u2192 15.5, hisoblagich 22 \u2192 32. Zikr o'qiyotgan
+         odam telefonni uzoqroq ushlaydi va tez qaraydi. */
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+        '<div style="width:46px;height:46px;border-radius:14px;background:'+z.rang+'22;display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0">'+z.emoji+'</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-family:Amiri,serif;font-size:26px;line-height:1.5;color:var(--text);text-align:right;direction:rtl;margin-bottom:4px">'+z.arab+'</div>' +
+          '<div style="font-size:15.5px;color:var(--t2);line-height:1.4">'+z.tarjima+'</div>' +
         '</div>' +
       '</div>' +
       '<div style="background:var(--bd);border-radius:4px;height:4px;margin-bottom:10px">' +
         '<div style="background:'+z.rang+';height:4px;border-radius:4px;width:'+pct+'%;transition:width .3s"></div>' +
       '</div>' +
       '<div style="display:flex;align-items:center;justify-content:space-between">' +
-        '<div style="font-size:22px;font-weight:800;color:'+z.rang+'">'+count+' <span style="font-size:15px;color:var(--t2);font-weight:400">/ '+z.maqsad+'</span></div>' +
+        '<div onclick="zikrQol(\''+z.id+'\')" style="font-size:32px;font-weight:800;color:'+z.rang+';cursor:pointer;line-height:1.1" title="Bosib istalgan sonni kiriting">'+count+' <span style="font-size:17px;color:var(--t2);font-weight:400">/ '+z.maqsad+'</span></div>' +
         '<div style="display:flex;gap:8px">' +
-          '<button onclick="resetZikr(\''+z.id+'\')" style="width:36px;height:36px;border-radius:10px;background:var(--bg);border:1px solid var(--bd);color:var(--t2);font-size:16px;cursor:pointer">↺</button>' +
-          '<button onclick="addZikr(\''+z.id+'\',1)" style="min-width:80px;height:36px;border-radius:10px;background:'+(done?'#1E8C8C':z.rang)+';border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;padding:0 12px">'+(done?'✅ Bajarildi':'+1')+'</button>' +
+          '<button onclick="resetZikr(\''+z.id+'\')" style="width:42px;height:42px;border-radius:12px;background:var(--bg);border:1px solid var(--bd);color:var(--t2);font-size:18px;cursor:pointer">↺</button>' +
+          '<button onclick="zikrQol(\''+z.id+'\')" style="width:42px;height:42px;border-radius:12px;background:var(--bg);border:1px solid var(--bd);color:var(--text);font-size:16px;font-weight:800;cursor:pointer" title="Istalgan son">123</button>' +
+          '<button onclick="addZikr(\''+z.id+'\',1)" style="min-width:92px;height:42px;border-radius:12px;background:'+(done?'#1E8C8C':z.rang)+';border:none;color:#fff;font-size:17px;font-weight:800;cursor:pointer;padding:0 14px">'+(done?'✅':'+1')+'</button>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -12355,7 +12691,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '80';
+var KUZ_VERSIYA = '85';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -12878,7 +13214,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '80';
+var ILOVA_VERSIYA = '85';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');

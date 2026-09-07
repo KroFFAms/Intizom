@@ -58,7 +58,23 @@
 }
 .dark{--bg:#0B1018;--card:#131A26;--text:#E6EAF2;--t2:#8792A6;--bd:#1F2836;--navy:#0F1724;--nl:#16203050;--nl2:#1C2942;--lojuvard:#4C79C4;--lojuvard-och:#6B94D6;--brass:#D2A64B;--g:#3BB0AE;--gd:#2C8C8A;--red:#C0655A;--shadow-nav:0 -1px 0 var(--bd)}
 
+/* IKKI MARTA BOSGANDA EKRAN KATTALASHMASIN.
+
+   Zoom qulfini (user-scalable=no) olib tashladim \u2014 ko'zi
+   xira odam matnni kattalashtira olishi kerak. Lekin uning
+   yon ta'siri bor edi: tugmani tez ikki marta bosganda
+   brauzer buni "kattalashtir" deb tushunardi. Zikr sanashda
+   bu chidab bo'lmas holga keladi.
+
+   touch-action:manipulation aynan shu ikkilangan bosishni
+   o'chiradi va barmoq bilan kattalashtirishga TEGMAYDI. */
+button, .htile, .sitem, .nav-item, .topbar-tab, .item, .card, label,
+[onclick]{
+  touch-action: manipulation;
+}
+
 body{
+  touch-action: manipulation;
   font-family:'Manrope','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   background:var(--bg);color:var(--text);
   font-size:15px;line-height:1.5;font-weight:450;
