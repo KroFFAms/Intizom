@@ -202,7 +202,7 @@
         </div>
       </div>
     </div>
-    <div class="hero">
+    <div class="hero" onclick="gotoPage('hisobot',null)" style="cursor:pointer" title="Bugun nima qildim">
       <div class="hero-halqa"><span id="b-foiz">0%</span></div>
       <div style="flex:1;min-width:0">
         <div class="hero-sarlavha">Bugun</div>
@@ -212,6 +212,7 @@
           <span><b id="b-st3">0</b> namoz</span>
         </div>
         <div class="hero-streak">&#128293; <b id="b-st4">0</b> kunlik ketma-ketlik</div>
+        <div style="font-size:12.5px;color:var(--g);font-weight:700;margin-top:6px">Bugun nima qildim &rsaquo;</div>
       </div>
     </div>
   </div>
@@ -661,7 +662,8 @@
       <h2>&#128202; Hisobot</h2><div style="width:32px"></div>
     </div>
     <div class="topbar-tabs">
-      <button class="topbar-tab active" onclick="showHisobotTab('hafta',this)">Haftalik</button>
+      <button class="topbar-tab active" onclick="showHisobotTab('kun',this)">Bugun</button>
+      <button class="topbar-tab" onclick="showHisobotTab('hafta',this)">Haftalik</button>
       <button class="topbar-tab" onclick="showHisobotTab('oy',this)">Oylik</button>
     </div>
   </div>
@@ -3136,7 +3138,7 @@ function gotoPage(page,btn){
     else if(page==='ratsion'&&typeof renderRatsion==='function')renderRatsion();
     else if(page==='sozlama'&&typeof renderSozlama==='function')renderSozlama();
     else if(page==='jurnal'&&typeof renderJurnal==='function')renderJurnal();
-    else if(page==='hisobot'&&typeof renderHisobot==='function')renderHisobot('hafta');
+    else if(page==='hisobot'&&typeof renderHisobot==='function')renderHisobot('kun');
     else if(page==='oila'&&typeof renderOila==='function')renderOila();
   }catch(e){console.error('render '+page+':',e);}
   try{izEnter(el);}catch(e){}
@@ -3910,11 +3912,17 @@ function kataklarniYangila(){
     else if(sk) chiq.inglizcha = ['boshlang','kutmoqda'];
   }catch(e){}
 
-  /* --- Sport --- */
+  /* --- Sport ---
+     DIQQAT: i_sport massiv EMAS, u {bugun:{}, tarix:[], vazn:[]}
+     ko'rinishidagi obyekt. Ilgari bu yerda massiv deb o'qilardi
+     va katak hech qachon to'g'ri son ko'rsatmasdi. */
   try{
-    var sp = S.g('i_sport')||[];
-    var bugungi = sp.filter(function(s){return (s.date||'').slice(0,10)===bugun;}).length;
-    if(sp.length) chiq.sport = bugungi?[bugungi+' mashq','bajarildi']:['bugun yo\'q','kutmoqda'];
+    var sp = S.g('i_sport')||{};
+    var bugungiMashq = (sp.bugun && sp.bugun[bugun]) ? sp.bugun[bugun].length : 0;
+    var tarixBor = (sp.tarix && sp.tarix.length) || bugungiMashq;
+    if(tarixBor) chiq.sport = bugungiMashq
+      ? [bugungiMashq+' mashq','bajarildi']
+      : ['bugun yo\'q','kutmoqda'];
   }catch(e){}
 
   /* --- Ekranga yozamiz --- */
@@ -4089,8 +4097,11 @@ function odatManbaKun(manba, kun){
       return Math.round(sv/250)>=8;
     }
     if(manba==='sport'){
-      var sp=S.g('i_sport')||[];
-      for(var i=0;i<sp.length;i++){ if(String(sp[i].date||'').slice(0,10)===kun) return true; }
+      var sp=S.g('i_sport')||{};
+      /* Bugungi mashqlar sp.bugun[kun] da, eskilari sp.tarix da */
+      if(sp.bugun && sp.bugun[kun] && sp.bugun[kun].length) return true;
+      var tx=sp.tarix||[];
+      for(var i=0;i<tx.length;i++){ if(String(tx[i].date||'').slice(0,10)===kun) return true; }
       return false;
     }
     if(manba==='kundalik'){
@@ -4564,16 +4575,171 @@ function renderMoliya(){
     '<button onclick="delTrans('+t.id+')" style="font-size:13.5px;color:var(--t2);background:none;border:none;cursor:pointer">o\'chirish</button></div>'+
   '</div>').join('');
 }
+/* ==================================================================
+   MOLIYA STATISTIKASI          07.09.2026
+
+   Ilgari bu yerda faqat bitta narsa bor edi: shu oydagi
+   xarajatlarning kategoriya bo'yicha chizig'i. Undan "qancha
+   sarfladim" degan savolga javob chiqardi, xolos.
+
+   Pulni boshqarish uchun boshqa savollarga javob kerak:
+     \u2022 O'tgan oyga nisbatan qanday? (o'sdimi, kamaydimi)
+     \u2022 Kuniga o'rtacha qancha ketyapti?
+     \u2022 Shu sur'atda oy oxirida qancha bo'ladi?
+     \u2022 Eng katta xarajat nima edi?
+     \u2022 Bir necha oylik manzara qanday?
+     \u2022 Jamg'arma o'syaptimi?
+   Endi hammasiga javob bor.
+   ================================================================== */
+
+/* Bitta oyning kesimi */
+function _oyKesim(hamma, m, y){
+  var k = {kirim:0, chiqim:0, jamQo:0, jamOl:0, soni:0};
+  hamma.forEach(function(t){
+    if(t.m!==m || t.y!==y) return;
+    if(t.type==='daromad')             k.kirim += t.amt;
+    else if(t.type==='xarajat')      { k.chiqim += t.amt; k.soni++; }
+    else if(t.type==='jamgarma')       k.jamQo += t.amt;
+    else if(t.type==='jamgarma_olish') k.jamOl += t.amt;
+  });
+  k.bal = k.kirim - k.chiqim - k.jamQo + k.jamOl;
+  return k;
+}
+
+/* Foizli o'zgarish yorlig'i. Xarajatda o'sish yomon,
+   daromadda yaxshi \u2014 shuning uchun rang teskari. */
+function _ozgarish(hozir, oldin, kamayishYaxshi){
+  if(!oldin) return '';
+  var f = Math.round((hozir - oldin) / oldin * 100);
+  if(f === 0) return '<span style="font-size:12.5px;color:var(--t2)">o\'tgan oy bilan bir xil</span>';
+  var osdi = f > 0;
+  var yaxshi = kamayishYaxshi ? !osdi : osdi;
+  return '<span style="font-size:12.5px;font-weight:700;color:'+(yaxshi?'var(--g)':'var(--red)')+'">'+
+         (osdi?'\u25B2 +':'\u25BC ')+f+'%</span>'+
+         '<span style="font-size:12.5px;color:var(--t2)"> o\'tgan oyga nisbatan</span>';
+}
+
 function renderMoliyaStat(){
-  const monthly=transRoyxat().filter(t=>t.m===state.finM&&t.y===state.finY&&t.type==='xarajat');
-  const el=document.getElementById('mol-stat-list');
-  if(!monthly.length){el.innerHTML='<div class="empty">Xarajat yo\'q</div>';return;}
-  const cats={};monthly.forEach(t=>{cats[t.name]=(cats[t.name]||0)+t.amt;});
-  const total=monthly.reduce((s,t)=>s+t.amt,0);
-  el.innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([n,a])=>{
-    const p=Math.round(a/total*100);
-    return '<div class="sbar-wrap"><div class="sbar-label"><span>'+n+'</span><span style="color:var(--red);font-weight:700">'+fmt(a)+' ('+p+'%)</span></div><div class="sbar"><div class="sbar-fill" style="width:'+p+'%;background:var(--red)"></div></div></div>';
-  }).join('');
+  var hamma = transRoyxat();
+  var el = document.getElementById('mol-stat-list');
+  if(!el) return;
+  if(!hamma.length){
+    el.innerHTML='<div class="empty">\uD83D\uDCCA<br><br>Hali yozuv yo\'q<br><small>Kirim va chiqimlarni yozganingizda<br>bu yerda tahlil paydo bo\'ladi</small></div>';
+    return;
+  }
+
+  var m = state.finM, y = state.finY;
+  var bu = _oyKesim(hamma, m, y);
+  var oldM = m===0?11:m-1, oldY = m===0?y-1:y;
+  var old = _oyKesim(hamma, oldM, oldY);
+
+  var chiq = '';
+
+  /* ---- 1. Oy xulosasi ---- */
+  chiq += '<div class="card" style="margin-bottom:12px"><div class="sec-title">Oy xulosasi</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+      '<div><div style="font-size:13px;color:var(--t2)">Kirim</div>' +
+        '<div style="font-size:19px;font-weight:800;color:var(--g)">'+fmt(bu.kirim)+'</div>' +
+        _ozgarish(bu.kirim, old.kirim, false)+'</div>' +
+      '<div><div style="font-size:13px;color:var(--t2)">Chiqim</div>' +
+        '<div style="font-size:19px;font-weight:800;color:var(--red)">'+fmt(bu.chiqim)+'</div>' +
+        _ozgarish(bu.chiqim, old.chiqim, true)+'</div>' +
+    '</div>' +
+    '<div style="border-top:1px solid var(--bd);margin-top:14px;padding-top:12px;font-size:14px;color:var(--t2)">' +
+      'Oy qoldig\'i: <b style="color:'+(bu.bal>=0?'var(--g)':'var(--red)')+';font-size:16px">'+fmt(bu.bal)+'</b>' +
+    '</div></div>';
+
+  /* ---- 2. Sur'at va bashorat ---- */
+  var oyKun = new Date(y, m+1, 0).getDate();
+  var bugungi = new Date();
+  var otgan = (bugungi.getMonth()===m && bugungi.getFullYear()===y) ? bugungi.getDate() : oyKun;
+  var kunlik = otgan ? Math.round(bu.chiqim/otgan) : 0;
+  var bashorat = kunlik * oyKun;
+
+  if(bu.chiqim){
+    chiq += '<div class="card" style="margin-bottom:12px"><div class="sec-title">Sur\'at</div>' +
+      '<div style="display:flex;gap:18px;flex-wrap:wrap">' +
+        '<div><div style="font-size:13px;color:var(--t2)">Kuniga o\'rtacha</div>' +
+          '<div style="font-size:18px;font-weight:800">'+fmt(kunlik)+'</div></div>' +
+        '<div><div style="font-size:13px;color:var(--t2)">Oy oxirida taxminan</div>' +
+          '<div style="font-size:18px;font-weight:800;color:var(--ora)">'+fmt(bashorat)+'</div></div>' +
+        '<div><div style="font-size:13px;color:var(--t2)">Xarajat soni</div>' +
+          '<div style="font-size:18px;font-weight:800">'+bu.soni+' ta</div></div>' +
+      '</div>' +
+      (otgan<oyKun ? '<div style="font-size:12.5px;color:var(--t2);margin-top:10px;line-height:1.5">Bashorat '+otgan+' kunlik sur\'atga qarab hisoblandi. Oy oxirigacha '+(oyKun-otgan)+' kun bor.</div>' : '') +
+    '</div>';
+  }
+
+  /* ---- 3. Nimaga ketdi ---- */
+  var xar = hamma.filter(function(t){return t.m===m&&t.y===y&&t.type==='xarajat';});
+  if(xar.length){
+    var kat = {};
+    xar.forEach(function(t){
+      if(!kat[t.name]) kat[t.name] = {jami:0, soni:0};
+      kat[t.name].jami += t.amt; kat[t.name].soni++;
+    });
+    var eng = xar.slice().sort(function(a,b){return b.amt-a.amt;})[0];
+    var royxat = Object.keys(kat).map(function(k){return [k, kat[k]];})
+                       .sort(function(a,b){return b[1].jami-a[1].jami;});
+
+    chiq += '<div class="card" style="margin-bottom:12px"><div class="sec-title">Nimaga ketdi</div>' +
+      royxat.map(function(r){
+        var nom = r[0], d = r[1];
+        var f = Math.round(d.jami/bu.chiqim*100);
+        return '<div class="sbar-wrap"><div class="sbar-label">' +
+          '<span>'+esc(nom)+(d.soni>1?' <span style="color:var(--t2);font-weight:400">\u00d7'+d.soni+'</span>':'')+'</span>' +
+          '<span style="color:var(--red);font-weight:700">'+fmt(d.jami)+' \u00b7 '+f+'%</span></div>' +
+          '<div class="sbar"><div class="sbar-fill" style="width:'+f+'%;background:var(--red)"></div></div></div>';
+      }).join('') +
+      '<div style="border-top:1px solid var(--bd);margin-top:12px;padding-top:10px;font-size:13.5px;color:var(--t2)">' +
+        'Eng katta xarajat: <b style="color:var(--text)">'+esc(eng.name)+'</b> \u2014 '+fmt(eng.amt)+
+      '</div></div>';
+  }
+
+  /* ---- 4. Olti oylik manzara ---- */
+  var oylar = [], engKatta = 0;
+  for(var i=5;i>=0;i--){
+    var d = new Date(y, m-i, 1);
+    var k = _oyKesim(hamma, d.getMonth(), d.getFullYear());
+    oylar.push({nom: MONTHS[d.getMonth()].slice(0,3), k:k});
+    if(k.kirim>engKatta) engKatta=k.kirim;
+    if(k.chiqim>engKatta) engKatta=k.chiqim;
+  }
+  if(engKatta){
+    chiq += '<div class="card" style="margin-bottom:12px"><div class="sec-title">Olti oy</div>' +
+      '<div style="display:flex;align-items:flex-end;gap:8px;height:120px">' +
+      oylar.map(function(o){
+        var hk = Math.round(o.k.kirim/engKatta*96);
+        var hc = Math.round(o.k.chiqim/engKatta*96);
+        return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">' +
+          '<div style="display:flex;align-items:flex-end;gap:3px;height:100px">' +
+            '<div title="Kirim" style="width:11px;height:'+Math.max(hk,2)+'px;background:var(--g);border-radius:3px 3px 0 0"></div>' +
+            '<div title="Chiqim" style="width:11px;height:'+Math.max(hc,2)+'px;background:var(--red);border-radius:3px 3px 0 0"></div>' +
+          '</div>' +
+          '<div style="font-size:11.5px;color:var(--t2)">'+o.nom+'</div></div>';
+      }).join('') + '</div>' +
+      '<div style="display:flex;gap:16px;margin-top:12px;font-size:12.5px;color:var(--t2)">' +
+        '<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--g);margin-right:5px"></span>kirim</span>' +
+        '<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--red);margin-right:5px"></span>chiqim</span>' +
+      '</div></div>';
+  }
+
+  /* ---- 5. Jamg'arma ---- */
+  var jami = jamgarmaJami();
+  if(jami || bu.jamQo || bu.jamOl){
+    chiq += '<div class="card"><div class="sec-title">Jamg\'arma</div>' +
+      '<div style="font-size:24px;font-weight:800;color:var(--pur)">'+fmt(jami)+'</div>' +
+      '<div style="font-size:13px;color:var(--t2);margin-top:2px">butun vaqt bo\'yicha yig\'ilgan</div>' +
+      ((bu.jamQo||bu.jamOl) ? '<div style="border-top:1px solid var(--bd);margin-top:12px;padding-top:10px;font-size:13.5px;color:var(--t2)">Bu oy: ' +
+        (bu.jamQo?'<b style="color:var(--g)">+'+fmt(bu.jamQo)+'</b> qo\'shildi':'') +
+        (bu.jamQo&&bu.jamOl?' \u00b7 ':'') +
+        (bu.jamOl?'<b style="color:var(--red)">\u2212'+fmt(bu.jamOl)+'</b> olindi':'') +
+      '</div>' : '') +
+      (bu.kirim ? '<div style="font-size:13.5px;color:var(--t2);margin-top:8px">Kirimning <b style="color:var(--text)">'+Math.round(bu.jamQo/bu.kirim*100)+'%</b> i jamg\'armaga o\'tdi</div>' : '') +
+    '</div>';
+  }
+
+  el.innerHTML = chiq;
 }
 const NAMOZ_VAQT_CALC=()=>{
   const geo=S.g('i_geo');
@@ -5245,12 +5411,287 @@ function clearAll(){
     location.reload();
   });
 }
+/* ==================================================================
+   BUGUN NIMA QILDIM                07.09.2026
+
+   Hisobotda faqat 7 va 30 kunlik xulosa bor edi. Lekin odam
+   kun oxirida boshqa savol beradi: "bugun o'zim uchun nima
+   qildim?" Foizlar va o'rtachalar bu savolga javob bermaydi.
+
+   Bu qism har bo'limdan bugungi natijani yig'ib, oddiy til
+   bilan aytadi. Bajarilgani \u2014 ro'yxat bilan, qolgani \u2014
+   ochiq. Maqtov yo'q, ayblov ham yo'q: faqat fakt.
+   ================================================================== */
+function _kunHisobot(){
+  var bugun = bugunKun();
+  var qildim = [];   /* [belgi, matn] */
+  var qoldi  = [];
+
+  /* --- Odat --- */
+  try{
+    var od = state.odatlar||[];
+    var ob = od.filter(function(o){return o.hist&&o.hist[bugun];});
+    if(ob.length) qildim.push(['\uD83D\uDD25', ob.length+' ta odat: '+ob.map(function(o){return esc(o.name);}).join(', ')]);
+    var oq = od.filter(function(o){return !(o.hist&&o.hist[bugun]);});
+    if(oq.length) qoldi.push(['\uD83D\uDD25', oq.length+' ta odat: '+oq.map(function(o){return esc(o.name);}).join(', ')]);
+  }catch(e){}
+
+  /* --- Reja --- */
+  try{
+    var rj = (state.reja&&state.reja.bugun&&state.reja.bugun[bugun])||[];
+    var rb = rj.filter(function(r){return r.done;});
+    if(rb.length) qildim.push(['\uD83D\uDCCB', rb.length+' ta reja: '+rb.map(function(r){return esc(r.name);}).join(', ')]);
+    var rq = rj.filter(function(r){return !r.done;});
+    if(rq.length) qoldi.push(['\uD83D\uDCCB', rq.length+' ta reja: '+rq.map(function(r){return esc(r.name);}).join(', ')]);
+  }catch(e){}
+
+  /* --- Namoz --- */
+  try{
+    var nz = (state.din&&state.din.namoz&&state.din.namoz[bugun])||{};
+    var nb = Object.keys(nz).length;
+    if(nb) qildim.push(['\uD83D\uDD4C', nb+' vaqt namoz'+(nb>=6?' \u2014 to\'liq':'')]);
+    if(nb<6) qoldi.push(['\uD83D\uDD4C', (6-nb)+' vaqt namoz']);
+  }catch(e){}
+
+  /* --- Suv --- */
+  try{
+    var sv = Math.round(((S.g('i_suv')||{})[bugun]||0)/250);
+    if(sv) qildim.push(['\uD83D\uDCA7', sv+' stakan suv'+(sv>=8?' \u2014 to\'liq':'')]);
+    else qoldi.push(['\uD83D\uDCA7','suv hisobga olinmadi']);
+  }catch(e){}
+
+  /* --- Sport --- */
+  try{
+    var sp = S.g('i_sport')||{};
+    var sm = (sp.bugun && sp.bugun[bugun]) || [];
+    if(sm.length){
+      var daq = sm.reduce(function(s,x){return s+(x.mins||0);},0);
+      var kal = sm.reduce(function(s,x){return s+(x.kal||0);},0);
+      qildim.push(['\uD83C\uDFC3', sm.length+' mashq \u00b7 '+daq+' daqiqa \u00b7 '+kal+' kcal']);
+    }
+  }catch(e){}
+
+  /* --- Kundalik --- */
+  try{
+    var ju = getJurnalData().filter(function(j){return String(j.date||'').slice(0,10)===bugun;});
+    if(ju.length) qildim.push(['\uD83D\uDCD3', ju.length+' ta kundalik yozuvi']);
+  }catch(e){}
+
+  /* --- Kayfiyat --- */
+  try{
+    var mo = (S.g('i_mood')||{})[bugun];
+    if(mo) qildim.push([mo.emoji||'\uD83D\uDE0A', 'kayfiyat: '+esc(mo.label||'')]);
+  }catch(e){}
+
+  /* --- Moliya --- */
+  try{
+    var tr = transRoyxat().filter(function(t){return String(t.date||'').slice(0,10)===bugun;});
+    if(tr.length){
+      var kir = tr.filter(function(t){return t.type==='daromad';}).reduce(function(s,t){return s+t.amt;},0);
+      var chq = tr.filter(function(t){return t.type==='xarajat';}).reduce(function(s,t){return s+t.amt;},0);
+      var qism = [];
+      if(kir) qism.push('+'+fmt(kir));
+      if(chq) qism.push('\u2212'+fmt(chq));
+      qildim.push(['\uD83D\uDCB0', tr.length+' ta moliya yozuvi'+(qism.length?' \u00b7 '+qism.join(' / '):'')]);
+    }
+  }catch(e){}
+
+  /* --- Kitob va til --- */
+  try{
+    var kt = S.g('i_kitoblar')||[];
+    var bugungiBet = 0;
+    kt.forEach(function(k){ if(k.tarix && k.tarix[bugun]) bugungiBet += k.tarix[bugun]; });
+    if(bugungiBet) qildim.push(['\uD83D\uDCDA', bugungiBet+' bet o\'qildi']);
+  }catch(e){}
+
+  return {qildim:qildim, qoldi:qoldi};
+}
+
+/* ==================================================================
+   BOG'LANISH                       07.09.2026
+
+   Ilovada 19 ta bo'lim bor va har biri o'z quduqida yashaydi.
+   Odat alohida, reja alohida, namoz alohida. Ilova hech qachon
+   ularni bir-biriga bog'lamaydi.
+
+   Holbuki eng qimmatli gap aynan shu bog'lanishda:
+     "Vaqtli turgan kunlaringizda rejangizning 80% ini
+      bajarasiz. Kech turgan kunlarda \u2014 35%."
+   Bitta shunday jumla o'nta foizdan foydaliroq, chunki u
+   SABABNI ko'rsatadi.
+
+   Quyidagi kod tarixdan haqiqiy bog'lanishlarni qidiradi.
+   Muhim shart: TAXMIN QILMAYDI. Yetarli kun bo'lmasa yoki
+   farq kichkina bo'lsa \u2014 hech narsa aytmaydi. Yolg'on
+   xulosa hech qanday xulosadan yomonroq.
+   ================================================================== */
+
+/* Bir kunning ko'rsatkichlari */
+function _kunOlchov(kun){
+  var o = {reja:null, namoz:0, odat:0, odatJami:0, suv:0, sport:false};
+  try{
+    var rj = (state.reja&&state.reja.bugun&&state.reja.bugun[kun])||[];
+    if(rj.length) o.reja = rj.filter(function(r){return r.done;}).length / rj.length;
+  }catch(e){}
+  try{ o.namoz = Object.keys((state.din&&state.din.namoz&&state.din.namoz[kun])||{}).length; }catch(e){}
+  try{
+    var od = state.odatlar||[];
+    o.odatJami = od.length;
+    o.odat = od.filter(function(x){return x.hist&&x.hist[kun];}).length;
+  }catch(e){}
+  try{ o.suv = Math.round(((S.g('i_suv')||{})[kun]||0)/250); }catch(e){}
+  try{
+    var sp = S.g('i_sport')||{};
+    o.sport = !!(sp.bugun && sp.bugun[kun] && sp.bugun[kun].length);
+  }catch(e){}
+  return o;
+}
+
+function _ortacha(a){ return a.length ? a.reduce(function(s,x){return s+x;},0)/a.length : 0; }
+
+/* Ikki guruhni taqqoslaydi. Yetarli dalil bo'lmasa null qaytaradi. */
+function _taqqosla(bor, yoq, engKam){
+  engKam = engKam || 5;
+  if(bor.length < engKam || yoq.length < engKam) return null;
+  var a = _ortacha(bor), b = _ortacha(yoq);
+  return {a:a, b:b, farq:a-b, borKun:bor.length, yoqKun:yoq.length};
+}
+
+function bogliqliklar(kunlar){
+  var natija = [];
+  var olch = kunlar.map(function(k){ return {kun:k, o:_kunOlchov(k)}; });
+
+  /* --- Har bir odat rejaga qanday ta'sir qiladi --- */
+  (state.odatlar||[]).forEach(function(od){
+    var bor=[], yoq=[];
+    olch.forEach(function(x){
+      if(x.o.reja===null) return;
+      if(od.hist && od.hist[x.kun]) bor.push(x.o.reja); else yoq.push(x.o.reja);
+    });
+    var r = _taqqosla(bor, yoq);
+    if(!r) return;
+    var f = Math.round(r.farq*100);
+    if(Math.abs(f) < 15) return;   /* kichik farq \u2014 tasodif bo'lishi mumkin */
+    natija.push({
+      kuch: Math.abs(f),
+      matn: '<b>'+esc(od.name)+'</b> bajarilgan kunlarda rejangizning <b>'+Math.round(r.a*100)+
+            '%</b> ini bajarasiz. Bajarilmagan kunlarda \u2014 <b>'+Math.round(r.b*100)+'%</b>.'
+    });
+  });
+
+  /* --- Namoz to'liq bo'lgan kunlar --- */
+  (function(){
+    var bor=[], yoq=[];
+    olch.forEach(function(x){
+      if(!x.o.odatJami) return;
+      var ulush = x.o.odat/x.o.odatJami;
+      if(x.o.namoz>=6) bor.push(ulush); else yoq.push(ulush);
+    });
+    var r = _taqqosla(bor, yoq);
+    if(!r) return;
+    var f = Math.round(r.farq*100);
+    if(Math.abs(f) < 15) return;
+    natija.push({
+      kuch: Math.abs(f),
+      matn: 'Besh vaqt namoz to\'liq o\'qilgan kunlarda odatlaringizning <b>'+Math.round(r.a*100)+
+            '%</b> ini bajarasiz. Boshqa kunlarda \u2014 <b>'+Math.round(r.b*100)+'%</b>.'
+    });
+  })();
+
+  /* --- Sport kunlari --- */
+  (function(){
+    var bor=[], yoq=[];
+    olch.forEach(function(x){
+      if(!x.o.odatJami) return;
+      var ulush = x.o.odat/x.o.odatJami;
+      if(x.o.sport) bor.push(ulush); else yoq.push(ulush);
+    });
+    var r = _taqqosla(bor, yoq);
+    if(!r) return;
+    var f = Math.round(r.farq*100);
+    if(Math.abs(f) < 15) return;
+    natija.push({
+      kuch: Math.abs(f),
+      matn: 'Mashq qilgan kunlaringizda odatlaringizning <b>'+Math.round(r.a*100)+
+            '%</b> ini bajarasiz. Mashqsiz kunlarda \u2014 <b>'+Math.round(r.b*100)+'%</b>.'
+    });
+  })();
+
+  /* --- Hafta kunlari: eng kuchli va eng bo'sh kun --- */
+  (function(){
+    var kunNom = ['Yakshanba','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'];
+    var yig = {};
+    olch.forEach(function(x){
+      if(!x.o.odatJami) return;
+      var d = new Date(x.kun).getDay();
+      if(!yig[d]) yig[d]=[];
+      yig[d].push(x.o.odat/x.o.odatJami);
+    });
+    var royxat = Object.keys(yig).filter(function(d){return yig[d].length>=3;})
+                  .map(function(d){ return {d:+d, o:_ortacha(yig[d])}; });
+    if(royxat.length < 4) return;
+    royxat.sort(function(a,b){return b.o-a.o;});
+    var eng = royxat[0], past = royxat[royxat.length-1];
+    if(Math.round((eng.o-past.o)*100) < 20) return;
+    natija.push({
+      kuch: Math.round((eng.o-past.o)*100),
+      matn: 'Eng kuchli kuningiz \u2014 <b>'+kunNom[eng.d]+'</b> ('+Math.round(eng.o*100)+
+            '%). Eng bo\'shi \u2014 <b>'+kunNom[past.d]+'</b> ('+Math.round(past.o*100)+'%).'
+    });
+  })();
+
+  natija.sort(function(a,b){return b.kuch-a.kuch;});
+  return natija.slice(0,3);
+}
+
 function renderHisobot(period){
-  period=period||'hafta';
+  period=period||'kun';
   const el=document.getElementById('hisobot-content');
   if(!el)return;
+
+  if(period==='kun'){
+    var d = _kunHisobot();
+    var soat = new Date().getHours();
+    var sarlavha = soat<12 ? 'Kun endi boshlandi'
+                 : soat<18 ? 'Kunning yarmi o\'tdi'
+                 : soat<22 ? 'Kun yakunlanmoqda' : 'Kun tugadi';
+
+    var chiq = '<div class="card" style="margin-bottom:12px">' +
+      '<div style="font-size:13px;color:var(--t2)">'+sanaUz(new Date(),'toliq')+'</div>' +
+      '<div style="font-size:20px;font-weight:800;margin:3px 0 2px">'+sarlavha+'</div>' +
+      '<div style="font-size:14px;color:var(--t2)">Bugun o\'zingiz uchun nima qildingiz</div></div>';
+
+    if(d.qildim.length){
+      chiq += '<div class="card" style="margin-bottom:12px">' +
+        '<div class="sec-title" style="color:var(--g)">Bajarildi</div>' +
+        d.qildim.map(function(x){
+          return '<div style="display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--bd);font-size:14.5px;line-height:1.5">' +
+                 '<span style="font-size:17px;flex-shrink:0">'+x[0]+'</span><span>'+x[1]+'</span></div>';
+        }).join('').replace(/border-bottom:1px solid var\(--bd\)(?![\s\S]*border-bottom)/, 'border-bottom:none') +
+      '</div>';
+    }else{
+      chiq += '<div class="card" style="margin-bottom:12px"><div style="font-size:15px;line-height:1.6">' +
+        'Bugun hali hech narsa belgilanmagan.<br>' +
+        '<span style="color:var(--t2);font-size:14px">Bitta ish ham hisobga o\'tadi \u2014 bir stakan suv bo\'lsa ham.</span>' +
+      '</div></div>';
+    }
+
+    if(d.qoldi.length){
+      chiq += '<div class="card"><div class="sec-title" style="color:var(--t2)">Qoldi</div>' +
+        d.qoldi.map(function(x){
+          return '<div style="display:flex;gap:11px;padding:9px 0;font-size:14.5px;line-height:1.5;color:var(--t2)">' +
+                 '<span style="font-size:17px;flex-shrink:0;opacity:.6">'+x[0]+'</span><span>'+x[1]+'</span></div>';
+        }).join('') + '</div>';
+    }
+
+    el.innerHTML = chiq;
+    return;
+  }
+
   const now=new Date(),days=period==='hafta'?7:30;
   const dates=Array.from({length:days},(_,i)=>{const d=new Date(now);d.setDate(d.getDate()-days+1+i);return kunKal(d);});
+  var _bog = [];
+  try{ _bog = bogliqliklar(dates); }catch(e){}
   const dinD=state.din||{namoz:{},quron:{done:[],history:[]}};
   let totalNamoz=0;
   dates.forEach(d=>{totalNamoz+=Object.keys((dinD.namoz&&dinD.namoz[d])||{}).length;});
@@ -5262,7 +5703,7 @@ function renderHisobot(period){
   let rT=0,rD=0;
   dates.forEach(d=>{const it=(state.reja.bugun&&state.reja.bugun[d])||[];rT+=it.length;rD+=it.filter(r=>r.done).length;});
   const rejaPct=rT?Math.round(rD/rT*100):0;
-  const mT=(state.trans||[]).filter(t=>t.m===now.getMonth()&&t.y===now.getFullYear());
+  const mT=transRoyxat().filter(t=>t.m===now.getMonth()&&t.y===now.getFullYear());
   const totInc=mT.filter(t=>t.type==='daromad').reduce((s,t)=>s+(t.amt||t.amount||0),0);
   const totExp=mT.filter(t=>t.type==='xarajat').reduce((s,t)=>s+(t.amt||t.amount||0),0);
   const totSav=mT.filter(t=>t.type==='jamgarma').reduce((s,t)=>s+(t.amt||t.amount||0),0);
@@ -5287,6 +5728,23 @@ function renderHisobot(period){
       '<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:#1E8C8C">'+quronDone+'/30</div><div style="font-size:12.5px;opacity:0.65;margin-top:3px">&#128214; Juz</div></div>'+
     '</div>'+
   '</div>'+
+
+  /* Bog'lanish \u2014 faqat haqiqiy dalil topilganda chiqadi.
+     Yetarli kun bo'lmasa yoki farq kichkina bo'lsa, bu blok
+     umuman ko'rinmaydi. Yolg'on xulosa aytmaymiz. */
+  (_bog.length ?
+    '<div class="card">'+
+      '<div class="sec-title">Nima nimaga bog\'liq</div>'+
+      _bog.map(function(b){
+        return '<div style="display:flex;gap:10px;padding:10px 0;font-size:14.5px;line-height:1.6">'+
+               '<span style="color:var(--g);font-size:16px;flex-shrink:0">&#8226;</span>'+
+               '<span>'+b.matn+'</span></div>';
+      }).join('')+
+      '<div style="border-top:1px solid var(--bd);margin-top:8px;padding-top:10px;font-size:12.5px;color:var(--t2);line-height:1.5">'+
+        'Bu xulosalar '+days+' kunlik yozuvlaringizdan chiqarildi. Kunlar ko\'paygan sari aniqroq bo\'ladi.'+
+      '</div>'+
+    '</div>'
+  : '')+
 
   '<div class="card">'+
     '<div class="sec-title">&#128179; '+(MONTHS[now.getMonth()]||'')+' moliya</div>'+
@@ -11565,7 +12023,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '72';
+var KUZ_VERSIYA = '76';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -12088,7 +12546,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '72';
+var ILOVA_VERSIYA = '76';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
