@@ -4876,16 +4876,27 @@ function renderMoliyaStat(){
   var bashorat = kunlik * oyKun;
 
   if(bu.chiqim){
-    chiq += '<div class="card" style="margin-bottom:12px"><div class="sec-title">Sur\'at</div>' +
-      '<div style="display:flex;gap:18px;flex-wrap:wrap">' +
-        '<div><div style="font-size:13px;color:var(--t2)">Kuniga o\'rtacha</div>' +
-          '<div style="font-size:18px;font-weight:800">'+fmt(kunlik)+'</div></div>' +
-        '<div><div style="font-size:13px;color:var(--t2)">Oy oxirida taxminan</div>' +
-          '<div style="font-size:18px;font-weight:800;color:var(--ora)">'+fmt(bashorat)+'</div></div>' +
-        '<div><div style="font-size:13px;color:var(--t2)">Xarajat soni</div>' +
-          '<div style="font-size:18px;font-weight:800">'+bu.soni+' ta</div></div>' +
+    /* Bu karta ilgari "Sur'at" deb atalardi va ichida "bashorat",
+       "sur'at" kabi so'zlar bor edi \u2014 hech kim bunday
+       gapirmaydi. Endi hammasi jonli tilda, jumla bilan. */
+    var oyNomi = MONTHS[m] || '';
+    chiq += '<div class="card" style="margin-bottom:12px">' +
+      '<div class="sec-title">Kuniga qancha sarflayapsiz</div>' +
+
+      '<div style="font-size:15px;line-height:1.75">' +
+        'Har kuni o\'rtacha <b style="font-size:18px">'+fmt(kunlik)+'</b> so\'m ketyapti.' +
+        (bu.soni ? '<br>Bu oy <b>'+bu.soni+' marta</b> pul sarfladingiz.' : '') +
       '</div>' +
-      (otgan<oyKun ? '<div style="font-size:12.5px;color:var(--t2);margin-top:10px;line-height:1.5">Bashorat '+otgan+' kunlik sur\'atga qarab hisoblandi. Oy oxirigacha '+(oyKun-otgan)+' kun bor.</div>' : '') +
+
+      (otgan < oyKun
+        ? '<div style="border-top:1px solid var(--bd);margin-top:13px;padding-top:12px;font-size:15px;line-height:1.75">' +
+            'Agar shu tarzda davom etsa, ' + esc(oyNomi.toLowerCase()) + ' oxirida jami ' +
+            '<b style="color:var(--ora);font-size:18px">'+fmt(bashorat)+'</b> so\'m bo\'ladi.' +
+            '<div style="font-size:13px;color:var(--t2);margin-top:6px">' +
+              'Hisob '+otgan+' kunlik sarfingizga qarab chiqarildi. Oy tugashiga '+(oyKun-otgan)+' kun qoldi.' +
+            '</div>' +
+          '</div>'
+        : '') +
     '</div>';
   }
 
@@ -6495,6 +6506,59 @@ function openTgEslatma(){
   });
 }
 
+/* ==================================================================
+   ESKI NAMUNANI AVTOMATIK ALMASHTIRISH      07.09.2026
+
+   Yangi hisob ochilganda beshta yangi odat va kun taqsimoti
+   o'zi tushadi \u2014 yangi foydalanuvchi hech narsa qilmaydi.
+
+   Lekin ilova bir necha oydan beri ishlab turibdi va ESKI
+   hisoblarda o'sha paytdagi namuna qolib ketgan: "IELTS bilan
+   shug'ullanish", "Arab tili", "Bomdodga turish", ustiga
+   3, 5, 8 kabi SOXTA ketma-ketliklar bilan.
+
+   Ularni ham qo'lda tugma bosishga majburlash noto'g'ri.
+   Quyidagi kod buni o'zi qiladi \u2014 lekin FAQAT ma'lumot
+   haqiqatan tegilmagan namuna bo'lsa.
+
+   Xavfsizlik sharti: agar odat tarixida birorta belgilangan
+   kun bo'lsa, u ODAM ISHLATGAN degani \u2014 unga tegilmaydi.
+   Ishlatilgan ma'lumotni hech qachon o'z-o'zidan o'chirmaymiz.
+   ================================================================== */
+var ESKI_SEED = [
+  'Ertalab yugurish - 30 min', 'Bomdodga turish', 'Suv ichish - 2 litr',
+  "Kitob o'qish", "IELTS bilan shug'ullanish", 'Arab tili', 'Zalga chiqish'
+];
+
+function eskiNamunaTekshir(){
+  try{
+    if(localStorage.getItem('i_eski_seed_tozalandi') === '1') return;
+
+    var od = state.odatlar || [];
+    if(od.length < 3) { localStorage.setItem('i_eski_seed_tozalandi','1'); return; }
+
+    /* Nechtasi eski namunadan? */
+    var eskiNom = 0;
+    od.forEach(function(o){ if(ESKI_SEED.indexOf(o.name) !== -1) eskiNom++; });
+    if(eskiNom < 3) { localStorage.setItem('i_eski_seed_tozalandi','1'); return; }
+
+    /* HAQIQIY ISH BORMI? Bitta belgilangan kun ham bo'lsa \u2014 tegmaymiz. */
+    var ishlatilgan = false;
+    od.forEach(function(o){
+      if(o.hist && Object.keys(o.hist).some(function(k){ return o.hist[k]; })) ishlatilgan = true;
+    });
+    if(ishlatilgan){
+      console.log("Eski namuna topildi, lekin ishlatilgan \u2014 tegilmadi.");
+      localStorage.setItem('i_eski_seed_tozalandi','1');
+      return;
+    }
+
+    console.log('Eski namuna topildi (' + eskiNom + ' ta) \u2014 yangisiga almashtirilmoqda.');
+    namunaniQoy(true);
+    localStorage.setItem('i_eski_seed_tozalandi','1');
+  }catch(e){ console.warn('namuna tekshiruvi:', e); }
+}
+
 function namunaniQayta(){
   var eskiOdat = (state.odatlar||[]).map(function(o){return o.name;});
   var bugun = bugunKun();
@@ -6506,10 +6570,17 @@ function namunaniQayta(){
   xabar += 'Ketma-ketliklar ham noldan boshlanadi.\n\nDavom etilsinmi?';
   if(!confirm(xabar)) return;
 
+  namunaniQoy(false);
+}
+
+/* Namunani qo'yish. jim=true bo'lsa xabar ko'rsatmaydi. */
+function namunaniQoy(jim){
+  var bugun = bugunKun();
+
   /* Almashtirishdan OLDIN sinxron belgisini hozirgi holatdan
      qayta quramiz. Aks holda o'chgan odatlar "o'chirilgan" deb
      tan olinmaydi va bir necha daqiqadan keyin serverdan
-     qaytib keladi \u2014 aynan shunday bo'lgan edi. */
+     qaytib keladi. */
   try{
     if(typeof window.intizomHolatTikla==='function'){
       window.intizomHolatTikla('i_odatlar');
@@ -6541,7 +6612,7 @@ function namunaniQayta(){
   S.s('i_reja', r);
 
   try{ renderOdat(); renderReja(); renderBosh(); }catch(e){}
-  showNotif('\u2705 Yangilandi','5 ta odat va kun taqsimoti qo\'yildi');
+  if(!jim) showNotif('\u2705 Yangilandi','5 ta odat va kun taqsimoti qo\'yildi');
   /* Eski yozuvlar serverdan ham darhol o'chsin */
   try{ if(window.intizomYozuv&&window.intizomYozuv.yubor) window.intizomYozuv.yubor(); }catch(e){}
 }
@@ -12691,7 +12762,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '85';
+var KUZ_VERSIYA = '88';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -13214,7 +13285,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '85';
+var ILOVA_VERSIYA = '88';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
@@ -13412,6 +13483,11 @@ window.INTIZOM_YANGILA = function(){
   try{ window.rasmlarniKorsat && window.rasmlarniKorsat(); }catch(e){}
   try{ window.intizomTilQoll && window.intizomTilQoll(); }catch(e){}
 };
+/* Eski namunani tekshirish: bulut ulangandan 12 soniya keyin,
+   bir marta. Kechroq qilganimiz ataylab \u2014 avval serverdagi
+   haqiqiy ma'lumot yetib kelsin, keyin xulosa chiqaramiz. */
+setTimeout(function(){ try{ eskiNamunaTekshir(); }catch(e){} }, 12000);
+
 window.addEventListener('intizom-bulut-yangilandi', function(){
   try{ window.INTIZOM_YANGILA(); }catch(e){}
 });
