@@ -117,18 +117,6 @@
   <div class="mactions"><button class="btn btn-out" onclick="closeM('jurnal-modal')">Bekor</button><button class="btn btn-g" onclick="addJurnal()">Saqlash</button></div>
 </div></div>
 
-<div class="moverlay" id="cloud-modal"><div class="modal"><div class="mhandle"></div>
-  <div class="mtitle">&#9729; Bulutga saqlash</div>
-  <div style="font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:12px">Yozuvlar <b>shifrlanib</b> Supabase bazangizga saqlanadi &mdash; faqat siz parol bilan ocha olasiz. <b>Parolni eslab qoling:</b> uni unutsangiz yozuvlar tiklanmaydi.</div>
-  <div class="igroup"><label class="ilabel">Supabase URL</label><input id="cloud-url" class="inp" placeholder="https://xxxx.supabase.co"></div>
-  <div class="igroup"><label class="ilabel">Anon (public) key</label><input id="cloud-key" class="inp" placeholder="eyJhbGciOi..."></div>
-  <div class="igroup"><label class="ilabel">Maxfiy parol (shifrlash)</label><input id="cloud-pass" type="password" class="inp" placeholder="Faqat sizga ma'lum parol"></div>
-  <div class="mactions"><button class="btn btn-out" onclick="cloudPull()">&#11015; Yuklash</button><button class="btn btn-g" onclick="saveCloudCfg()">Ulash</button></div>
-  <button class="btn btn-out" style="width:100%;margin-top:8px" onclick="cloudPushAll()">&#11014; Hammasini bulutga yuklash</button>
-  <div style="border-top:1px solid var(--bd);margin:12px 0 8px;padding-top:10px;font-size:13.5px;color:var(--t2);text-align:center">📦 To'liq zaxira (barcha bo'limlar)</div>
-  <div style="display:flex;gap:8px"><button class="btn btn-out" style="flex:1" onclick="cloudBackupPull()">&#11015; Tiklash</button><button class="btn btn-g" style="flex:1" onclick="cloudBackupPush()">&#11014; Zaxira</button></div>
-  <div id="cloud-status" style="font-size:13.5px;color:var(--t2);text-align:center;margin-top:10px"></div>
-</div></div>
 
 <nav class="bottom-nav">
   <button class="nav-item active" id="nav-bosh" onclick="gotoPage('bosh',this)">
@@ -2646,16 +2634,6 @@ function guruhYangiSora(){
 }
 
 /* ---------- Amallar ---------- */
-function oilaYaratBulut(){
-  var nom = prompt('Oila nomi:', 'Oilam');
-  if(nom === null) return;
-  _oilaRpc('oila_yarat', {p_nom: (nom||'Oilam').trim()}).then(function(r){
-    if(r.error){ showNotif('⚠️','Xatolik: '+r.error.message); return; }
-    _oilaKesh = null; oilaBulutYukla();
-    try{ oilaHolatQayta(); }catch(e){}
-    showNotif('🌐','Oila yaratildi! Kodni yaqinlaringizga bering.');
-  });
-}
 
 function oilaQoshilSora(){
   var k = prompt('Taklif kodini kiriting (6 belgi):');
@@ -3157,7 +3135,7 @@ function gotoPage(page,btn){
     else if(page==='sport'&&typeof renderSport==='function')renderSport();
     else if(page==='ratsion'&&typeof renderRatsion==='function')renderRatsion();
     else if(page==='sozlama'&&typeof renderSozlama==='function')renderSozlama();
-    else if(page==='jurnal'&&typeof renderJurnal==='function'){renderJurnal();if(typeof cloudAutoPull==='function')cloudAutoPull();}
+    else if(page==='jurnal'&&typeof renderJurnal==='function')renderJurnal();
     else if(page==='hisobot'&&typeof renderHisobot==='function')renderHisobot('hafta');
     else if(page==='oila'&&typeof renderOila==='function')renderOila();
   }catch(e){console.error('render '+page+':',e);}
@@ -3184,16 +3162,6 @@ function gotoPage(page,btn){
 })();
 function getUyquData(){return S.g('i_uyqu')||[];}
 
-function setUyquSifat(s){
-  document.getElementById('uy-sifat').value=s;
-  ['yaxshi','oddiy','yomon'].forEach(t=>{
-    const el=document.getElementById('us-'+t);
-    if(el){el.style.borderColor='var(--bd)';el.style.background='var(--bg)';el.style.color='var(--t2)';}
-  });
-  const c={yaxshi:'var(--g)',oddiy:'var(--ora)',yomon:'var(--red)'};
-  const sel=document.getElementById('us-'+s);
-  if(sel){sel.style.borderColor=c[s];sel.style.background=c[s]+'22';sel.style.color=c[s];}
-}
 
 function addUyqu(){
   const yot=document.getElementById('uy-yot').value;
@@ -3564,7 +3532,6 @@ function ensureBackBtn(page){
   else if(b.nextElementSibling){ b.nextElementSibling.style.paddingLeft='42px'; }
 }
 /* Eski nomlar uchun alias (buzuq tugmalarni tuzatadi) */
-function openModal(id){ return openM(id); }
 function showPage(p,b){ return gotoPage(p,b); }
 document.querySelectorAll('.moverlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m&&m.id!=='parol-kirish-modal')m.classList.remove('open');}));
 
@@ -4396,38 +4363,9 @@ setInterval(function(){ try{
 }catch(e){console.error(e);}},60000);
 let tInt=null;
 const CIRC=678.6;
-function setTMode(mode,el){
-  if(state.timer.run)return;
-  state.timer.mode=mode;
-  const mins=mode==='pom'?state.ts.p:mode==='short'?state.ts.s:state.ts.l;
-  state.timer.secs=mins*60;
-
-  if(el)el.classList.add('active');
-  const lbls={pom:'Pomodoro',short:'Qisqa tanaffus',long:'Uzoq tanaffus'};
-  document.getElementById('t-label').textContent=lbls[mode];
-  updateTDisplay();updateTRing();
-}
-function toggleT(){
-  if(state.timer.run){clearInterval(tInt);state.timer.run=false;document.getElementById('t-play').textContent='▶';}
-  else{
-    state.timer.run=true;document.getElementById('t-play').textContent='⏸';
-    tInt=setInterval(()=>{
-      state.timer.secs--;updateTDisplay();updateTRing();
-      if(state.timer.secs<=0){
-        clearInterval(tInt);state.timer.run=false;document.getElementById('t-play').textContent='▶';
-        if(state.timer.mode==='pom'){state.timer.sess++;state.timer.total+=state.ts.p;
-          document.getElementById('t-sess').textContent=state.timer.sess;
-          document.getElementById('t-total').textContent=state.timer.total;}
-        showNotif('⏰ Taymer tugadi!',state.timer.mode==='pom'?'Ajoyib! Tanaffus oling 🎉':'Yana bir sessiya!');
-        resetT();
-      }
-    },1000);
-  }
-}
 function resetT(){clearInterval(tInt);state.timer.run=false;document.getElementById('t-play').textContent='▶';
   const mins=state.timer.mode==='pom'?state.ts.p:state.timer.mode==='short'?state.ts.s:state.ts.l;
   state.timer.secs=mins*60;updateTDisplay();updateTRing();}
-function skipT(){resetT();}
 function updateTDisplay(){
   const m=(Math.floor(state.timer.secs/60)<10?'0':'')+Math.floor(state.timer.secs/60);
   const s=(state.timer.secs%60<10?'0':'')+(state.timer.secs%60);
@@ -4458,15 +4396,6 @@ function createNoise(type){
     src.connect(filt);filt.connect(gain);gain.connect(ctx.destination);src.start();
     return{src,gain};
   }catch(e){return null;}
-}
-function playMuz(type){
-  stopMuz();_muzType=type;
-  const n=createNoise(type);if(n)_muzNodes.push(n);
-  ['rain','forest','waves','white'].forEach(t=>{const el=document.getElementById('muz-'+t);if(el){el.style.borderColor='var(--bd)';el.style.background='var(--bg)';el.style.color='var(--text)';}});
-  const sel=document.getElementById('muz-'+type);
-  if(sel){sel.style.borderColor='var(--g)';sel.style.background='rgba(30,140,140,.1)';sel.style.color='var(--g)';}
-  const names={rain:'🌧️ Yomg\'ir',forest:'🌲 O\'rmon',waves:'🌊 To\'lqin',white:'📻 Shovqin'};
-  document.getElementById('muz-st').textContent='▶ '+names[type];
 }
 function stopMuz(){
   _muzNodes.forEach(n=>{try{n.src.stop();}catch(e){}});_muzNodes=[];_muzType=null;
@@ -5431,112 +5360,25 @@ function openJurnalNew(){
   openM('jurnal-modal');
 }
 
-/* ---- shifrlash (Web Crypto AES-GCM) ---- */
-function _cloudCfg(){return S.g('i_cloud')||null;}
-/* ESKI BULUT YO'LI O'CHIRILDI (06.09.2026)
-   Ilgari kundalik uchun uchta sinxron yo'l bir vaqtda ishlardi:
-   shu yerdagi 'kundalik' jadvali, intizom_data blobi va yozuv
-   jadvali. Uchtasi bir xil ma'lumotni boshqa qoida bilan yozar,
-   cloudPull() esa butun ro'yxatni ustiga yozib yuborardi \u2014
-   ma'lumot yo'qolishining bir sababi shu edi.
-   Funksiyalar joyida qoldi, lekin endi hech qachon ishlamaydi. */
-function cloudOn(){ return false; }
-function _b64(buf){var a=new Uint8Array(buf),s='';for(var i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s);}
-function _unb64(str){var bin=atob(str),a=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
-function _deriveKey(pass){
-  var enc=new TextEncoder();
-  return crypto.subtle.importKey('raw',enc.encode(pass),{name:'PBKDF2'},false,['deriveKey']).then(function(base){
-    return crypto.subtle.deriveKey({name:'PBKDF2',salt:enc.encode('intizom-kundalik-v1'),iterations:100000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
-  });
-}
-function _encStr(pass,plain){
-  return _deriveKey(pass).then(function(key){
-    var iv=crypto.getRandomValues(new Uint8Array(12));
-    return crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,new TextEncoder().encode(plain)).then(function(ct){
-      var out=new Uint8Array(12+ct.byteLength);out.set(iv,0);out.set(new Uint8Array(ct),12);
-      return _b64(out.buffer);
-    });
-  });
-}
-function _decStr(pass,b64){
-  return _deriveKey(pass).then(function(key){
-    var raw=_unb64(b64),iv=raw.slice(0,12),data=raw.slice(12);
-    return crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,data).then(function(pt){return new TextDecoder().decode(pt);});
-  });
-}
-function _boxTok(pass){
-  return crypto.subtle.digest('SHA-256',new TextEncoder().encode('intizom-box:'+pass)).then(function(h){
-    var a=new Uint8Array(h),s='';for(var i=0;i<a.length;i++)s+=('0'+a[i].toString(16)).slice(-2);return s.slice(0,32);
-  });
-}
-function _cloudBase(){return _cloudCfg().url.replace(/\/+$/,'')+'/rest/v1/kundalik';}
-function _cloudHdr(extra){
-  var c=_cloudCfg(),h={'apikey':c.key};
-  /* Eski (JWT, eyJ...) kalitlar Authorization talab qiladi; yangi sb_ kalitlar faqat apikey orqali ishlaydi */
-  if(c.key&&c.key.indexOf('sb_')!==0)h['Authorization']='Bearer '+c.key;
-  if(extra)for(var k in extra)h[k]=extra[k];
-  return h;
-}
-function _setCloudStatus(t){var el=document.getElementById('cloud-status');if(el)el.textContent=t;}
+/* ==================================================================
+   ESKI BULUT YO'LI OLIB TASHLANDI          07.09.2026
 
-function cloudPush(entry){
-  if(!cloudOn())return Promise.resolve();
-  var c=_cloudCfg();
-  return Promise.all([_boxTok(c.pass),_encStr(c.pass,JSON.stringify(entry))]).then(function(r){
-    return fetch(_cloudBase(),{method:'POST',headers:_cloudHdr({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify([{id:entry.id,box:r[0],enc:r[1],updated:new Date().toISOString()}])});
-  }).catch(function(e){console.warn('cloudPush',e);});
-}
-function cloudDelete(id){
-  if(!cloudOn())return Promise.resolve();
-  var c=_cloudCfg();
-  return _boxTok(c.pass).then(function(box){
-    return fetch(_cloudBase()+'?id=eq.'+id+'&box=eq.'+box,{method:'DELETE',headers:_cloudHdr()});
-  }).catch(function(e){console.warn('cloudDelete',e);});
-}
-function cloudPull(){
-  if(!cloudOn()){showNotif('&#9729;','Avval bulutni ulang');return;}
-  var c=_cloudCfg();_setCloudStatus('Yuklanmoqda...');
-  _boxTok(c.pass).then(function(box){
-    return fetch(_cloudBase()+'?select=id,enc,updated&box=eq.'+box,{headers:_cloudHdr()});
-  }).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(rows){
-    var local=getJurnalData(),map={};
-    local.forEach(function(j){map[j.id]=j;});
-    return Promise.all(rows.map(function(row){
-      return _decStr(c.pass,row.enc).then(function(s){try{var o=JSON.parse(s);if(o&&o.id)map[o.id]=o;}catch(e){}}).catch(function(){});
-    })).then(function(){
-      var merged=Object.keys(map).map(function(k){return map[k];}).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-      if(merged.length>300)merged=merged.slice(0,300);
-      S.s('i_jurnal',merged);renderJurnal();
-      _setCloudStatus(rows.length+' ta yozuv bulutdan yuklandi');
-      showNotif('&#9729; Bulutdan yuklandi',rows.length+' ta yozuv');
-    });
-  }).catch(function(e){console.warn('cloudPull',e);_setCloudStatus('Xato: '+(e.message||e));showNotif('&#9888;','Bulut xatosi');});
-}
-function cloudPushAll(){
-  if(!cloudOn()){showNotif('&#9729;','Avval bulutni ulang');return;}
-  var data=getJurnalData();_setCloudStatus('Yuklanmoqda...');
-  var p=Promise.resolve();
-  data.forEach(function(j){p=p.then(function(){return cloudPush(j);});});
-  p.then(function(){_setCloudStatus(data.length+' ta yozuv bulutga saqlandi');showNotif('&#9729; Saqlandi',data.length+' ta yozuv bulutda');});
-}
-function cloudAutoPull(){ if(cloudOn())try{cloudPull();}catch(e){} }
-function openCloud(){
-  var c=_cloudCfg()||{};
-  var u=document.getElementById('cloud-url'),k=document.getElementById('cloud-key'),p=document.getElementById('cloud-pass');
-  if(u)u.value=c.url||'';if(k)k.value=c.key||'';if(p)p.value=c.pass||'';
-  _setCloudStatus(cloudOn()?'Bulut ulangan \u2713':'');
-  openM('cloud-modal');
-}
-function saveCloudCfg(){
-  var url=(document.getElementById('cloud-url').value||'').trim();
-  var key=(document.getElementById('cloud-key').value||'').trim();
-  var pass=document.getElementById('cloud-pass').value||'';
-  if(!url||!key||!pass){showNotif('&#9888;','Hammasini to\'ldiring');return;}
-  S.s('i_cloud',{url:url,key:key,pass:pass});
-  showNotif('&#9729; Bulut ulandi','Yozuvlar endi saqlanadi');
-  closeM('cloud-modal');
-  cloudPushAll();
-}
+   Bu yerda ~107 qator kod turardi: cloudPush, cloudPull,
+   cloudDelete, cloudAutoPull, openCloud, saveCloudCfg,
+   _cloudCfg, _setCloudStatus, cloudOn va ular ishlatgan
+   shifrlash yordamchilari.
+
+   Ular kundalikni foydalanuvchi o'zi kiritgan Supabase
+   jadvaliga yozadigan ESKI, uchinchi sinxron yo'l edi.
+   06.09 da cloudOn() doim false qaytaradigan qilingan \u2014
+   ya'ni o'shandan beri bu kodning birortasi ishlamagan.
+   O'lik kod xatolarni yashiradi va faylni og'irlashtiradi,
+   shuning uchun butunlay olib tashlandi.
+
+   Kundalik endi bitta yo'l bilan sinxronlanadi: yozuv
+   jadvali. Shifrlash esa "Kundalik qulfi" da (_jurEnc /
+   _jurDec), u o'z kalitini o'zi hosil qiladi.
+   ================================================================== */
 
 function getJurnalData(){return S.g('i_jurnal')||[];}
 
@@ -5646,7 +5488,6 @@ function jurQulfDesc(){
                  : (_jurParol ? 'Yoqilgan \u00b7 hozir ochiq' : 'Yoqilgan \u00b7 qulflangan');
 }
 function jurQulfBor(){ return !!jurQulf(); }
-function jurOchilganmi(){ return !jurQulfBor() || _jurParol!==null; }
 
 /* Har foydalanuvchida o'z tuzi bo'ladi \u2014 umumiy jadval tuzib
    bo'lmaydi. Tuz maxfiy emas, shuning uchun yozuv bilan yuriydi. */
@@ -5830,8 +5671,7 @@ function addJurnal(){
     document.getElementById('jurnal-rasm').value='';
     renderJurnal();
     var tObj=JUR_TYPES[jType]||JUR_TYPES.kundalik;
-    showNotif('&#128214; Saqlandi!',tObj.label+(cloudOn()?' &middot; &#9729; bulutga ham':''));
-    cloudPush(entry);
+    showNotif('&#128214; Saqlandi!',tObj.label);
   }
   if(file){
     var reader=new FileReader();
@@ -5848,7 +5688,6 @@ function delJurnal(id){
   confirmDel('&#128214;','Yozuvni o\'chirish?','Bu yozuv o\'chadi',function(){
     S.s('i_jurnal',getJurnalData().filter(function(j){return j.id!==id;}));
     renderJurnal();
-    cloudDelete(id);
   });
 }
 
@@ -6458,9 +6297,6 @@ var WORKOUT_VIDEOS = {
   'default':             'Yw0IFMvOKUA',
 };
 
-function getYouTubeId(nom){
-  return WORKOUT_VIDEOS[nom] || WORKOUT_VIDEOS['default'];
-}
 var ERTALAB_MASHQ = {
   erkak: [
     {nom:'Ertalabki nafas',  son:'2 daq',  izoh:'Chuqur nafas, tana uyg\'otish', ytId:'tybOi4hjZFQ'},
@@ -7383,30 +7219,6 @@ function copyLeaderLink(){
 
 // Mashq rasm animatsiyasi
 var _exAnimTimers = {};
-function toggleExAnim(uid){
-  if(_exAnimTimers[uid]){
-    clearInterval(_exAnimTimers[uid]);
-    delete _exAnimTimers[uid];
-    var i0=document.getElementById('mc0-'+uid);
-    var i1=document.getElementById('mc1-'+uid);
-    var pb=document.getElementById('play-'+uid);
-    if(i0)i0.style.opacity='1';
-    if(i1)i1.style.opacity='0';
-    if(pb){pb.textContent='▶ bosing';pb.style.background='rgba(0,0,0,.45)';}
-    return;
-  }
-  var show1=false;
-  var pb=document.getElementById('play-'+uid);
-  if(pb){pb.textContent='⏸ to\'xtat';pb.style.background='rgba(30,140,140,.7)';}
-  _exAnimTimers[uid]=setInterval(function(){
-    var i0=document.getElementById('mc0-'+uid);
-    var i1=document.getElementById('mc1-'+uid);
-    if(!i0||!i1){clearInterval(_exAnimTimers[uid]);delete _exAnimTimers[uid];return;}
-    show1=!show1;
-    i0.style.opacity=show1?'0':'1';
-    i1.style.opacity=show1?'1':'0';
-  },900);
-}
 
 function renderKunMashq(){
   var el=document.getElementById('kun-mashq-card');
@@ -8279,7 +8091,6 @@ function startVoice(inputId, btnId, statusId){
 }
 
 function startVoiceReja(){ startVoice('rj-name','mic-btn','voice-status'); }
-function startVoiceOdat(){ startVoice('odat-name','mic-odat-btn','voice-odat-status'); }
 function startVoiceMaqsad(){ startVoice('mq-name','mic-maqsad-btn','voice-maqsad-status'); }
 var _globalRec = null;
 var _voiceOpen = false;
@@ -8452,9 +8263,6 @@ function processVoiceCommand(t){
   var res2 = document.getElementById('voice-result');
   if(title2) title2.textContent='Tushunilmadi 🤔';
   if(res2){ res2.style.display='block'; res2.textContent='💡 "Namoz o\'qidim", "Squat 20 ta qildim", "5000 so\'m sarfladim"'; res2.style.color='var(--ora)'; res2.style.background='rgba(245,158,11,.1)'; res2.style.borderColor='rgba(245,158,11,.3)'; }
-}
-function tryRussianFallback(){
-  if(_recognition) _recognition.lang = 'ru-RU';
 }
 var KASBLAR = {
   'dasturchi': {
@@ -9474,9 +9282,6 @@ var ST_LOGOS = {
   twitter:   '<svg width="28" height="28" viewBox="0 0 24 24"><rect width="24" height="24" rx="12" fill="#000"/><path d="M17.5 6h-2l-3.5 4.5L8.5 6H4l5.5 7L4 19h2l4-5 4 5h4.5l-5.5-7 4.5-6z" fill="white"/></svg>',
 };
 
-function stGetLogo(emoji){
-  return ST_LOGOS[emoji] || '<div style="font-size:22px">📱</div>';
-}
 var _stSlotDays = [0,1,2,3,4,5,6]; // barcha kunlar
 
 function getStSettings(){ return S.g('i_st')||{apps:ST_APPS_DEFAULT, slots:[], style:'motivate', on:false}; }
@@ -11432,28 +11237,6 @@ function requestNotif(){
 
 /* ===== BULUTGA TO'LIQ ZAXIRA ===== */
 function _cloudBackupUrl(){ return _cloudCfg().url.replace(/\/+$/,'')+'/rest/v1/backup'; }
-function cloudBackupPush(){
-  if(!cloudOn()){ showNotif('\u2601\uFE0F','Avval bulutni ulang'); return; }
-  var c=_cloudCfg(); _setCloudStatus('To\'liq zaxira yuklanmoqda...');
-  Promise.all([_boxTok(c.pass), _encStr(c.pass, JSON.stringify(_buildBackup()))]).then(function(r){
-    return fetch(_cloudBackupUrl(),{method:'POST',headers:_cloudHdr({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify([{box:r[0],enc:r[1],updated:new Date().toISOString()}])});
-  }).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); _setCloudStatus('\u2705 To\'liq zaxira bulutda'); showNotif('\u2705','Bulutga zaxiralandi'); })
-  .catch(function(e){ _setCloudStatus('Xato: '+(e.message||e)); showNotif('\u26A0\uFE0F','Bulut xatosi'); });
-}
-function cloudBackupPull(){
-  if(!cloudOn()){ showNotif('\u2601\uFE0F','Avval bulutni ulang'); return; }
-  var c=_cloudCfg(); _setCloudStatus('Bulutdan tekshirilmoqda...');
-  _boxTok(c.pass).then(function(box){
-    return fetch(_cloudBackupUrl()+'?select=enc,updated&box=eq.'+box,{headers:_cloudHdr()});
-  }).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }).then(function(rows){
-    if(!rows||!rows.length){ _setCloudStatus('Bulutda zaxira topilmadi'); showNotif('\u2601\uFE0F','Zaxira topilmadi'); return; }
-    return _decStr(c.pass, rows[0].enc).then(function(txt){
-      var obj=JSON.parse(txt);
-      _setCloudStatus('\u2705 Topildi');
-      confirmDel('\u267B\uFE0F','Bulutdan tiklash?','Joriy ma\'lumotlar ustiga yoziladi.',function(){ _restoreBackup(obj); });
-    });
-  }).catch(function(e){ _setCloudStatus('Xato: '+(e.message||e)); showNotif('\u26A0\uFE0F','Bulut xatosi'); });
-}
 
 /* ===== HAR BIR OYNAGA YOPISH TUGMASI ===== */
 function _ensureCloseButtons(){
@@ -11782,7 +11565,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '71';
+var KUZ_VERSIYA = '72';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -12305,7 +12088,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '71';
+var ILOVA_VERSIYA = '72';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
