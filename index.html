@@ -11701,14 +11701,69 @@ function yordamYubor(){
    ================================================================== */
 (function(){
   if(!('serviceWorker' in navigator)) return;
+
+  /* ================================================================
+     YANGILANISH O'ZI QO'LLANADI       07.09.2026
+
+     Ilgari yangi versiya kelganda faqat "qayta oching" degan xabar
+     chiqardi. Oddiy foydalanuvchi buni qilmaydi: u ilovani ochadi,
+     ishini qiladi va chiqadi. Natijada odamlar oylab eski versiyada
+     qolib ketardi \u2014 tuzatilgan xatolar ularga yetib bormasdi.
+
+     Endi yangilanish o'zi qo'llanadi:
+       \u2022 har ochilganda va ilovaga qaytilganda yangisi bormi
+         deb tekshiriladi;
+       \u2022 tayyor bo'lgach sahifa BIR marta qayta yuklanadi;
+       \u2022 foydalanuvchi ishlayotgan payt uzilib qolmasin uchun
+         qayta yuklash faqat ilova ORQADA turganda yoki endi
+         ochilganda bo'ladi.
+     ================================================================ */
+  var _qaytaYuklandi = false;
+  var _kutmoqda = false;
+  var _ochilgan = Date.now();
+
+  function _yangilaniQoll(){
+    if(_qaytaYuklandi) return;      /* takror yuklanish halqasiga tushmaslik */
+    _qaytaYuklandi = true;
+    location.reload();
+  }
+
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    /* Endi ochilgan bo'lsa yoki ilova orqada tursa \u2014 darhol.
+       Aks holda foydalanuvchi biror narsa yozayotgan bo'lishi
+       mumkin: uzib qo'ymaymiz, ilovadan chiqqanini kutamiz. */
+    if(Date.now() - _ochilgan < 8000 || document.visibilityState !== 'visible'){
+      _yangilaniQoll();
+    }else{
+      _kutmoqda = true;
+    }
+  });
+
+  document.addEventListener('visibilitychange', function(){
+    if(_kutmoqda && document.visibilityState !== 'visible') _yangilaniQoll();
+  });
+
   window.addEventListener('load',function(){
     navigator.serviceWorker.register('sw.js')
       .then(function(reg){
+        /* Ochilganda darhol, so'ng har 30 daqiqada va ilovaga
+           qaytilganda tekshiramiz */
+        function tekshir(){ try{ reg.update(); }catch(e){} }
+        tekshir();
+        setInterval(tekshir, 30*60*1000);
+        document.addEventListener('visibilitychange', function(){
+          if(document.visibilityState==='visible') tekshir();
+        });
+
         reg.addEventListener('updatefound',function(){
           var w=reg.installing; if(!w) return;
           w.addEventListener('statechange',function(){
             if(w.state==='installed' && navigator.serviceWorker.controller){
-              try{ showNotif('\uD83D\uDD04 Yangilandi','Ilovaning yangi versiyasi tayyor \u2014 qayta oching.'); }catch(e){}
+              /* sw.js da skipWaiting bor \u2014 yangi ishchi darhol
+                 boshqaruvni oladi va yuqoridagi controllerchange
+                 sahifani qayta yuklaydi. Foydalanuvchi hech narsa
+                 bosmaydi. */
+              try{ showNotif('\uD83D\uDD04 Yangilandi','Ilova yangi versiyaga o\'tdi'); }catch(e){}
             }
           });
         });
@@ -11727,7 +11782,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '70';
+var KUZ_VERSIYA = '71';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -12250,7 +12305,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '70';
+var ILOVA_VERSIYA = '71';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
