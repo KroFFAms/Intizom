@@ -143,10 +143,6 @@
     <span class="nav-ico" style="display:flex;align-items:center;justify-content:center;height:24px"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 13l2 2 4-4"/></svg></span>
     <span>Reja</span>
   </button>
-  <button class="nav-item" id="nav-moliya" onclick="gotoPage('moliya',this)">
-    <span class="nav-ico" style="display:flex;align-items:center;justify-content:center;height:24px"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.2"/></svg></span>
-    <span>Moliya</span>
-  </button>
   <button class="nav-item" id="nav-din" onclick="gotoPage('din',this)">
     <span class="nav-ico" style="display:flex;align-items:center;justify-content:center;height:24px"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4a8 8 0 100 16 6 6 0 010-16z"/></svg></span>
     <span>Din</span>
@@ -259,29 +255,29 @@
     </div>
 
     <div class="hgrid">
-      <div data-hw="odat" onclick="gotoPage('odat',document.getElementById('nav-odat'))" class="htile"><div class="hticon" style="color:#DE7831"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3-1 4-2 6s0 4 2 4c1 0 1.8-1 1.8-2.8C16 11 17 13 17 16a5 5 0 11-10 0c0-3 2-5 3-7 1-2 1-4 2-6z"/></svg></div><div class="htlbl">Odat</div></div>
-      <div data-hw="reja" onclick="gotoPage('reja',document.getElementById('nav-reja'))" class="htile"><div class="hticon" style="color:#4F86E2"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 13l2 2 4-4"/></svg></div><div class="htlbl">Reja</div></div>
-      <div data-hw="namoz" onclick="gotoPage('din',document.getElementById('nav-din'))" class="htile"><div class="hticon" style="color:#875DE5"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4a8 8 0 100 16 6 6 0 010-16z"/><path d="M18.5 4.5l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3L16.5 6.3l1.3-.5z" fill="currentColor" stroke="none"/></svg></div><div class="htlbl">Namoz</div></div>
-      <div data-hw="moliya" onclick="gotoPage('moliya',document.getElementById('nav-moliya'))" class="htile"><div class="hticon" style="color:#00C896"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.2"/></svg></div><div class="htlbl">Moliya</div></div>
-      <div data-hw="kayfiyat" onclick="openMoodModal()" class="htile"><div class="hticon" style="color:#E35199"><span id="bosh-mood-icon" style="font-size:22px;line-height:1">&#128522;</span></div><div class="htlbl">Kayfiyat</div></div>
-      <div data-hw="suv" onclick="openSuvModal()" class="htile"><div class="hticon" style="color:#1FA4BB"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7 6 11a6 6 0 11-12 0c0-4 3-7 6-11z"/></svg></div><div class="htlbl"><span id="suv-bosh-lbl">Suv</span></div></div>
-      <div data-hw="dori" onclick="openM('dori-modal');renderDoriList()" class="htile"><div class="hticon" style="color:#E35050"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="8" rx="4"/><path d="M12 8v8"/></svg></div><div class="htlbl">Dori</div></div>
-      <div data-hw="eslatma" onclick="openM('eslatma-modal');renderEslatmalar()" class="htile"><div class="hticon" style="color:#64748B"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4"/></svg></div><div class="htlbl">Eslatma</div></div>
-      <div data-hw="xarid" onclick="openM('xarid-modal');renderXaridList()" class="htile"><div class="hticon" style="color:#DE7831"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="20" r="1.4" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.4" fill="currentColor" stroke="none"/><path d="M3 4h2l2.4 11h10l1.8-8H6.2"/></svg></div><div class="htlbl">Xarid</div></div>
-      <div data-hw="kundalik" onclick="gotoPage('jurnal',null)" class="htile"><div class="hticon" style="color:#1FA4BB"><span style="font-size:22px;line-height:1">&#128214;</span></div><div class="htlbl">Kundalik</div></div>
-      <div data-hw="kitoblar" onclick="openM('kitob-modal');renderKitobList()" class="htile"><div class="hticon" style="color:#875DE5"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a2 2 0 012 2v14H7a2 2 0 01-2-2V4z"/><path d="M5 18a2 2 0 012-2h11"/></svg></div><div class="htlbl">Kitoblar</div></div>
-      <div data-hw="inglizcha" onclick="openM('til-modal');renderTilBugun()" class="htile"><div class="hticon" style="color:#00C896"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-4 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg></div><div class="htlbl">Inglizcha</div></div>
-      <div data-hw="oila" onclick="gotoPage('oila',null)" class="htile"><div class="hticon" style="color:#E35199"><span style="font-size:22px;line-height:1">&#128104;&#8205;&#128105;&#8205;&#128103;</span></div><div class="htlbl">Oila</div></div>
-      <div data-hw="tugilgankun" onclick="openM('oila-modal');renderOilaList()" class="htile"><div class="hticon" style="color:#E76FAE"><span style="font-size:22px;line-height:1">&#127874;</span></div><div class="htlbl">Tug'ilgan kun</div></div>
-      <div data-hw="dua" onclick="openM('dua-modal');renderDuaList('kundalik')" class="htile"><div class="hticon" style="color:#875DE5"><span style="font-size:22px;line-height:1">&#129330;</span></div><div class="htlbl">Dua</div></div>
-      <div data-hw="aireja" onclick="openM('ai-reja-modal')" class="htile"><div class="hticon" style="color:#6062E5"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1.4"/><circle cx="9.3" cy="13" r="1.1" fill="currentColor" stroke="none"/><circle cx="14.7" cy="13" r="1.1" fill="currentColor" stroke="none"/><path d="M9.5 16h5"/></svg></div><div class="htlbl">AI Reja</div></div>
-      <div data-hw="missiya" onclick="openMissionModal()" class="htile"><div class="hticon" style="color:#DB9725"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div><div class="htlbl"><span id="mission-badge">Missiya</span></div></div>
-      <div data-hw="reyting" onclick="reytingOch()" class="htile"><div class="hticon" style="color:#DB9725"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 01-10 0V4z"/><path d="M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3M10 18v-3M14 18v-3M8 21h8"/></svg></div><div class="htlbl">Reyting</div></div>
-      <div data-hw="spin" onclick="openSpinWheel()" class="htile"><div class="hticon" style="color:#DE7831"><span style="font-size:22px;line-height:1">&#127905;</span></div><div class="htlbl">Omad</div></div>
-      <div data-hw="viktorina" onclick="openViktorina()" class="htile"><div class="hticon" style="color:#1FA4BB"><span style="font-size:22px;line-height:1">&#129504;</span></div><div class="htlbl">Viktorina</div></div>
-      <div data-hw="mashq60" onclick="openMiniChallenge()" class="htile"><div class="hticon" style="color:#00C896"><span style="font-size:22px;line-height:1">&#9889;</span></div><div class="htlbl">60 soniya</div></div>
-      <div data-hw="avatar" onclick="openAvatar()" class="htile"><div class="hticon" style="color:#875DE5"><span id="avatar-display" style="font-size:22px;line-height:1">&#129489;</span></div><div class="htlbl">Avatarim</div></div>
-      <div data-hw="kunsir" onclick="openKunSir()" class="htile"><div class="hticon" style="color:#875DE5"><span style="font-size:22px;line-height:1">&#11088;</span></div><div class="htlbl">Kun siri</div></div>
+      <div data-hw="odat" onclick="gotoPage('odat',document.getElementById('nav-odat'))" class="htile"><div class="hticon" style="color:#DE7831"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3-1 4-2 6s0 4 2 4c1 0 1.8-1 1.8-2.8C16 11 17 13 17 16a5 5 0 11-10 0c0-3 2-5 3-7 1-2 1-4 2-6z"/></svg></div><div class="htlbl">Odat</div><div class="htsub" data-hs="odat"></div></div>
+      <div data-hw="reja" onclick="gotoPage('reja',document.getElementById('nav-reja'))" class="htile"><div class="hticon" style="color:#4F86E2"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 13l2 2 4-4"/></svg></div><div class="htlbl">Reja</div><div class="htsub" data-hs="reja"></div></div>
+      <div data-hw="namoz" onclick="gotoPage('din',document.getElementById('nav-din'))" class="htile"><div class="hticon" style="color:#875DE5"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4a8 8 0 100 16 6 6 0 010-16z"/><path d="M18.5 4.5l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3L16.5 6.3l1.3-.5z" fill="currentColor" stroke="none"/></svg></div><div class="htlbl">Namoz</div><div class="htsub" data-hs="namoz"></div></div>
+      <div data-hw="moliya" onclick="gotoPage('moliya',null)" class="htile"><div class="hticon" style="color:#00C896"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.2"/></svg></div><div class="htlbl">Moliya</div><div class="htsub" data-hs="moliya"></div></div>
+      <div data-hw="kayfiyat" onclick="openMoodModal()" class="htile"><div class="hticon" style="color:#E35199"><span id="bosh-mood-icon" style="font-size:22px;line-height:1">&#128522;</span></div><div class="htlbl">Kayfiyat</div><div class="htsub" data-hs="kayfiyat"></div></div>
+      <div data-hw="suv" onclick="openSuvModal()" class="htile"><div class="hticon" style="color:#1FA4BB"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7 6 11a6 6 0 11-12 0c0-4 3-7 6-11z"/></svg></div><div class="htlbl">Suv</div><div class="htsub" data-hs="suv"></div></div>
+      <div data-hw="dori" onclick="openM('dori-modal');renderDoriList()" class="htile"><div class="hticon" style="color:#E35050"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="8" rx="4"/><path d="M12 8v8"/></svg></div><div class="htlbl">Dori</div><div class="htsub" data-hs="dori"></div></div>
+      <div data-hw="eslatma" onclick="openM('eslatma-modal');renderEslatmalar()" class="htile"><div class="hticon" style="color:#64748B"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4"/></svg></div><div class="htlbl">Eslatma</div><div class="htsub" data-hs="eslatma"></div></div>
+      <div data-hw="xarid" onclick="openM('xarid-modal');renderXaridList()" class="htile"><div class="hticon" style="color:#DE7831"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="20" r="1.4" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.4" fill="currentColor" stroke="none"/><path d="M3 4h2l2.4 11h10l1.8-8H6.2"/></svg></div><div class="htlbl">Xarid</div><div class="htsub" data-hs="xarid"></div></div>
+      <div data-hw="kundalik" onclick="gotoPage('jurnal',null)" class="htile"><div class="hticon" style="color:#1FA4BB"><span style="font-size:22px;line-height:1">&#128214;</span></div><div class="htlbl">Kundalik</div><div class="htsub" data-hs="kundalik"></div></div>
+      <div data-hw="kitoblar" onclick="openM('kitob-modal');renderKitobList()" class="htile"><div class="hticon" style="color:#875DE5"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a2 2 0 012 2v14H7a2 2 0 01-2-2V4z"/><path d="M5 18a2 2 0 012-2h11"/></svg></div><div class="htlbl">Kitoblar</div><div class="htsub" data-hs="kitoblar"></div></div>
+      <div data-hw="inglizcha" onclick="openM('til-modal');renderTilBugun()" class="htile"><div class="hticon" style="color:#00C896"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-4 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg></div><div class="htlbl">Inglizcha</div><div class="htsub" data-hs="inglizcha"></div></div>
+      <div data-hw="oila" onclick="gotoPage('oila',null)" class="htile"><div class="hticon" style="color:#E35199"><span style="font-size:22px;line-height:1">&#128104;&#8205;&#128105;&#8205;&#128103;</span></div><div class="htlbl">Oila</div><div class="htsub" data-hs="oila"></div></div>
+      <div data-hw="tugilgankun" onclick="openM('oila-modal');renderOilaList()" class="htile"><div class="hticon" style="color:#E76FAE"><span style="font-size:22px;line-height:1">&#127874;</span></div><div class="htlbl">Tug'ilgan kun</div><div class="htsub" data-hs="tugilgankun"></div></div>
+      <div data-hw="dua" onclick="openM('dua-modal');renderDuaList('kundalik')" class="htile"><div class="hticon" style="color:#875DE5"><span style="font-size:22px;line-height:1">&#129330;</span></div><div class="htlbl">Dua</div><div class="htsub" data-hs="dua"></div></div>
+      <div data-hw="aireja" onclick="openM('ai-reja-modal')" class="htile"><div class="hticon" style="color:#6062E5"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1.4"/><circle cx="9.3" cy="13" r="1.1" fill="currentColor" stroke="none"/><circle cx="14.7" cy="13" r="1.1" fill="currentColor" stroke="none"/><path d="M9.5 16h5"/></svg></div><div class="htlbl">AI Reja</div><div class="htsub" data-hs="aireja"></div></div>
+      <div data-hw="missiya" onclick="openMissionModal()" class="htile"><div class="hticon" style="color:#DB9725"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div><div class="htlbl"><span id="mission-badge">Missiya</span></div><div class="htsub" data-hs="missiya"></div></div>
+      <div data-hw="reyting" onclick="reytingOch()" class="htile"><div class="hticon" style="color:#DB9725"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 01-10 0V4z"/><path d="M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3M10 18v-3M14 18v-3M8 21h8"/></svg></div><div class="htlbl">Reyting</div><div class="htsub" data-hs="reyting"></div></div>
+      <div data-hw="spin" onclick="openSpinWheel()" class="htile"><div class="hticon" style="color:#DE7831"><span style="font-size:22px;line-height:1">&#127905;</span></div><div class="htlbl">Omad</div><div class="htsub" data-hs="spin"></div></div>
+      <div data-hw="viktorina" onclick="openViktorina()" class="htile"><div class="hticon" style="color:#1FA4BB"><span style="font-size:22px;line-height:1">&#129504;</span></div><div class="htlbl">Viktorina</div><div class="htsub" data-hs="viktorina"></div></div>
+      <div data-hw="mashq60" onclick="openMiniChallenge()" class="htile"><div class="hticon" style="color:#00C896"><span style="font-size:22px;line-height:1">&#9889;</span></div><div class="htlbl">60 soniya</div><div class="htsub" data-hs="mashq60"></div></div>
+      <div data-hw="avatar" onclick="openAvatar()" class="htile"><div class="hticon" style="color:#875DE5"><span id="avatar-display" style="font-size:22px;line-height:1">&#129489;</span></div><div class="htlbl">Avatarim</div><div class="htsub" data-hs="avatar"></div></div>
+      <div data-hw="kunsir" onclick="openKunSir()" class="htile"><div class="hticon" style="color:#875DE5"><span style="font-size:22px;line-height:1">&#11088;</span></div><div class="htlbl">Kun siri</div><div class="htsub" data-hs="kunsir"></div></div>
     </div>
 
     <div data-hw="bugunreja" class="card">
@@ -311,7 +307,7 @@
 <!-- ODAT -->
 <div id="page-odat" class="page">
   <div class="topbar">
-    <div class="topbar-inner"><h2>Odatlar</h2></div>
+    <div class="topbar-inner"><h2>Odatlar</h2><span style="font-size:13px;opacity:.72">Ketma-ketlik &mdash; har kuni takrorlanadi</span></div>
     <div class="topbar-tabs">
       <button class="topbar-tab active" onclick="showOdatTab('kunlik',this)">Kunlik</button>
       <button class="topbar-tab" onclick="showOdatTab('stat',this)">Statistika</button>
@@ -337,7 +333,7 @@
 <!-- REJA -->
 <div id="page-reja" class="page">
   <div class="topbar">
-    <div class="topbar-inner"><h2>📋 Kunlik Reja</h2><span id="reja-sana" style="font-size:13.5px;opacity:.7"></span></div>
+    <div class="topbar-inner"><h2>📋 Kunlik Reja</h2><span style="font-size:13px;opacity:.72">Faqat bugun &mdash; ertaga yangisi</span><span id="reja-sana" style="font-size:13.5px;opacity:.7"></span></div>
     <div class="topbar-tabs">
       <button class="topbar-tab active" onclick="showRejaTab('bugun',this)">Bugun</button>
       <button class="topbar-tab" onclick="showRejaTab('shablon',this)">Shablon</button>
@@ -427,6 +423,7 @@
           <div class="ficon" style="background:linear-gradient(135deg,#875DE5,#7F46E1)"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><ellipse cx="10" cy="13" rx="6" ry="3.5" stroke="white" stroke-width="1.8"/><path d="M4 10c0-1.9 2.7-3.5 6-3.5s6 1.6 6 3.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M4 7c0-1.9 2.7-3.5 6-3.5s6 1.6 6 3.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg></div>
           <div style="font-size:14px;color:var(--t2)">Jamg&#39;arma</div>
           <div id="mol-sav" style="font-size:20px;font-weight:800;color:var(--pur)">0</div>
+          <div id="mol-sav-izoh" style="font-size:12px;color:var(--t2);margin-top:2px">jami yig&#39;ilgan</div>
         </div>
       </div>
       <div class="card"><div class="sec-title">Tranzaksiyalar</div><div id="mol-list"></div></div>
@@ -1776,8 +1773,10 @@
       <div style="display:flex;gap:8px">
         <button id="ft-x" onclick="setFT('xarajat')" style="flex:1;padding:10px;border-radius:12px;border:2px solid var(--red);background:rgba(244,63,94,.1);color:var(--red);font-size:15px;font-weight:700;cursor:pointer">💸 Xarajat</button>
         <button id="ft-d" onclick="setFT('daromad')" style="flex:1;padding:10px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);color:var(--t2);font-size:15px;font-weight:700;cursor:pointer">💰 Daromad</button>
-        <button id="ft-j" onclick="setFT('jamgarma')" style="flex:1;padding:10px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);color:var(--t2);font-size:15px;font-weight:700;cursor:pointer">🐷 Jamg&#39;</button>
+        <button id="ft-j" onclick="setFT('jamgarma')" style="flex:1;padding:10px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);color:var(--t2);font-size:15px;font-weight:700;cursor:pointer">🐷 Yig&#39;ish</button>
+        <button id="ft-o" onclick="setFT('jamgarma_olish')" style="flex:1;padding:10px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);color:var(--t2);font-size:15px;font-weight:700;cursor:pointer">🏦 Olish</button>
       </div>
+      <div id="ft-izoh" style="font-size:12.5px;color:var(--t2);line-height:1.5;margin-top:8px"></div>
       <input type="hidden" id="f-type" value="xarajat">
     </div>
     <div class="igroup"><label class="ilabel">Nomi</label><input class="inp" id="f-name" placeholder="Masalan: Oziq-ovqat"></div>
@@ -2091,31 +2090,42 @@ const MOTIVLAR=[
 if(state.dark)document.body.classList.add('dark');
 if(!S.g('i_inited3')){
   const t=bugunKun();
+  /* BOSHLANG'ICH ODATLAR \u2014 5 ta, o'zini rivojlantirish uchun.
+     Kerak bo'lsa odam o'zi qo'shadi: ko'p bo'lgani yordam bermaydi.
+
+     Namoz ataylab yo'q \u2014 uning o'z bo'limi bor (Din), u yerda
+     besh vaqt alohida belgilanadi. Ikki joyda turgani faqat
+     chalkashlik tug'diradi.
+
+     streak: 0 va hist bo'sh \u2014 ilgari bu yerda 3, 7, 8 kabi
+     soxta raqamlar turardi. Odam birinchi kirganda o'zi
+     qilmagan ketma-ketlikni ko'rardi, bu esa streakning butun
+     ma'nosini yo'qotadi. */
   state.odatlar=[
-    {id:1,name:'Ertalab yugurish - 30 min',icon:'🏃',color:'linear-gradient(135deg,#00C896,#00A87E)',time:'07:00',streak:3,hist:{}},
-    {id:2,name:'Bomdodga turish',icon:'🌅',color:'linear-gradient(135deg,#DB9725,#DE7831)',time:'06:00',streak:7,hist:{[t]:true}},
-    {id:3,name:'Suv ichish - 2 litr',icon:'💧',color:'linear-gradient(135deg,#4F86E2,#3268DE)',time:'',streak:5,hist:{[t]:true}},
-    {id:4,name:"Kitob o\'qish",icon:'📚',color:'linear-gradient(135deg,#875DE5,#7F46E1)',time:'',streak:8,hist:{}},
-    {id:5,name:"IELTS bilan shug\'ullanish",icon:'📝',color:'linear-gradient(135deg,#E35050,#DC2626)',time:'10:00',streak:2,hist:{}},
-    {id:6,name:"Arab tili",icon:'🌍',color:'linear-gradient(135deg,#00C896,#00A87E)',time:'19:00',streak:1,hist:{}},
-    {id:7,name:'Zalga chiqish',icon:'🏋️',color:'linear-gradient(135deg,#DE7831,#D45F22)',time:'',streak:4,hist:{}},
+    {id:1,name:'Ertalab mashq \u2014 20 daqiqa',icon:'🏃',color:'linear-gradient(135deg,#00C896,#00A87E)',time:'07:00',streak:0,hist:{}},
+    {id:2,name:'Suv ichish \u2014 2 litr',icon:'💧',color:'linear-gradient(135deg,#4F86E2,#3268DE)',time:'',streak:0,hist:{}},
+    {id:3,name:"Kitob o\'qish \u2014 20 bet",icon:'📚',color:'linear-gradient(135deg,#875DE5,#7F46E1)',time:'21:00',streak:0,hist:{}},
+    {id:4,name:'Telefonsiz 1 soat',icon:'📵',color:'linear-gradient(135deg,#DE7831,#D45F22)',time:'20:00',streak:0,hist:{}},
+    {id:5,name:'23:00 gacha uxlash',icon:'🌙',color:'linear-gradient(135deg,#875DE5,#6062E5)',time:'23:00',streak:0,hist:{}},
   ];
-  const now=new Date();
-  state.trans=[
-    {id:1,type:'daromad',name:'Oylik maosh',amt:3500000,date:now.toISOString(),m:now.getMonth(),y:now.getFullYear()},
-    {id:2,type:'xarajat',name:'Oziq-ovqat',amt:450000,date:now.toISOString(),m:now.getMonth(),y:now.getFullYear()},
-    {id:3,type:'xarajat',name:'Transport',amt:120000,date:now.toISOString(),m:now.getMonth(),y:now.getFullYear()},
-    {id:4,type:'jamgarma',name:"Jamg\'arma",amt:500000,date:now.toISOString(),m:now.getMonth(),y:now.getFullYear()},
+  /* Moliya bo'sh boshlanadi. Ilgari bu yerda namuna sifatida
+     "Oylik maosh 3 500 000", "Oziq-ovqat", "Transport",
+     "Jamg'arma" turardi. Ular haqiqiy yozuvga o'xshab ko'rinar
+     va foydalanuvchi o'z pulini yozganda soxta raqamlar bilan
+     aralashib ketardi. Pul \u2014 o'ylab topilmaydigan narsa. */
+  state.trans=[];
+  /* REJA \u2014 faqat BUGUN tugaydigan ishlar.
+     Ilgari bu yerda shablon turardi: yugurish, kitob, arab tili
+     \u2014 ya'ni har kuni takrorlanadigan ishlar, aynan Odatning
+     ishi. Shuning uchun ikki bo'lim bir xil ko'rinardi.
+     Endi shablon bo'sh: misol uchun qo'yilgan uchta ish
+     bugun bajarilsa tamom, ertaga ro'yxat bo'shab qoladi. */
+  state.reja.shablon=[];
+  state.reja.bugun[t]=[
+    {id:Date.now()+1,name:"Onamga qo\'ng\'iroq qilish",start:'09:00',end:'09:15',icon:'📞',color:'#E35199',signal:-1,done:false},
+    {id:Date.now()+2,name:'Bozorga chiqish',start:'11:00',end:'12:00',icon:'🛒',color:'#DE7831',signal:-1,done:false},
+    {id:Date.now()+3,name:'Hujjatlarni tayyorlash',start:'15:00',end:'16:00',icon:'📄',color:'#4F86E2',signal:10,done:false},
   ];
-  state.reja.shablon=[
-    {id:1,name:'Bomdod namoz',start:'05:30',end:'06:00',icon:'🌅',color:'#DB9725',signal:-1},
-    {id:2,name:'Ertalabki yugurish',start:'07:00',end:'07:30',icon:'🏃',color:'#00C896',signal:5},
-    {id:3,name:"Nonushta va kitob o\'qish",start:'08:00',end:'09:00',icon:'📚',color:'#875DE5',signal:-1},
-    {id:4,name:"IELTS mashg\'ulot",start:'10:00',end:'12:00',icon:'📝',color:'#E35050',signal:10},
-    {id:5,name:'Tushlik',start:'13:00',end:'14:00',icon:'🍽️',color:'#DE7831',signal:-1},
-    {id:6,name:'Arab tili',start:'19:00',end:'20:00',icon:'🌍',color:'#00C896',signal:5},
-  ];
-  state.reja.bugun[t]=state.reja.shablon.map(s=>({...s,id:Date.now()+Math.random(),done:false}));
   S.s('i_odatlar',state.odatlar);S.s('i_reja',state.reja);S.s('i_trans',state.trans);
   S.s('i_inited3',true);
 }
@@ -2748,7 +2758,7 @@ var QOL_BOSHLASH = [
   ['1', 'Uchta odat tanlang',
    'Odat bo\'limiga kiring va o\'zingizga eng kerakli uch-to\'rtta odatni qo\'shing. Ko\'p qo\'shmang — boshida kam bo\'lgani yaxshi, keyin qo\'shasiz.'],
   ['2', 'Ertalab rejangizni yozing',
-   'Reja bo\'limida bugungi vazifalarni yozing. Har kuni takrorlanadiganini shablon qilib qo\'ysangiz, o\'zi paydo bo\'ladi.'],
+   'Rejaga faqat BUGUNGI ishlarni yozing \u2014 ertaga ro\'yxat bo\'shab qoladi. Har kuni takrorlanadigani Odat bo\'limiga tegishli.'],
   ['3', 'Kun davomida belgilab boring',
    'Bajarganingizni bir bosishda belgilaysiz. Ketma-ket kunlar streak bo\'lib yig\'iladi.'],
   ['4', 'Kechqurun bir daqiqa',
@@ -2758,8 +2768,8 @@ var QOL_BOSHLASH = [
 ];
 
 var QOL_BOLIM = [
-  { emo:'\uD83D\uDD25', nom:'Odat', matn:'Har kuni takrorlanadigan ishlar: namoz, sport, kitob. Belgilaganingizda streak o\'sadi, bir kun o\'tkazsangiz nolga tushadi. Aynan shu streak odamni ushlab turadi.' },
-  { emo:'\uD83D\uDCCB', nom:'Reja', matn:'Bugungi vazifalar. Shablon qo\'ysangiz har kuni o\'zi takrorlanadi — ertalab qaytadan yozib o\'tirmaysiz.' },
+  { emo:'\uD83D\uDD25', nom:'Odat', matn:'<b>Hech qachon tugamaydigan ishlar.</b> Ertalab yugurish, kitob o\'qish \u2014 ularning ma\'nosi bajarishda emas, <b>uzilmaslikda</b>. Har kuni belgilaganingizda streak o\'sadi, bir kun o\'tkazsangiz nolga tushadi.' },
+  { emo:'\uD83D\uDCCB', nom:'Reja', matn:'<b>Bugun tugaydigan ishlar.</b> Bankka borish, onaga qo\'ng\'iroq, hujjat tayyorlash \u2014 bajarilsa tamom, ertaga ro\'yxat bo\'shab qoladi.<br><br><b>Farqi oddiy:</b> ish har kuni takrorlansa \u2014 Odat. Faqat bugunga tegishli bo\'lsa \u2014 Reja.' },
   { emo:'\uD83C\uDF19', nom:'Namoz', matn:'Besh vaqt namozni belgilash. Vaqtlari shahringizga qarab ko\'rsatiladi.' },
   { emo:'\uD83D\uDCB3', nom:'Moliya', matn:'Kirim-chiqim. Har kuni yozib borsangiz, oy oxirida puling qayerga ketganini ko\'rasiz. Oylik xulosa o\'zi hisoblanadi.' },
   { emo:'\uD83D\uDCD6', nom:'Kundalik', matn:'Kun haqidagi shaxsiy yozuvlaringiz. <b>Bu bo\'lim hech kimga ko\'rinmaydi</b> — oila guruhida ham, hech qayerda ham.' },
@@ -3786,6 +3796,141 @@ function nextMotiv(){
   state.motivIdx=(state.motivIdx+1)%MOTIVLAR.length;
   S.s('i_midx',state.motivIdx);showMotiv();
 }
+/* ==================================================================
+   KATAKLAR O'Z HOLATINI AYTADI          06.09.2026
+
+   Ilgari 23 ta katak bir xil oq karta edi: ichida belgi va bitta
+   so'z. Katak nima ahvolda ekanini bilish uchun uni bosish kerak
+   bo'lardi \u2014 23 ta katak, 23 ta bosish. Odam buni qilmaydi va
+   ekran "ko'p, lekin bo'sh" bo'lib tuyuladi.
+
+   Endi har katak o'z raqamini ko'rsatadi, bajarilgani esa
+   so'nadi. Shunda ko'z o'z-o'zidan qolganiga tushadi va ekran
+   kun davomida o'zgarib boradi.
+   ================================================================== */
+function kataklarniYangila(){
+  var bugun = bugunKun();
+  var chiq = {};   /* kalit -> [matn, holat]  holat: '', 'kutmoqda', 'bajarildi', 'ogoh' */
+
+  function son(a,b){ return a+'/'+b; }
+
+  /* --- Odat --- */
+  try{
+    var od = state.odatlar||[];
+    if(od.length){
+      var b = od.filter(function(o){return o.hist&&o.hist[bugun];}).length;
+      /* Odatning ma'nosi bajarishda emas, uzilmaslikda \u2014 shuning
+         uchun katakda ketma-ketlik ham ko'rsatiladi. Reja kataki
+         faqat "2/6" beradi, ikkalasi bir xil ko'rinmaydi. */
+      var eng = 0;
+      od.forEach(function(o){ if((o.streak||0) > eng) eng = o.streak||0; });
+      chiq.odat = [son(b,od.length) + (eng?' \u00b7 \uD83D\uDD25'+eng:''),
+                   b>=od.length?'bajarildi':(b>0?'':'kutmoqda')];
+    }
+  }catch(e){}
+
+  /* --- Reja --- */
+  try{
+    var rj = (state.reja&&state.reja.bugun&&state.reja.bugun[bugun])||[];
+    if(rj.length){
+      var rb = rj.filter(function(r){return r.done;}).length;
+      chiq.reja = [son(rb,rj.length), rb>=rj.length?'bajarildi':(rb>0?'':'kutmoqda')];
+    }else chiq.reja = ['reja yo\'q',''];
+  }catch(e){}
+
+  /* --- Namoz --- */
+  try{
+    var nz = (state.din&&state.din.namoz&&state.din.namoz[bugun])||{};
+    var nb = Object.keys(nz).length;
+    chiq.namoz = [son(nb,6), nb>=6?'bajarildi':(nb>0?'':'kutmoqda')];
+  }catch(e){}
+
+  /* --- Suv --- */
+  try{
+    var sv = (S.g('i_suv')||{})[bugun]||0;
+    var st = Math.round(sv/250);
+    chiq.suv = [son(st,8), st>=8?'bajarildi':(st>0?'':'kutmoqda')];
+  }catch(e){}
+
+  /* --- Kayfiyat --- */
+  try{
+    var mo = (S.g('i_mood')||{})[bugun];
+    chiq.kayfiyat = mo ? [(mo.emoji||'')+' '+(mo.label||''), 'bajarildi'] : ['belgilanmagan','kutmoqda'];
+  }catch(e){}
+
+  /* --- Dori --- */
+  try{
+    var dr = S.g('i_dorilar')||[];
+    if(dr.length){
+      var dd = (S.g('i_dori_done')||{})[bugun]||{};
+      var db = dr.filter(function(d){return dd[d.id];}).length;
+      chiq.dori = [son(db,dr.length), db>=dr.length?'bajarildi':'ogoh'];
+    }
+  }catch(e){}
+
+  /* --- Xarid --- */
+  try{
+    var xr = S.g('i_xarid')||[];
+    var xq = xr.filter(function(x){return !x.done;}).length;
+    if(xr.length) chiq.xarid = [xq?xq+' ta qoldi':'tugadi', xq?'':'bajarildi'];
+  }catch(e){}
+
+  /* --- Eslatma --- */
+  try{
+    var es = S.g('i_eslatmalar')||[];
+    if(es.length) chiq.eslatma = [es.length+' ta',''];
+  }catch(e){}
+
+  /* --- Kundalik --- */
+  try{
+    var ju = getJurnalData();
+    if(!ju.length) chiq.kundalik = ['hali yo\'q','kutmoqda'];
+    else{
+      var oxir = new Date(ju[0].date||ju[0].sana||Date.now());
+      var kun = Math.floor((Date.now()-oxir.getTime())/86400000);
+      chiq.kundalik = kun<=0 ? ['bugun yozildi','bajarildi']
+                   : (kun===1 ? ['kecha yozildi',''] : [kun+' kun yozilmadi','ogoh']);
+    }
+  }catch(e){}
+
+  /* --- Kitoblar --- */
+  try{
+    var kt = S.g('i_kitoblar')||[];
+    var oq = kt.filter(function(k){return k.holat==='oqilmoqda'||k.holat==='oqiyapman';}).length;
+    if(kt.length) chiq.kitoblar = [oq?oq+' ta o\'qilmoqda':kt.length+' ta',''];
+  }catch(e){}
+
+  /* --- Inglizcha --- */
+  try{
+    var lr = S.g('i_til_learned')||[];
+    var sk = S.g('i_til_streak');
+    if(lr.length) chiq.inglizcha = [lr.length+' so\'z',''];
+    else if(sk) chiq.inglizcha = ['boshlang','kutmoqda'];
+  }catch(e){}
+
+  /* --- Sport --- */
+  try{
+    var sp = S.g('i_sport')||[];
+    var bugungi = sp.filter(function(s){return (s.date||'').slice(0,10)===bugun;}).length;
+    if(sp.length) chiq.sport = bugungi?[bugungi+' mashq','bajarildi']:['bugun yo\'q','kutmoqda'];
+  }catch(e){}
+
+  /* --- Ekranga yozamiz --- */
+  var hammasi = document.querySelectorAll('.htsub[data-hs]');
+  for(var i=0;i<hammasi.length;i++){
+    var el = hammasi[i];
+    var k = el.getAttribute('data-hs');
+    var v = chiq[k];
+    var karta = el.parentNode;
+    el.textContent = v ? v[0] : '';
+    el.className = 'htsub' + (v && v[1] && v[1]!=='bajarildi' ? ' '+v[1] : '');
+    if(karta && karta.classList){
+      karta.classList.toggle('bajarildi', !!(v && v[1]==='bajarildi'));
+      karta.classList.toggle('kutmoqda',  !!(v && v[1]==='kutmoqda'));
+    }
+  }
+}
+
 function renderBosh(){
   const p=state.profil,today=bugunKun();
   const h=new Date().getHours();
@@ -3795,6 +3940,7 @@ function renderBosh(){
   setEl('b-ism',p.name+(p.job?' · '+p.job:''));
   setEl('b-sana', sanaUz(new Date(),'toliq'));
   updateAvatarUI(p);
+  try{ kataklarniYangila(); }catch(e){}
   const rd=state.reja,todayR=(rd.bugun[today]||[]);
   const doneR=todayR.filter(r=>r.done).length;
   const doneO=state.odatlar.filter(o=>o.hist&&o.hist[today]).length;
@@ -3825,8 +3971,74 @@ function renderBosh(){
     }).join('');
   }
 }
+/* ==================================================================
+   BIR ISH IKKI JOYDA TURMASIN          06.09.2026
+
+   Odat va Reja \u2014 ikki xil narsa: Odat takrorlanadi va uning
+   ma'nosi uzilmaslikda, Reja esa bugun tugaydi. Lekin bir ish
+   ikkalasiga ham yozilib qolsa, uni ikki marta belgilash kerak
+   bo'ladi \u2014 hech kim buni qilmaydi va ikkala raqam ham
+   noto'g'ri bo'lib qoladi.
+
+   Quyidagi kod shuni oldini oladi: qo'shayotganda tekshiradi,
+   mavjudlarini esa bo'lim tepasida ko'rsatib beradi.
+   ================================================================== */
+
+/* Nomlarni solishtirish uchun soddalashtiramiz: katta-kichik harf,
+   ortiqcha bo'shliq va tinish belgilari hisobga olinmaydi. */
+function _nomKalit(s){
+  return String(s||'').toLowerCase().replace(/[^a-z\u0400-\u04ff0-9']+/g,'').replace(/'/g,'');
+}
+
+function _odatNomlari(){
+  return (state.odatlar||[]).map(function(o){ return _nomKalit(o.name); }).filter(Boolean);
+}
+function _rejaNomlari(){
+  var chiq = [], r = state.reja||{};
+  ((r.bugun&&r.bugun[bugunKun()])||[]).forEach(function(x){ chiq.push(_nomKalit(x.name)); });
+  (r.shablon||[]).forEach(function(x){ chiq.push(_nomKalit(x.name)); });
+  return chiq.filter(Boolean);
+}
+
+/* Ikkalasida ham bor ishlar ro'yxati */
+function takrorlanganlar(){
+  var od = state.odatlar||[], rj = _rejaNomlari(), chiq = [];
+  od.forEach(function(o){
+    if(rj.indexOf(_nomKalit(o.name)) !== -1) chiq.push(o.name);
+  });
+  return chiq;
+}
+
+/* Bo'lim tepasidagi ogohlantirish */
+function takrorBanner(qayer){
+  var t = takrorlanganlar();
+  if(!t.length) return '';
+  var royxat = t.slice(0,4).map(function(x){ return esc(x); }).join(', ') + (t.length>4?' va boshqalar':'');
+  return '<div style="background:rgba(219,151,37,.10);border:1px solid rgba(219,151,37,.32);' +
+         'border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:13.5px;line-height:1.6;color:var(--text)">' +
+         '<b>\u26A0\uFE0F Ikki joyda turibdi:</b> ' + royxat + '<br>' +
+         '<span style="color:var(--t2)">Bir ishni ikki marta belgilash shart emas. ' +
+         (qayer==='odat'
+           ? 'Har kuni takrorlansa \u2014 shu yerda qoldiring, Rejadan o\'chiring.'
+           : 'Har kuni takrorlansa \u2014 Odatda qoldiring, bu yerdan o\'chiring.') +
+         '</span></div>';
+}
+
+/* Qo'shayotganda tekshiruv. Qaytaradi: davom etsinmi. */
+function _takrorTekshir(nom, qayerga){
+  var k = _nomKalit(nom); if(!k) return true;
+  var bor = (qayerga==='odat') ? _rejaNomlari().indexOf(k)!==-1
+                               : _odatNomlari().indexOf(k)!==-1;
+  if(!bor) return true;
+  var joy = (qayerga==='odat') ? 'Rejada' : 'Odatlarda';
+  return confirm('"' + nom + '" allaqachon ' + joy + ' bor.\n\n' +
+    'Ikki joyda tursa, uni ikki marta belgilashingiz kerak bo\'ladi va ikkala raqam ham noto\'g\'ri chiqadi.\n\n' +
+    'Baribir qo\'shilsinmi?');
+}
+
 function addOdat(){
   const name=document.getElementById('od-name').value.trim();if(!name)return;
+  if(!_takrorTekshir(name,'odat')) return;
   state.odatlar.push({id:Date.now(),name,icon:document.getElementById('od-icon').value||'⭐',color:document.getElementById('od-color').value,time:document.getElementById('od-time').value,streak:0,hist:{}});
   S.s('i_odatlar',state.odatlar);closeM('odat-modal');
   document.getElementById('od-name').value='';document.getElementById('od-icon').value='';document.getElementById('od-time').value='';
@@ -3861,8 +4073,8 @@ function renderOdat(){
   document.getElementById('odat-prog-t').textContent=done+'/'+total+' bajarildi';
   document.getElementById('odat-prog-b').style.width=(total?(done/total*100):0)+'%';
   const list=document.getElementById('odat-list');
-  if(!state.odatlar.length){list.innerHTML='<div class="empty">🌱<br><br>Odat yo\'q<br><small>+ bosing</small></div>';return;}
-  list.innerHTML=state.odatlar.map(o=>{
+  if(!state.odatlar.length){list.innerHTML=takrorBanner('odat')+'<div class="empty">🌱<br><br>Odat yo\'q<br><small>Har kuni takrorlanadigan ish qo\'shing &mdash;<br>ertalab yugurish, kitob o\'qish, suv ichish.<br>Bir marta bajariladigan ish Rejaga tegishli.</small></div>';return;}
+  list.innerHTML=takrorBanner('odat')+state.odatlar.map(o=>{
     const isDone=!!(o.hist&&o.hist[today]);
     const pct=Math.min((o.streak||0),30)/30*100;
     return '<div class="hcard'+(isDone?' done':'')+'">'+
@@ -3927,6 +4139,7 @@ function addReja(){
   const name=document.getElementById('rj-name').value.trim();
   const start=document.getElementById('rj-start').value;
   if(!name||!start)return;
+  if(!_takrorTekshir(name,'reja')) return;
   const item={id:Date.now(),name,start,end:document.getElementById('rj-end').value,icon:document.getElementById('rj-icon').value||'📌',color:_rejaColor,signal:parseInt(document.getElementById('rj-signal').value)||-1,done:false};
   const today=bugunKun();
   if(!state.reja.bugun[today])state.reja.bugun[today]=[];
@@ -3999,10 +4212,10 @@ function renderReja(){
   document.getElementById('reja-prog-b').style.width=(items.length?done/items.length*100:0)+'%';
   const list=document.getElementById('reja-list');
   if(!items.length){
-    list.innerHTML='<div class="empty">📅<br><br>Bugun reja yo\'q<br>'+(state.reja.shablon.length?'<button onclick="applyToday()" class="btn btn-g" style="margin-top:12px">📋 Shablonni qo\'llash</button>':'<small>+ bosing</small>')+'</div>';
+    list.innerHTML=takrorBanner('reja')+'<div class="empty">📅<br><br>Bugun reja yo\'q<br>'+(state.reja.shablon.length?'<button onclick="applyToday()" class="btn btn-g" style="margin-top:12px">📋 Shablonni qo\'llash</button>':'<small>Bugun tugaydigan ishlarni yozing &mdash;<br>bankka borish, qo\'ng\'iroq, uchrashuv.<br>Har kuni takrorlanadigani Odat bo\'limida.</small>')+'</div>';
     return;
   }
-  list.innerHTML=items.map(r=>{
+  list.innerHTML=takrorBanner('reja')+items.map(r=>{
     var rParts=r.start.split(':');var sh=Number(rParts[0]),sm=Number(rParts[1]),sM=sh*60+sm;
     var ep=(r.end||r.start).split(':');var eh=Number(ep[0]),em=Number(ep[1]),eM=eh*60+em;
     const isNow=!r.done&&nowM>=sM&&nowM<eM;
@@ -4124,8 +4337,8 @@ function stopMuz(){
   ['rain','forest','waves','white'].forEach(t=>{const el=document.getElementById('muz-'+t);if(el){el.style.borderColor='var(--bd)';el.style.background='var(--bg)';el.style.color='var(--text)';}});
   document.getElementById('muz-st').textContent='To\'xtatilgan';
 }
-const FC={xarajat:'linear-gradient(135deg,#E35050,#DC2626)',daromad:'linear-gradient(135deg,#00C896,#00A87E)',jamgarma:'linear-gradient(135deg,#875DE5,#7F46E1)'};
-const FA={xarajat:'var(--red)',daromad:'var(--g)',jamgarma:'var(--pur)'};
+const FC={xarajat:'linear-gradient(135deg,#E35050,#DC2626)',daromad:'linear-gradient(135deg,#00C896,#00A87E)',jamgarma:'linear-gradient(135deg,#875DE5,#7F46E1)',jamgarma_olish:'linear-gradient(135deg,#DB9725,#DE7831)'};
+const FA={xarajat:'var(--red)',daromad:'var(--g)',jamgarma:'var(--pur)',jamgarma_olish:'#DB9725'};
 function fmt(n){return Math.round(n).toLocaleString('ru-RU');}
 function changeOy(d){
   state.finM+=d;
@@ -4135,10 +4348,17 @@ function changeOy(d){
 }
 function setFT(t){
   document.getElementById('f-type').value=t;
-  const cols={xarajat:'var(--red)',daromad:'var(--g)',jamgarma:'var(--pur)'};
-  ['x','d','j'].forEach(k=>{
+  const cols={xarajat:'var(--red)',daromad:'var(--g)',jamgarma:'var(--pur)',jamgarma_olish:'#DB9725'};
+  const izoh={
+    xarajat:"Pul ketdi \u2014 balansdan ayriladi.",
+    daromad:"Pul keldi \u2014 balansga qo\u2018shiladi.",
+    jamgarma:"Balansdan jamg\u2018armaga o\u2018tkaziladi. Pul yo\u2018qolmaydi \u2014 joyi almashadi.",
+    jamgarma_olish:"Jamg\u2018armadan balansga qaytariladi."
+  };
+  const iz=document.getElementById('ft-izoh'); if(iz) iz.textContent=izoh[t]||'';
+  ['x','d','j','o'].forEach(k=>{
     const el=document.getElementById('ft-'+k);if(!el)return;
-    const type=k==='x'?'xarajat':k==='d'?'daromad':'jamgarma';
+    const type=k==='x'?'xarajat':k==='d'?'daromad':k==='j'?'jamgarma':'jamgarma_olish';
     const active=type===t;
     el.style.borderColor=active?cols[type]:'var(--bd)';
     el.style.background=active?'rgba(0,0,0,.05)':'var(--bg)';
@@ -4183,8 +4403,18 @@ function addTrans(){
   const amt=parseFloat(document.getElementById('f-amt').value);
   if(!name||!amt)return;
   const now=new Date();
+  var _tur=document.getElementById('f-type').value;
+  /* Jamg'armada yo'q pulni olib bo'lmaydi \u2014 aks holda
+     jamg'arma manfiy bo'lib qoladi va hisob ma'nosini yo'qotadi. */
+  if(_tur==='jamgarma_olish'){
+    var _bor=jamgarmaJami();
+    if(amt>_bor){
+      alert('Jamg\'armada '+fmt(_bor)+' so\'m bor.\n\n'+fmt(amt)+' so\'m olib bo\'lmaydi.');
+      return;
+    }
+  }
   var _tr=transRoyxat();
-  _tr.push({id:Date.now(),type:document.getElementById('f-type').value,name,amt,date:now.toISOString(),m:now.getMonth(),y:now.getFullYear()});
+  _tr.push({id:Date.now(),type:_tur,name,amt,date:now.toISOString(),m:now.getMonth(),y:now.getFullYear()});
   transSaqla(_tr);closeM('mol-modal');
   document.getElementById('f-name').value='';document.getElementById('f-amt').value='';
   renderMoliya();
@@ -4202,26 +4432,70 @@ function showMoliyaTab(tab,el){
   document.getElementById('mol-stat').style.display=tab==='stat'?'block':'none';
   if(tab==='stat')renderMoliyaStat();
 }
+/* ==================================================================
+   MOLIYA HISOBI          06.09.2026
+
+   Ilgari hisob nomukammal edi:
+     \u2022 jamg'armaga o'tkazilgan pul balansdan AYRILMAS edi \u2014
+       500 000 ni yig'ib qo'ysangiz ham balans o'zgarmasdi,
+       ya'ni bir pul ikki joyda turardi;
+     \u2022 jamg'arma faqat SHU OY yig'ilgani ko'rsatilardi \u2014
+       oy almashsa nolga tushardi, holbuki jamg'arma yig'ilib
+       boradigan narsa;
+     \u2022 jamg'armadan pul olish imkoni umuman yo'q edi.
+
+   Endi to'rt xil harakat bor va ular bir-biriga bog'langan:
+     Daromad          balans +
+     Xarajat          balans \u2212
+     Jamg'armaga      balans \u2212, jamg'arma +
+     Jamg'armadan     balans +, jamg'arma \u2212
+   ================================================================== */
+
+/* Jamg'arma \u2014 BUTUN tarix bo'yicha, oyga bog'liq emas */
+function jamgarmaJami(){
+  var t = transRoyxat(), q = 0;
+  t.forEach(function(x){
+    if(x.type==='jamgarma') q += x.amt;
+    else if(x.type==='jamgarma_olish') q -= x.amt;
+  });
+  return q;
+}
+
 function renderMoliya(){
   document.getElementById('mol-oy').textContent=MONTHS[state.finM]+' '+state.finY;
   const monthly=transRoyxat().filter(t=>t.m===state.finM&&t.y===state.finY);
   const inc=monthly.filter(t=>t.type==='daromad').reduce((s,t)=>s+t.amt,0);
   const exp=monthly.filter(t=>t.type==='xarajat').reduce((s,t)=>s+t.amt,0);
-  const sav=monthly.filter(t=>t.type==='jamgarma').reduce((s,t)=>s+t.amt,0);
+  const jamQo=monthly.filter(t=>t.type==='jamgarma').reduce((s,t)=>s+t.amt,0);
+  const jamOl=monthly.filter(t=>t.type==='jamgarma_olish').reduce((s,t)=>s+t.amt,0);
+  /* Qo'ldagi pul: jamg'armaga o'tkazilgani bu yerda yo'q,
+     olingani esa qaytib qo'shiladi. */
+  const bal = inc - exp - jamQo + jamOl;
   document.getElementById('mol-inc').textContent=fmt(inc);
   document.getElementById('mol-exp').textContent=fmt(exp);
-  document.getElementById('mol-bal').textContent=fmt(inc-exp);
-  document.getElementById('mol-sav').textContent=fmt(sav);
+  document.getElementById('mol-bal').textContent=fmt(bal);
+  document.getElementById('mol-sav').textContent=fmt(jamgarmaJami());
+
+  /* Jamg'arma kartasi ostida shu oyda nima bo'lgani */
+  var savIzoh=document.getElementById('mol-sav-izoh');
+  if(savIzoh){
+    var qism=[];
+    if(jamQo) qism.push('+'+fmt(jamQo));
+    if(jamOl) qism.push('\u2212'+fmt(jamOl));
+    savIzoh.textContent = qism.length ? 'bu oy '+qism.join(' / ') : 'jami yig\'ilgan';
+  }
+
   const list=document.getElementById('mol-list');
-  if(!monthly.length){list.innerHTML='<div class="empty">Tranzaksiya yo\'q</div>';return;}
+  if(!monthly.length){list.innerHTML='<div class="empty">💳<br><br>Bu oyda yozuv yo\'q<br><small>+ bosib kirim yoki chiqimni yozing</small></div>';return;}
   list.innerHTML=[...monthly].reverse().map(t=>'<div class="titem">'+
     '<div class="ticon" style="background:'+FC[t.type]+'"><svg width="16" height="16" viewBox="0 0 16 16" fill="none">'+
     (t.type==='daromad'?'<path d="M8 12V4M4 7l4-3 4 3" stroke="white" stroke-width="1.8" stroke-linecap="round"/>'
     :t.type==='xarajat'?'<path d="M8 4v8M4 9l4 3 4-3" stroke="white" stroke-width="1.8" stroke-linecap="round"/>'
+    :t.type==='jamgarma_olish'?'<path d="M12 8H4M7 5L4 8l3 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
     :'<ellipse cx="8" cy="10" rx="5" ry="2.5" stroke="white" stroke-width="1.5"/><path d="M3 8c0-1.4 2.2-2.5 5-2.5s5 1.1 5 2.5M3 6c0-1.4 2.2-2.5 5-2.5s5 1.1 5 2.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>')+
     '</svg></div>'+
     '<div style="flex:1"><div style="font-size:15px;font-weight:700">'+esc(t.name)+'</div><div style="font-size:13.5px;color:var(--t2)">'+sanaUz(t.date)+'</div></div>'+
-    '<div style="text-align:right"><div style="font-size:15px;font-weight:700;color:'+FA[t.type]+'">'+(t.type==='xarajat'?'- ':'+  ')+fmt(t.amt)+'</div>'+
+    '<div style="text-align:right"><div style="font-size:15px;font-weight:700;color:'+FA[t.type]+'">'+((t.type==='xarajat'||t.type==='jamgarma')?'\u2212 ':'+ ')+fmt(t.amt)+'</div>'+
     '<button onclick="delTrans('+t.id+')" style="font-size:13.5px;color:var(--t2);background:none;border:none;cursor:pointer">o\'chirish</button></div>'+
   '</div>').join('');
 }
@@ -9770,7 +10044,7 @@ function renderSuvModal(){
   var cups=document.getElementById('suv-cups');
   var bar=document.getElementById('suv-bar');
   var mlEl=document.getElementById('suv-ml');
-  var suvBoshLbl=document.getElementById('suv-bosh-lbl');
+  var suvBoshLbl=null;
   if(cups){
     var filled=Math.min(8,Math.round(ml/250));
     cups.innerHTML='';
@@ -10808,8 +11082,7 @@ function renderDuaList(kat){
   var today=bugunKun();
   var suvData=S.g('i_suv')||{};
   var ml=suvData[today]||0;
-  var el=document.getElementById('suv-bosh-lbl');
-  if(el) el.textContent=Math.round(ml/250)+'/8 💧';
+  /* Endi raqam katakning holat qatorida ko'rsatiladi */
 })();
 // iPhone o'rnatilgan ilovada faqat erkin "ovozli buyruq" tugmasi yashiriladi.
 // Maydon yonidagi 🎤 tugmalar qoladi — bosilganda klaviatura mikrofoniga yo'naltiradi.
@@ -11256,7 +11529,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '52';
+var KUZ_VERSIYA = '57';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -11779,7 +12052,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '52';
+var ILOVA_VERSIYA = '57';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');

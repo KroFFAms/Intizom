@@ -161,6 +161,23 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Hel
 .hticon{display:flex;justify-content:center;align-items:center;height:28px}
 .hticon svg{width:25px;height:25px}
 .htlbl{font-size:12.5px;font-weight:700;color:var(--text);margin-top:8px;line-height:1.3;word-break:break-word}
+
+/* Katak holati — katak nima ahvolda ekanini o'zi aytadi.
+   Ilgari hammasi bir xil oq karta edi va ma'nosini bilish
+   uchun har birini bosish kerak bo'lardi. */
+.htsub{font-size:11px;font-weight:700;color:var(--t2);margin-top:3px;line-height:1.2;min-height:13px}
+.htsub:empty{min-height:0;margin-top:0}
+.htsub.kutmoqda{color:var(--g)}
+.htsub.ogoh{color:var(--red)}
+
+/* Bajarilgan katak so'nadi — ko'z bajarilmaganiga tushadi.
+   Kun davomida ekran o'zi o'zgarib boradi. */
+.htile.bajarildi{opacity:.42;box-shadow:none}
+.htile.bajarildi .hticon{filter:grayscale(1)}
+.htile.bajarildi .htsub{color:var(--t2)}
+
+/* Tegilmagan, lekin bugun kerak bo'lgani biroz ajralib tursin */
+.htile.kutmoqda{border-color:rgba(0,200,150,.45)}
 .hstrip{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px 14px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
 
 /* QULF EKRANI — to'liq ekran, markazda (pastki "sheet" emas) */
