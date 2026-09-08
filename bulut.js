@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "99";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "100";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -1344,6 +1344,9 @@
     return chiq;
   }
 
+  /* Foydalanuvchi o'zi chiqdimi \u2014 shunda zaxiradan
+     tiklashga urinmaymiz. */
+  var _ozimChiqdim = false;
   var _rasmYuribdi = false;
   function rasmKochir(majburiy) {
     if (!sb || !uid) return Promise.resolve(0);
@@ -1698,8 +1701,16 @@
      Saqlangan yangilanish kalitini keyin ishlatish \u2014 uni ikkinchi
      marta ishlatish demak. Supabase buni sessiya o'g'irlanishi deb
      hisoblab, butun sessiyani bekor qiladi. Foydasidan zarari ko'p edi. */
+  /* XATO TUZATILDI (08.09.2026)
+     Bu funksiya afterAuth() ichidan har kirishda chaqirilardi va
+     zaxira kirish kalitini DARHOL o'chirib tashlardi. Ya'ni
+     "kod faqat ro'yxatdan o'tishda so'ralsin" degan himoya
+     yozilgan bo'lsa ham hech qachon ishlamagan: kalit saqlanar,
+     bir soniyadan keyin yo'q qilinardi.
+
+     Endi kalit faqat foydalanuvchi O'ZI chiqqanda o'chadi. */
   function kirishKalitiTozala() {
-    try { localStorage.removeItem("kirish_kaliti"); } catch (e) {}
+    /* ataylab bo'sh \u2014 kalit chiqishda o'chadi, kirishda emas */
   }
 
   /* Brauzerdan xotirani o'chirmaslikni so'raymiz.
@@ -1792,6 +1803,8 @@
   };
   window.BULUT.kirganmi = function () { return !!uid; };
   window.BULUT.chiqish = function () {
+    _ozimChiqdim = true;
+    try { localStorage.removeItem("kirish_kaliti"); } catch (e) {}
     if (!sb) { location.reload(); return; }
     sb.auth.signOut().then(function () {
       try { sessionStorage.removeItem("i_bulut_hydrated"); } catch (e) {}
@@ -1846,6 +1859,8 @@
     m.querySelector("#acc-close").onclick = function () { m.remove(); };
     m.onclick = function (e) { if (e.target === m) m.remove(); };
     m.querySelector("#acc-out").onclick = function () {
+      _ozimChiqdim = true;
+      try { localStorage.removeItem("kirish_kaliti"); } catch (e) {}
       sb.auth.signOut().then(function () { sessionStorage.removeItem("i_bulut_hydrated"); location.reload(); });
     };
   }
@@ -2277,7 +2292,18 @@
             _kalitSaqla(sessiya);
           }
           if (hodisa === "SIGNED_IN") { _kalitSaqla(sessiya); }
-          if (hodisa === "SIGNED_OUT") { console.warn("Sessiya tugadi (SIGNED_OUT)."); }
+          if (hodisa === "SIGNED_OUT") {
+            console.warn("Sessiya tugadi (SIGNED_OUT).");
+            /* Foydalanuvchi o'zi chiqmagan bo'lsa \u2014 bu kutilmagan
+               uzilish. Kod so'rashdan oldin zaxiradan tiklaymiz. */
+            if (!_ozimChiqdim) {
+              setTimeout(function () {
+                _zaxiradanTikla().then(function (u) {
+                  if (u) { console.log("Sessiya avtomatik tiklandi."); afterAuth(u); }
+                });
+              }, 1200);
+            }
+          }
         });
       } catch (e) {}
 
