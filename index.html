@@ -203,6 +203,7 @@
       </div>
     </div>
     <div id="hafta-yakun-strip"></div>
+    <div id="kun-gapi"></div>
     <div class="hero" onclick="gotoPage('hisobot',null)" style="cursor:pointer" title="Bugun nima qildim">
       <div class="hero-halqa"><span id="b-foiz">0%</span></div>
       <div style="flex:1;min-width:0">
@@ -449,6 +450,7 @@
         </div>
       </div>
       <div class="card"><div id="namoz-list"></div></div>
+      <div id="namoz-qazo"></div>
       <div id="namoz-oylik"></div>
     </div>
     <div id="din-quron" style="display:none">
@@ -3870,6 +3872,91 @@ function haftaYakunOch(){
   }, 120); }catch(e){}
 }
 
+/* ==================================================================
+   KUN GAPI                        07.09.2026
+
+   Bosh sahifa ertalab ham, kechqurun ham bir xil turardi:
+   o'sha kataklar, o'sha raqamlar. Ilova kunga javob bermasdi.
+
+   Bu blok vaqtga qarab bitta jumla aytadi. Qoida qat'iy:
+     \u2022 AYBLASH YO'Q. "Yana uddalay olmadingiz" degan ilova
+       bir hafta ichida o'chiriladi.
+     \u2022 MAQTOV HAM YO'Q. Kam bo'lsa qadrli.
+     \u2022 Faqat FAKT va OQIBAT. "8 kunlik ketma-ketlik bugun
+       uziladi" \u2014 bunda hukm yo'q, faqat haqiqat. Odam
+       xulosani o'zi chiqaradi va aynan shu turg'izadi.
+   ================================================================== */
+function kunGapi(){
+  var el = document.getElementById('kun-gapi');
+  if(!el) return;
+  var bugun = bugunKun(), hozir = new Date();
+  var soat = hozir.getHours(), daqiqa = hozir.getMinutes();
+  var vaqtMatn = String(soat).padStart(2,'0') + ':' + String(daqiqa).padStart(2,'0');
+
+  /* Sonlar */
+  var od = state.odatlar || [];
+  var odB = od.filter(function(o){ return o.hist && o.hist[bugun]; }).length;
+  var rj = (state.reja && state.reja.bugun && state.reja.bugun[bugun]) || [];
+  var rjB = rj.filter(function(r){ return r.done; }).length;
+  var nz = 0;
+  try{ nz = Object.keys((state.din && state.din.namoz && state.din.namoz[bugun]) || {}).length; }catch(e){}
+  var jami = od.length + rj.length, bajarildi = odB + rjB;
+  var streak = 0;
+  od.forEach(function(o){ if((o.streak||0) > streak) streak = o.streak||0; });
+
+  /* Keyingi namozgacha qancha qolgan */
+  var namozGap = '';
+  try{
+    var vq = NAMOZ_VAQT_CALC() || {};
+    var nowM = soat*60 + daqiqa, eng = null;
+    NAMOZLAR_LIST.forEach(function(v){
+      if(v.id==='tahajjud') return;
+      var t = vq[v.id];
+      if(typeof t!=='string' || t.indexOf(':')<0) return;
+      var p = t.split(':'), m = Number(p[0])*60 + Number(p[1]);
+      if(m > nowM && (!eng || m < eng.m)) eng = {m:m, nom:v.nom};
+    });
+    if(eng){
+      var q = eng.m - nowM;
+      var s = Math.floor(q/60), d = q%60;
+      namozGap = eng.nom + 'ga ' + (s ? s+' soat ' : '') + d + ' daqiqa.';
+    }
+  }catch(e){}
+
+  var gap = '', ogoh = false;
+
+  if(jami === 0){
+    gap = 'Bugunga hali hech narsa yozilmagan.';
+  } else if(bajarildi >= jami && (nz >= 5 || nz === 0)){
+    gap = 'Kun yopildi.' + (streak ? ' ' + streak + '-kun.' : '');
+  } else if(soat < 9){
+    gap = vaqtMatn + '. Bugun ' + jami + ' ta ish bor.'
+        + (bajarildi ? ' ' + bajarildi + ' tasi bajarildi.' : ' Hech biri boshlanmagan.');
+  } else if(soat < 14){
+    gap = 'Kunning yarmi o\'tdi. ' + jami + ' ta ishdan ' + bajarildi + ' tasi bajarildi.';
+    if(namozGap) gap += ' ' + namozGap;
+  } else if(soat < 19){
+    gap = vaqtMatn + '.' + (namozGap ? ' ' + namozGap : '');
+    if(nz < 5) gap += ' Namozdan ' + (5-nz) + ' vaqt qoldi.';
+    else gap += ' ' + (jami - bajarildi) + ' ta ish qoldi.';
+  } else {
+    var qoldi = jami - bajarildi;
+    gap = vaqtMatn + '. Bugun ' + bajarildi + '/' + jami + ' bajarildi.';
+    if(streak > 0 && od.length && odB === 0){
+      gap += ' ' + streak + ' kunlik ketma-ketlik bugun uziladi.';
+      ogoh = true;
+    } else if(qoldi > 0){
+      gap += ' ' + qoldi + ' ta ish qoldi.';
+    }
+  }
+
+  el.innerHTML =
+    '<div style="padding:2px 3px 14px">' +
+      '<div style="font-size:16.5px;font-weight:700;line-height:1.6;color:' +
+        (ogoh ? 'var(--red)' : 'var(--text)') + '">' + gap + '</div>' +
+    '</div>';
+}
+
 function kataklarniYangila(){
   var bugun = bugunKun();
   /* kalit -> [matn, holat, ulush]
@@ -3980,6 +4067,7 @@ function kataklarniYangila(){
   /* --- Ekranga yozamiz --- */
   try{ guruhSarlavhalari(); }catch(e){}
   try{ haftaYakunStrip(); }catch(e){}
+  try{ kunGapi(); }catch(e){}
   var hammasi = document.querySelectorAll('.htsub[data-hs]');
   for(var i=0;i<hammasi.length;i++){
     var el = hammasi[i];
@@ -5201,6 +5289,105 @@ function toggleNamoz(id){
      3. Kundalik \u2014 "o'tgan yili shu kunda"
    ================================================================== */
 
+/* ==================================================================
+   QAZO NAMOZLAR                    07.09.2026
+
+   Oylik hisob "30 kunda 28 marta qoldirilgan" deb aytardi,
+   lekin ular bilan nima qilishni aytmasdi. Qoldirilgan namoz
+   yo'qolib ketmaydi \u2014 u qazo bo'lib qoladi va o'qilishi kerak.
+
+   Endi ular ro'yxat bo'lib turadi. O'qigan sari belgilaysiz,
+   ro'yxat qisqaradi. Saqlanishi: state.din.qazo[sana][vaqt].
+   ================================================================== */
+function qazoRoyxat(kunSoni){
+  var d = dinOl(), bugun = bugunKun(), chiq = [];
+  d.qazo = d.qazo || {};
+  for(var i=1;i<=(kunSoni||60);i++){       /* bugundan boshqa kunlar */
+    var t = new Date(); t.setDate(t.getDate()-i);
+    var k = kunKal(t);
+    var oqilgan = (d.namoz && d.namoz[k]) || {};
+    var qazoQilingan = d.qazo[k] || {};
+    NAMOZLAR_LIST.forEach(function(v){
+      if(v.id==='tahajjud') return;
+      if(oqilgan[v.id] || qazoQilingan[v.id]) return;
+      chiq.push({kun:k, id:v.id, nom:v.nom, icon:v.icon});
+    });
+  }
+  return chiq;
+}
+
+function qazoBelgila(kun, id){
+  var d = dinOl();
+  d.qazo = d.qazo || {};
+  if(!d.qazo[kun]) d.qazo[kun] = {};
+  d.qazo[kun][id] = true;
+  state.din = d;
+  dinSaqla();
+  try{ renderQazo(); renderNamozOylik(); }catch(e){}
+  showNotif('\u2705 Qazo o\'qildi', id);
+}
+
+function qazoHammasi(kun){
+  var d = dinOl();
+  d.qazo = d.qazo || {};
+  if(!d.qazo[kun]) d.qazo[kun] = {};
+  NAMOZLAR_LIST.forEach(function(v){ if(v.id!=='tahajjud') d.qazo[kun][v.id] = true; });
+  state.din = d; dinSaqla();
+  try{ renderQazo(); renderNamozOylik(); }catch(e){}
+  showNotif('\u2705 Kun yopildi', sanaUz(new Date(kun),'oy'));
+}
+
+function renderQazo(){
+  var el = document.getElementById('namoz-qazo');
+  if(!el) return;
+  var q = qazoRoyxat(60);
+  if(!q.length){
+    el.innerHTML = '<div class="card"><div style="font-size:15px;line-height:1.6">' +
+      '\u2705 Qazo namoz yo\'q.<div style="font-size:13.5px;color:var(--t2);margin-top:4px">Oxirgi 60 kunda hammasi o\'qilgan yoki qazosi ado etilgan.</div>' +
+      '</div></div>';
+    return;
+  }
+
+  /* Kunlar bo'yicha guruhlaymiz, eng yaqinidan boshlab */
+  var kunlar = {};
+  q.forEach(function(x){ (kunlar[x.kun] = kunlar[x.kun] || []).push(x); });
+  var royxat = Object.keys(kunlar).sort().reverse();
+
+  el.innerHTML =
+    '<div class="card">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
+        '<div class="sec-title" style="margin-bottom:0">Qazolar</div>' +
+        '<div style="font-size:15px;font-weight:800;color:var(--red)">' + q.length + ' ta</div>' +
+      '</div>' +
+      '<div style="font-size:13.5px;color:var(--t2);line-height:1.55;margin-bottom:12px">' +
+        'O\'qib bo\'lgach belgilang \u2014 ro\'yxat qisqaradi.' +
+      '</div>' +
+
+      royxat.slice(0,7).map(function(k){
+        var v = kunlar[k];
+        return '<div style="border-top:1px solid var(--bd);padding:11px 0">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+            '<span style="font-size:13.5px;color:var(--t2);font-weight:700">'+sanaUz(new Date(k),'oy')+'</span>' +
+            (v.length>1
+              ? '<button onclick="qazoHammasi(\''+k+'\')" style="padding:5px 11px;border:1px solid var(--bd);border-radius:999px;background:var(--bg);color:var(--text);font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer">Hammasi</button>'
+              : '') +
+          '</div>' +
+          '<div style="display:flex;gap:7px;flex-wrap:wrap">' +
+            v.map(function(x){
+              return '<button onclick="qazoBelgila(\''+x.kun+'\',\''+x.id+'\')" '+
+                'style="padding:9px 13px;border:1px solid var(--bd);border-radius:var(--r-sm);'+
+                'background:var(--bg);color:var(--text);font-size:13.5px;font-weight:700;'+
+                'font-family:inherit;cursor:pointer">'+x.icon+' '+x.nom+'</button>';
+            }).join('') +
+          '</div></div>';
+      }).join('') +
+
+      (royxat.length>7
+        ? '<div style="border-top:1px solid var(--bd);margin-top:6px;padding-top:11px;font-size:13px;color:var(--t2)">Yana '+(royxat.length-7)+' kun bor. Yaqinlarini o\'qib bo\'lgach ular chiqadi.</div>'
+        : '') +
+    '</div>';
+}
+
 /* --- 1. Namoz: oxirgi 30 kun --- */
 /* --- Kitoblar: o'qish sur'ati --- */
 function renderKitobXulosa(){
@@ -5387,7 +5574,10 @@ function renderSportXulosa(){
 
 function renderNamoz(){
   const today=bugunKun();
-  const vaqt=NAMOZ_VAQT_CALC();
+  var vaqt = {};
+  try{ vaqt = NAMOZ_VAQT_CALC() || {}; }
+  catch(e){ console.warn('namoz vaqtini hisoblab bo\'lmadi:', e); }
+  dinOl();
   const ob=S.g('i_ob');const geo=S.g('i_geo');
   const dinCityEl=document.getElementById('din-city-lbl');
   if(dinCityEl){
@@ -5399,15 +5589,26 @@ function renderNamoz(){
   if(!state.din.namoz[today])state.din.namoz[today]={};
   const done=NAMOZLAR_LIST.filter(n=>state.din.namoz[today][n.id]).length;
   document.getElementById('namoz-prog-t').textContent=done+'/6';
+  try{ renderQazo(); }catch(e){}
   try{ renderNamozOylik(); }catch(e){}
   document.getElementById('namoz-prog-b').style.width=(done/6*100)+'%';
   const now=new Date(),nowM=now.getHours()*60+now.getMinutes();
   let nextId=null;
-  NAMOZLAR_LIST.forEach(n=>{
-    const t=vaqt[n.id];if(!t||t==='--:--')return;
-    var hp=t.split(':');var h=Number(hp[0]),m=Number(hp[1]);
-    if((h*60+m)>nowM&&!state.din.namoz[today][n.id]&&!nextId)nextId=n.id;
-  });
+  /* XATO TUZATILDI (07.09.2026): vaqt matn bo'lmasa .split()
+     xato berardi va funksiya SHU YERDA to'xtardi \u2014 natijada
+     namoz ro'yxati umuman chizilmay, ekranda bo'sh oq karta
+     qolardi. Hech qanday xabar ham chiqmasdi.
+     Endi har bir qadam alohida himoyalangan. */
+  try{
+    NAMOZLAR_LIST.forEach(n=>{
+      const t=vaqt && vaqt[n.id];
+      if(typeof t!=='string' || t.indexOf(':')<0 || t==='--:--') return;
+      var hp=t.split(':');
+      var hh=Number(hp[0]), mm=Number(hp[1]);
+      if(!isFinite(hh)||!isFinite(mm)) return;
+      if((hh*60+mm)>nowM && !state.din.namoz[today][n.id] && !nextId) nextId=n.id;
+    });
+  }catch(e){ console.warn('namoz vaqti:', e); }
   document.getElementById('namoz-list').innerHTML=NAMOZLAR_LIST.map(n=>{
     const isDone=!!state.din.namoz[today][n.id];
     const isNext=n.id===nextId;
@@ -5417,7 +5618,7 @@ function renderNamoz(){
         '<div style="font-size:15px;font-weight:700">'+n.nom+
           (isNext?'<span style="font-size:12.5px;background:var(--g);color:#fff;padding:2px 7px;border-radius:8px;margin-left:6px">Keyingi</span>':'')+
         '</div>'+
-        '<div style="font-size:14px;color:var(--t2);margin-top:2px">⏰ '+vaqt[n.id]+(isDone?' · ✅ O\'qildi':'')+'</div>'+
+        '<div style="font-size:14px;color:var(--t2);margin-top:2px">⏰ '+((vaqt&&vaqt[n.id])||'--:--')+(isDone?' · ✅ O\'qildi':'')+'</div>'+
       '</div>'+
       '<button class="nbtn'+(isDone?' done':'')+'" onclick="toggleNamoz(\''+n.id+'\')">'+(isDone?'&#10003;':'+')+'</button>'+
     '</div>';
@@ -8491,11 +8692,82 @@ function addAiTask(soat, emoji, vazifa){
             done:false, start:soat, time:soat, date:bugunKun(), icon:emoji});
   showNotif('✅','"'+vazifa+'" rejaga qo\'shildi!');
 }
+/* ==================================================================
+   MISSIYA ENDI SIZNING ODATLARINGIZDAN CHIQADI      07.09.2026
+
+   Ilgari missiyalar qat'iy yozib qo'yilgan edi: "Bir odatingni
+   bajarsang bas", "10 ta squat qil". Ilova sizning haqiqiy
+   odatlaringizni biladi, lekin ishlatmasdi \u2014 shuning uchun
+   missiya begona va ma'nosiz tuyulardi.
+
+   Endi u bugungi holatga qaraydi: qaysi odat qolgan, qaysi
+   namoz o'qilmagan, suv yetmadimi. Aniq ish nomini aytadi.
+   ================================================================== */
 var DEFAULT_MISSIONS = [
-  {id:1,text:'Bir odatingni bajarsam bas',emoji:'🔥',ball:10},
+  {id:1,text:'Bir odatingni bajar',emoji:'🔥',ball:10},
   {id:2,text:'Kamida bir namoz o\'qi',emoji:'🕌',ball:15},
-  {id:3,text:'10 ta squat qil',emoji:'💪',ball:8},
+  {id:3,text:'10 daqiqa harakat qil',emoji:'💪',ball:8},
 ];
+
+function missiyaYarat(){
+  var bugun = bugunKun(), chiq = [], id = 1;
+
+  /* 1. Bajarilmagan odatlardan eng uzun seriyalisi \u2014 uni
+        yo'qotish eng og'ir, shuning uchun eng qimmatli. */
+  try{
+    var qolgan = (state.odatlar||[]).filter(function(o){ return !(o.hist && o.hist[bugun]); });
+    qolgan.sort(function(a,b){ return (b.streak||0) - (a.streak||0); });
+    qolgan.slice(0,2).forEach(function(o){
+      var s = o.streak||0;
+      chiq.push({
+        id:id++, emoji:o.icon||'\uD83D\uDD25',
+        text:o.name + (s>=3 ? ' \u2014 ' + s + ' kunlik seriya' : ''),
+        ball: s>=7 ? 20 : 10
+      });
+    });
+  }catch(e){}
+
+  /* 2. O'qilmagan namoz */
+  try{
+    var nz = (state.din && state.din.namoz && state.din.namoz[bugun]) || {};
+    var yoq = NAMOZLAR_LIST.filter(function(v){ return v.id!=='tahajjud' && !nz[v.id]; });
+    if(yoq.length){
+      chiq.push({ id:id++, emoji:'\uD83D\uDD4C',
+        text: yoq.length===1 ? yoq[0].nom + ' namozini o\'qi'
+                             : 'Qolgan ' + yoq.length + ' vaqt namozni o\'qi',
+        ball: 15 });
+    }
+  }catch(e){}
+
+  /* 3. Suv */
+  try{
+    var sv = Math.round(((S.g('i_suv')||{})[bugun]||0)/250);
+    if(sv < 8) chiq.push({ id:id++, emoji:'\uD83D\uDCA7',
+      text:'Yana ' + (8-sv) + ' stakan suv ich', ball:8 });
+  }catch(e){}
+
+  /* 4. Bugungi rejadan biri */
+  try{
+    var rj = ((state.reja && state.reja.bugun && state.reja.bugun[bugun]) || [])
+             .filter(function(r){ return !r.done; });
+    if(rj.length) chiq.push({ id:id++, emoji:rj[0].icon||'\uD83D\uDCCB',
+      text:rj[0].name + (rj[0].start ? ' \u00b7 ' + rj[0].start : ''), ball:10 });
+  }catch(e){}
+
+  /* 5. Kundalik */
+  try{
+    var bugungiYozuv = getJurnalData().some(function(j){
+      return String(j.date||'').slice(0,10)===bugun;
+    });
+    if(!bugungiYozuv) chiq.push({ id:id++, emoji:'\uD83D\uDCD3',
+      text:'Kundalikka bir qator yoz', ball:10 });
+  }catch(e){}
+
+  if(!chiq.length){
+    return DEFAULT_MISSIONS.map(function(m){ return Object.assign({}, m, {done:false}); });
+  }
+  return chiq.slice(0,4).map(function(m){ return Object.assign({}, m, {done:false}); });
+}
 
 function openMissionModal(){
   renderMissions();
@@ -8516,7 +8788,7 @@ function renderMissions(){
       '<div style="font-size:15px;font-weight:700">Bugun uchun missiyalar yo\'q</div>'+
       '<div style="font-size:14px;margin-top:6px">AI missiya yaratish uchun tugmani bosing</div>'+
     '</div>';
-    todayM={items:DEFAULT_MISSIONS.map(function(m){return Object.assign({},m,{done:false});})};
+    todayM={items:missiyaYarat()};
     mdata[today]=todayM; S.s('i_missions',mdata);
     renderMissions(); return;
   }
@@ -10642,9 +10914,21 @@ function runKaloriyaAnaliz(){
     });
   }
 
+  /* XATO TUZATILDI (07.09.2026): so'rovda VAQT CHEGARASI yo'q edi.
+     Server javob bermasa fetch tugamaydi, .catch ham ishlamaydi \u2014
+     natijada "AI tahlil qilyapti..." abadiy turib qolardi va
+     foydalanuvchi nima bo'layotganini bilmasdi.
+     Endi rasm uchun 45, matn uchun 25 soniya kutiladi. */
+  var _kalCtrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
+  var _kalMuddat = _kalImgB64 ? 45000 : 25000;
+  var _kalSoat = setTimeout(function(){
+    if(_kalCtrl) _kalCtrl.abort();
+  }, _kalMuddat);
+
   fetch(AI_ENDPOINT,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
+    signal: _kalCtrl ? _kalCtrl.signal : undefined,
     body:JSON.stringify({
       model:'claude-sonnet-4-6',
       max_tokens:1000,
@@ -10652,7 +10936,7 @@ function runKaloriyaAnaliz(){
       messages:messages
     })
   })
-  .then(function(r){return r.json();})
+  .then(function(r){ clearTimeout(_kalSoat); return r.json(); })
   .then(function(d){
     document.getElementById('kal-loading').style.display='none';
     document.getElementById('kal-scan-btn').disabled=false;
@@ -10669,14 +10953,20 @@ function runKaloriyaAnaliz(){
       else showNotif('⚠️','Natijani o\'qib bo\'lmadi');
     }
   })
-  .catch(function(){
+  .catch(function(e){
+    clearTimeout(_kalSoat);
     document.getElementById('kal-loading').style.display='none';
     document.getElementById('kal-scan-btn').disabled=false;
+    var kechikdi = e && (e.name==='AbortError');
     if(textVal){
       showKalResult(calcOfflineKal(textVal));
-      showNotif('📊 Offline rejim','Internet yo\'q — mahalliy hisoblandi');
+      showNotif(kechikdi?'\u23F1 Javob kelmadi':'\uD83D\uDCCA Offline rejim',
+                kechikdi?'Mahalliy baza bo\'yicha hisoblandi'
+                       :'Internet yo\'q \u2014 mahalliy hisoblandi');
     } else {
-      showNotif('❌','Internet kerak (rasm tahlili uchun)');
+      showNotif(kechikdi?'\u23F1 Javob kelmadi':'\u274C Ulanmadi',
+                kechikdi?'Qayta urinib ko\'ring yoki ovqat nomini yozing'
+                       :'Rasm tahlili uchun internet kerak');
     }
   });
 }
@@ -13221,7 +13511,7 @@ function yordamYubor(){
    Ilgari bu yerda qotib qolgan '3.1' turardi va bazadagi hisobotlardan
    qaysi versiya buzilgani bilinmasdi. Endi ILOVA_VERSIYA ishlatiladi. */
 function _kuzVersiya(){ try{ return String(ILOVA_VERSIYA); }catch(e){ return '?'; } }
-var KUZ_VERSIYA = '96';
+var KUZ_VERSIYA = '99';
 
 /* Qurilma raqami — tasodifiy, shaxsni aniqlamaydi, kirmagan
    foydalanuvchini ham sanash uchun kerak */
@@ -13744,7 +14034,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '96';
+var ILOVA_VERSIYA = '99';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
