@@ -3406,7 +3406,7 @@ function removeParol(){
 }
 /* PIN'ni unutgan bo'lsa — hisobdan chiqadi, email+kod bilan qayta kiradi */
 function pinUnutdim(){
-  confirmDel('PIN\'ni unutdingizmi?','Hisobdan chiqasiz va email + kod bilan qayta kirasiz. Ma\'lumotlaringiz bulutda saqlanib qoladi.','',function(){
+  confirmDel('PIN\'ni unutdingizmi?','Hisobdan chiqasiz va Telegram orqali qayta kirasiz. Ma\'lumotlaringiz bulutda saqlanib qoladi.','',function(){
     try{localStorage.removeItem(_PINK);}catch(e){}
     S.s('i_parol','');
     try{sessionStorage.clear();}catch(e){}
@@ -13451,8 +13451,18 @@ function yordamYubor(){
   var _kutmoqda = false;
   var _ochilgan = Date.now();
 
+  var _bandKutish = 0;
   function _yangilaniQoll(){
     if(_qaytaYuklandi) return;      /* takror yuklanish halqasiga tushmaslik */
+    /* Kirish (sessiya kaliti almashinuvi) ketayotgan bo'lsa \u2014
+       kutamiz. Qayta yuklash uni yarim yo'lda uzsa, Supabase
+       sessiyani bekor qilar va yana Telegram kodi so'ralardi.
+       Eng ko'pi 20 soniya kutamiz. */
+    if(window.BULUT && typeof window.BULUT.band==='function' && window.BULUT.band() && _bandKutish < 40){
+      _bandKutish++;
+      setTimeout(_yangilaniQoll, 500);
+      return;
+    }
     _qaytaYuklandi = true;
     location.reload();
   }
@@ -14034,7 +14044,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '100';
+var ILOVA_VERSIYA = '101';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
