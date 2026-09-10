@@ -5659,6 +5659,11 @@ function _renderNamozIch(){
   document.getElementById('namoz-prog-t').textContent=done+'/6';
   try{ renderQazo(); }catch(e){}
   try{ renderNamozOylik(); }catch(e){}
+  /* XATO TUZATILDI (10.09.2026): renderQazo ichidagi dinOl() state.din ni
+     diskdan qayta o'qib, yuqorida yaratilgan bugungi bo'sh yozuvni
+     yo'qotardi \u2014 pastdagi ro'yxat "undefined.tahajjud" da yiqilardi. */
+  if(!state.din.namoz)state.din.namoz={};
+  if(!state.din.namoz[today])state.din.namoz[today]={};
   document.getElementById('namoz-prog-b').style.width=(done/6*100)+'%';
   const now=new Date(),nowM=now.getHours()*60+now.getMinutes();
   let nextId=null;
@@ -14095,7 +14100,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '102';
+var ILOVA_VERSIYA = '103';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
