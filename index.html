@@ -2045,6 +2045,49 @@ function kechaKun(){ var d=new Date(); d.setDate(d.getDate()-1); return kunKal(d
 /* ===== AI SOZLAMA: backend-proxy URL shu yerda. Proxy tayyor bo'lgach faqat shu qatorni o'zgartiring ===== */
 var AI_ENDPOINT='https://kqtonpusgorwfqktbeto.supabase.co/functions/v1/ai';
 var AI_READY=(AI_ENDPOINT.indexOf('api.anthropic.com')===-1); /* proxy qo'yilgandagina true bo'ladi */
+/* ==================================================================
+   AI SO'ROVI                                     10.09.2026
+   `ai` edge funksiyasi 05.09 dan beri foydalanuvchining sessiya
+   tokenini talab qiladi (obuna va kunlik limit serverda tekshiriladi).
+   Ilova esa hamon tokensiz so'rar edi — server 401 qaytarar,
+   kaloriya skaneri, AI reja, missiya va kitob tavsiyasi "tahlil
+   qilib bo'lmadi" deb turardi. Endi hamma AI so'rovi shu yerdan
+   o'tadi: token qo'shiladi, server xatosi ochiq ko'rsatiladi. */
+function aiToken(){
+  try{
+    if(window.intizomSb && window.intizomSb.auth){
+      return window.intizomSb.auth.getSession().then(function(r){
+        return (r && r.data && r.data.session && r.data.session.access_token) || null;
+      }).catch(function(){ return null; });
+    }
+  }catch(e){}
+  return Promise.resolve(null);
+}
+function aiFetch(tur, body, opts){
+  opts = opts || {};
+  return aiToken().then(function(tok){
+    var anon = window.INTIZOM_ANON || '';
+    var h = {'Content-Type':'application/json'};
+    if(anon) h['apikey'] = anon;
+    h['Authorization'] = 'Bearer ' + (tok || anon);
+    body = body || {}; body.tur = tur;
+    return fetch(AI_ENDPOINT, {method:'POST', headers:h, body:JSON.stringify(body), signal:opts.signal});
+  }).then(function(r){
+    if(r.ok) return r;
+    /* Server sababini aytadi — foydalanuvchiga ko'rsatamiz */
+    return r.text().then(function(t){
+      var d = {}; try{ d = JSON.parse(t); }catch(e){}
+      var xabar = d.xabar || d.error || d.message || d.xato || t.slice(0,120) || ('HTTP '+r.status);
+      var sarl = r.status===401 ? '\uD83D\uDD10 Kirish kerak'
+               : (r.status===402 || r.status===403) ? '\u2B50 PRO kerak'
+               : r.status===429 ? '\u23F3 Bugungi limit tugadi'
+               : '\u26A0\uFE0F AI xatosi ('+r.status+')';
+      try{ showNotif(sarl, String(xabar).slice(0,140)); }catch(e){}
+      try{ console.warn('AI', tur, r.status, d); }catch(e){}
+      return { ok:false, status:r.status, json:function(){ return Promise.resolve(d); } };
+    });
+  });
+}
 /* AI javobidan JSON ni bardoshli ajratib oladi (kod-belgi, qo'shimcha matn, egri qo'shtirnoq) */
 function _extractJson(text){
   if(!text) return null;
@@ -5256,8 +5299,12 @@ const NAMOZ_VAQT_CALC=()=>{
   const sunrise=srHA?Noon-srHA:null,sunset=srHA?Noon+srHA:null;
   const fHA=sunHA(FAJR+90),iHA=sunHA(ISHA+90);
   const fajr=fHA?Noon-fHA:null,isha=iHA?Noon+iHA:null;
-  const Aasr=R2D*Math.atan(1/(2+Math.tan(Math.abs((LAT-Decl)*D2R))))/15;
-  const asr=Noon+Aasr;
+  /* ASR (qayta tuzatildi 10.09.2026): ilgari soya burchagi to'g'ridan-
+     to'g'ri 15 ga bo'linib "soat" deb olinardi — Asr 3 soatcha erta
+     chiqardi. To'g'risi: burchak → sunHA orqali soat burchagi. SOYA=2 (hanafiy). */
+  const asrAlt=R2D*Math.atan(1/(2+Math.tan(Math.abs((LAT-Decl)*D2R))));
+  const aHA=sunHA(90-asrAlt);
+  const asr=aHA?Noon+aHA:null;
   const tahajjud=fajr?fajr-1.5:null;
   const fmtH=h=>{if(!h)return'--:--';let hh=((Math.floor(h)%24)+24)%24;let mm=Math.round((h-Math.floor(h))*60);if(mm>=60){mm=0;hh=(hh+1)%24;}return (hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;};
   return{tahajjud:fmtH(tahajjud),bomdod:fmtH(fajr),peshin:fmtH(Noon),asr:fmtH(asr),shom:fmtH(sunset),xufton:fmtH(isha)};
@@ -5302,9 +5349,20 @@ function toggleNamoz(id){
 function qazoRoyxat(kunSoni){
   var d = dinOl(), bugun = bugunKun(), chiq = [];
   d.qazo = d.qazo || {};
+  /* Hisob foydalanuvchi namoz belgilay boshlagan KUNDAN yuriladi.
+     Ilgari 60 kun orqaga qarab, ilovani ishlatishdan oldingi kunlar
+     ham "qazo" deb sanalardi — yangi foydalanuvchi darhol
+     "285 ta qazo" ko'rardi. */
+  var bosh = null;
+  try{
+    Object.keys(d.namoz||{}).forEach(function(k){ if(Object.keys(d.namoz[k]||{}).length && (!bosh || k<bosh)) bosh=k; });
+    Object.keys(d.qazo||{}).forEach(function(k){ if(!bosh || k<bosh) bosh=k; });
+  }catch(e){}
+  if(!bosh) return chiq;
   for(var i=1;i<=(kunSoni||60);i++){       /* bugundan boshqa kunlar */
     var t = new Date(); t.setDate(t.getDate()-i);
     var k = kunKal(t);
+    if(k < bosh) break;
     var oqilgan = (d.namoz && d.namoz[k]) || {};
     var qazoQilingan = d.qazo[k] || {};
     NAMOZLAR_LIST.forEach(function(v){
@@ -5573,6 +5631,16 @@ function renderSportXulosa(){
 }
 
 function renderNamoz(){
+  try{ _renderNamozIch(); }
+  catch(e){
+    /* Ilgari xato konsolda qolar, ekranda bo'sh oq karta turardi.
+       Endi sabab kartaning o'zida ko'rinadi. */
+    console.error('renderNamoz:', e);
+    var l=document.getElementById('namoz-list');
+    if(l) l.innerHTML='<div style="font-size:13.5px;color:var(--red);line-height:1.5">\u26A0\uFE0F Namoz ro\'yxati chizilmadi: '+String(e&&e.message||e).replace(/</g,'&lt;')+'</div>';
+  }
+}
+function _renderNamozIch(){
   const today=bugunKun();
   var vaqt = {};
   try{ vaqt = NAMOZ_VAQT_CALC() || {}; }
@@ -8627,15 +8695,11 @@ function genAiReja(){
     'JSON formatda: {"jadval":[{"soat":"05:30","vazifa":"Bomdod namoz","emoji":"🕌","tur":"din"},...], "maslahat":"..."}'+
     ' Faqat JSON, boshqa hech narsa yozma. O\'zbek tilida.';
 
-  fetch(AI_ENDPOINT,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
+  aiFetch('reja', {
       model:'claude-sonnet-4-6', max_tokens:4000,
       system:'Sen shaxsiy produktivlik yordamchisisan. Faqat JSON javob ber.',
       messages:[{role:'user',content:prompt}]
     })
-  })
   .then(function(r){return r.json();})
   .then(function(d){
     document.getElementById('ai-reja-loading').style.display='none';
@@ -8857,10 +8921,7 @@ function genMissions(){
     return;
   }
 
-  fetch(AI_ENDPOINT,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
+  aiFetch('missiya', {
       model:'claude-sonnet-4-6', max_tokens:600,
       system:'Sen motivatsion yordamchisan. Faqat JSON javob ber.',
       messages:[{role:'user',content:
@@ -8870,7 +8931,6 @@ function genMissions(){
         'JSON: {"missions":[{"text":"...","emoji":"...","ball":10},...]} Faqat JSON. O\'zbek tilida.'
       }]
     })
-  })
   .then(function(r){return r.json();})
   .then(function(d){
     if(btn){btn.disabled=false;btn.textContent='🔄 Yangi missiyalar olish';}
@@ -10925,17 +10985,12 @@ function runKaloriyaAnaliz(){
     if(_kalCtrl) _kalCtrl.abort();
   }, _kalMuddat);
 
-  fetch(AI_ENDPOINT,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    signal: _kalCtrl ? _kalCtrl.signal : undefined,
-    body:JSON.stringify({
+  aiFetch('kaloriya', {
       model:'claude-sonnet-4-6',
       max_tokens:1000,
       system:'Sen ovqat va kaloriya mutaxassisisan. Foydalanuvchi o\'zbek tilida yozadi, sen ham o\'zbek tilida javob berasan. Rasm ko\'rsatilsa uni tahlil qil. Faqat JSON format.',
       messages:messages
-    })
-  })
+    }, {signal:_kalCtrl?_kalCtrl.signal:undefined})
   .then(function(r){ clearTimeout(_kalSoat); return r.json(); })
   .then(function(d){
     document.getElementById('kal-loading').style.display='none';
@@ -12182,10 +12237,7 @@ function aiKitobTavsiya(nom){
     return;
   }
 
-  fetch(AI_ENDPOINT,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
+  aiFetch('kitob', {
       model:'claude-sonnet-4-6', max_tokens:1200,
       system:'Sen kitob mutaxassisisisan. O\'zbek tilida qisqa va foydali javob ber.',
       messages:[{role:'user',content:
@@ -12197,7 +12249,6 @@ function aiKitobTavsiya(nom){
         'Qisqa, aniq, motivatsion yoz. O\'zbek tilida.'
       }]
     })
-  })
   .then(function(r){return r.json();})
   .then(function(d){
     var text=(d.content&&d.content[0]&&d.content[0].text)||'Javob olinmadi';
@@ -14044,7 +14095,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    Fayl yangilangan bo'lsa ham eski kesh qolib ketishi mumkin,
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
-var ILOVA_VERSIYA = '101';
+var ILOVA_VERSIYA = '102';
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');

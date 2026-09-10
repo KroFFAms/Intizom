@@ -12,7 +12,8 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "101";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "102";   /* har o'zgarishda oshiriladi */
+  window.INTIZOM_ANON = SUPA_KEY;   /* AI so'rovlari uchun (index.html → aiFetch) */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
