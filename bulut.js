@@ -12,7 +12,7 @@
   var SUPA_URL = "https://kqtonpusgorwfqktbeto.supabase.co";
   var SUPA_KEY = "sb_publishable_bclhi6PMaXkdYB5JvpqCIQ_YpB5GJGN";
   var TABLE = "intizom_data";
-  window.BULUT_VERSIYA = "100";   /* har o'zgarishda oshiriladi */
+  window.BULUT_VERSIYA = "101";   /* har o'zgarishda oshiriladi */
 
   // ---- localStorage kalitlarini yig'ish ----
   function collect() {
@@ -1772,6 +1772,9 @@
       });
     } catch (e) {}
     removeGate();
+    _band = false;
+    try { sessionStorage.removeItem("i_tarmoq_kut"); } catch (e) {}
+    qurilmaKalitTaminla();
     tgTaklif();
     /* Rasm ko'chirish va tenglashtirish pullThenStart ning
        tarmoqlariga bog'lanmasin: u yerda bir necha chiqish yo'li
@@ -1805,11 +1808,18 @@
   window.BULUT.chiqish = function () {
     _ozimChiqdim = true;
     try { localStorage.removeItem("kirish_kaliti"); } catch (e) {}
-    if (!sb) { location.reload(); return; }
-    sb.auth.signOut().then(function () {
+    /* Qurilma kalitini serverda ham bekor qilamiz \u2014 chiqish
+       haqiqiy chiqish bo'lsin */
+    var kalitTugadi = _qkOl().then(function (k) {
+      if (!k || !sb) return;
+      return sb.rpc("qurilma_kalit_ochir", { p_kalit: k }).catch(function () {});
+    }).then(function () { return _qkOchir(); });
+    var tugat = function () {
       try { sessionStorage.removeItem("i_bulut_hydrated"); } catch (e) {}
-      location.reload();
-    });
+      idbYoz("sb_sessiya", null).then(function () { location.reload(); });
+    };
+    if (!sb) { kalitTugadi.then(tugat); return; }
+    kalitTugadi.then(function () { return sb.auth.signOut(); }).then(tugat, tugat);
   };
 
   // ---- bulut nuqtasi + hisob menyusi (parol qo'yish / chiqish) ----
@@ -1859,9 +1869,8 @@
     m.querySelector("#acc-close").onclick = function () { m.remove(); };
     m.onclick = function (e) { if (e.target === m) m.remove(); };
     m.querySelector("#acc-out").onclick = function () {
-      _ozimChiqdim = true;
-      try { localStorage.removeItem("kirish_kaliti"); } catch (e) {}
-      sb.auth.signOut().then(function () { sessionStorage.removeItem("i_bulut_hydrated"); location.reload(); });
+      /* Bitta yo'l: qurilma kalitini ham bekor qiladi */
+      window.BULUT.chiqish();
     };
   }
 
@@ -1907,6 +1916,8 @@
   }
 
   function gate() {
+    _band = false;
+    if (document.getElementById("bulut-gate")) return;
     var wrap = document.createElement("div");
     wrap.id = "bulut-gate";
     wrap.style.cssText = "position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#0b1220,#111827);display:flex;align-items:center;justify-content:center;padding:22px;font-family:system-ui,-apple-system,sans-serif;overflow:auto";
@@ -2151,6 +2162,237 @@
 
   function removeGate() { var g = document.getElementById("bulut-gate"); if (g) g.remove(); }
 
+  /* ==========================================================
+     QURILMA KALITI                              09.09.2026
+
+     MUAMMO: har yangilanishdan keyin ilova yana Telegram kodi
+     so'rardi. Sabab — kirish butunlay Supabase'ning yangilanish
+     kalitiga bog'liq edi, u esa nozik: har ishlatilganda
+     almashadi, xotira to'lganda yozilmay qoladi, ikki marta
+     ishlatilsa server BUTUN sessiyani bekor qiladi. Yangilanish
+     paytida sahifa qayta yuklanadi va aynan shu holatlar ro'y
+     beradi. Kalit o'lgach zaxira nusxa ham o'sha o'lik kalit
+     edi — ikkalasi birga yo'qolardi.
+
+     YECHIM: kirganda server foydalanuvchiga uzoq muddatli
+     QURILMA KALITI beradi (tasodifiy 64 belgi; serverda faqat
+     SHA-256 hash turadi). Supabase sessiyasi qanday sababdan
+     o'lmasin, `qurilma` edge funksiyasi shu kalit bilan YANGI
+     sessiya beradi — foydalanuvchi hech narsa sezmaydi.
+     Kod faqat ikki holda so'raladi: birinchi ro'yxatdan
+     o'tishda va foydalanuvchi O'ZI "Chiqish" bosganda.
+
+     Kalit uch joyda saqlanadi: localStorage, IndexedDB (xotira
+     to'lganda ham yoziladi) va cookie (brauzer sayt xotirasini
+     tozalaganda ham ko'pincha qoladi).
+     ========================================================== */
+  var QK = "qurilma_kaliti";
+  var QURILMA_URL = SUPA_URL + "/functions/v1/qurilma";
+
+  /* --- IndexedDB: kichik kalit-qiymat ombori --- */
+  function idbOchiq() {
+    return new Promise(function (res, rej) {
+      try {
+        if (!window.indexedDB) return rej(new Error("idb yo'q"));
+        var r = indexedDB.open("intizom_kalit", 1);
+        r.onupgradeneeded = function () { r.result.createObjectStore("k"); };
+        r.onsuccess = function () { res(r.result); };
+        r.onerror = function () { rej(r.error); };
+      } catch (e) { rej(e); }
+    });
+  }
+  function idbOl(k) {
+    return idbOchiq().then(function (db) {
+      return new Promise(function (res) {
+        var q = db.transaction("k", "readonly").objectStore("k").get(k);
+        q.onsuccess = function () { res(q.result == null ? null : q.result); };
+        q.onerror = function () { res(null); };
+      });
+    }).catch(function () { return null; });
+  }
+  function idbYoz(k, v) {
+    return idbOchiq().then(function (db) {
+      return new Promise(function (res) {
+        var t = db.transaction("k", "readwrite");
+        if (v == null) t.objectStore("k").delete(k); else t.objectStore("k").put(v, k);
+        t.oncomplete = function () { res(true); };
+        t.onerror = function () { res(false); };
+      });
+    }).catch(function () { return false; });
+  }
+
+  /* --- cookie: uchinchi nusxa (400 kun — brauzer chegarasi) --- */
+  function cookieYoz(k, v) {
+    try {
+      if (v == null) { document.cookie = k + "=; Max-Age=0; Path=/; SameSite=Lax"; return; }
+      document.cookie = k + "=" + encodeURIComponent(v) + "; Max-Age=" + (400 * 86400) +
+        "; Path=/; SameSite=Lax" + (location.protocol === "https:" ? "; Secure" : "");
+    } catch (e) {}
+  }
+  function cookieOl(k) {
+    try {
+      var m = document.cookie.match(new RegExp("(?:^|; )" + k + "=([^;]*)"));
+      return m ? decodeURIComponent(m[1]) : null;
+    } catch (e) { return null; }
+  }
+
+  function _qkSaqla(kalit) {
+    try { localStorage.setItem(QK, kalit); } catch (e) {}
+    cookieYoz(QK, kalit);
+    return idbYoz(QK, kalit);
+  }
+  function _qkOchir() {
+    try { localStorage.removeItem(QK); } catch (e) {}
+    cookieYoz(QK, null);
+    return idbYoz(QK, null);
+  }
+  /* Uch joydan birida bo'lsa — topadi va qolganlariga qayta yozadi */
+  function _qkOl() {
+    var k = null;
+    try { k = localStorage.getItem(QK); } catch (e) {}
+    if (k) return Promise.resolve(k);
+    return idbOl(QK).then(function (v) {
+      if (!v) v = cookieOl(QK);
+      if (v) _qkSaqla(v);
+      return v || null;
+    });
+  }
+
+  /* Kirgandan keyin: kalit yo'q bo'lsa serverdan yangisini olamiz */
+  var _qkYaratilmoqda = false;
+  function qurilmaKalitTaminla() {
+    if (!sb || !uid || _qkYaratilmoqda) return;
+    _qkOl().then(function (bor) {
+      if (bor) return;
+      _qkYaratilmoqda = true;
+      var nom = "";
+      try { nom = (navigator.userAgent || "").slice(0, 120); } catch (e) {}
+      sb.rpc("qurilma_kalit_yarat", { p_nom: nom }).then(function (r) {
+        _qkYaratilmoqda = false;
+        if (r.error || !r.data) { console.warn("Qurilma kaliti olinmadi:", r.error && r.error.message); return; }
+        _qkSaqla(r.data);
+        console.log("Qurilma kaliti saqlandi — endi kod qayta so'ralmaydi.");
+      }).catch(function () { _qkYaratilmoqda = false; });
+    });
+  }
+
+  /* Supabase sessiyasi o'lganda: qurilma kaliti bilan yangi sessiya.
+     Natija: {user} | {holat:"yoq"} (kalit yo'q/bekor) | {holat:"tarmoq"} */
+  var _qkUrinilmoqda = null;
+  function qurilmaBilanKir() {
+    if (_qkUrinilmoqda) return _qkUrinilmoqda;
+    _qkUrinilmoqda = _qkOl().then(function (kalit) {
+      if (!kalit) return { holat: "yoq" };
+      if (typeof navigator !== "undefined" && navigator.onLine === false) return { holat: "tarmoq" };
+      console.log("Qurilma kaliti bilan kirilmoqda...");
+      var ctrl = null;
+      try { ctrl = new AbortController(); setTimeout(function () { ctrl.abort(); }, 15000); } catch (e) {}
+      return fetch(QURILMA_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": SUPA_KEY, "Authorization": "Bearer " + SUPA_KEY },
+        body: JSON.stringify({ kalit: kalit }),
+        signal: ctrl ? ctrl.signal : undefined
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (d) {
+          if (r.status === 401 && d && d.xato === "kalit_yoq") {
+            console.warn("Qurilma kaliti bekor qilingan.");
+            _qkOchir();
+            return { holat: "yoq" };
+          }
+          if (r.status === 404) {
+            /* Funksiya joylanmagan \u2014 kutishning ma'nosi yo'q */
+            console.warn("qurilma edge funksiyasi topilmadi (404).");
+            return { holat: "yoq" };
+          }
+          if (!r.ok || !d || !d.access_token) {
+            console.warn("qurilma funksiyasi javobi:", r.status, d && (d.xato || d.xabar));
+            return { holat: "tarmoq" };
+          }
+          return sb.auth.setSession({ access_token: d.access_token, refresh_token: d.refresh_token })
+            .then(function (s) {
+              if (s.error || !s.data || !s.data.user) return { holat: "tarmoq" };
+              _kalitSaqla(s.data.session);
+              console.log("Sessiya qurilma kaliti bilan tiklandi — kod so'ralmadi.");
+              return { user: s.data.user };
+            });
+        });
+      }).catch(function (e) {
+        console.warn("qurilma: tarmoq xatosi", e && e.message);
+        return { holat: "tarmoq" };
+      });
+    }).then(function (n) { _qkUrinilmoqda = null; return n; });
+    return _qkUrinilmoqda;
+  }
+
+  /* Internet yo'q — kod so'ramaymiz, ulanishni kutamiz */
+  function tarmoqniKut() {
+    /* Cheksiz kutmaymiz: bir sessiyada 2 marta urinib bo'lmasa
+       (server uzoq yotgan bo'lsa) kirish oynasini ko'rsatamiz */
+    var son = 0;
+    try { son = parseInt(sessionStorage.getItem("i_tarmoq_kut") || "0", 10); } catch (e) {}
+    if (son >= 2) { console.warn("Server javob bermadi \u2014 kirish so'raladi."); gate(); return; }
+    try { sessionStorage.setItem("i_tarmoq_kut", String(son + 1)); } catch (e) {}
+    console.warn("Kirish tasdiqlanmadi (tarmoq) \u2014 ulanish tiklanganda qayta uriniladi.");
+    removeGate();
+    _band = false;
+    badgeHolat("xato");
+    var qayta = function () { if (!uid) location.reload(); };
+    window.addEventListener("online", qayta, { once: true });
+    setTimeout(qayta, 60000);
+  }
+
+  /* Hamma yo'l tugaganda: qurilma kaliti → bo'lmasa kod */
+  function oxirgiChora() {
+    qurilmaBilanKir().then(function (n) {
+      if (n.user) { afterAuth(n.user); return; }
+      if (n.holat === "tarmoq") { tarmoqniKut(); return; }
+      gate();
+    });
+  }
+
+  /* Supabase'ning o'z xotirasi: xotira to'lganda ham sessiya
+     yo'qolmasin. localStorage'ga yozilmasa — joy bo'shatib qayta
+     yoziladi; baribir bo'lmasa xotirada (RAM) va IndexedDB'da
+     qoladi, keyingi ochilishda IndexedDB'dan tiklanadi. */
+  var _xm = {};
+  var xavfsizXotira = {
+    getItem: function (k) {
+      var v = null;
+      try { v = localStorage.getItem(k); } catch (e) {}
+      if (v == null && Object.prototype.hasOwnProperty.call(_xm, k)) v = _xm[k];
+      return v;
+    },
+    setItem: function (k, v) {
+      _xm[k] = v;
+      var ok = false;
+      try { localStorage.setItem(k, v); ok = true; } catch (e) {}
+      if (!ok) {
+        try { xotiraBoshat(true); localStorage.setItem(k, v); ok = true; } catch (e2) {}
+      }
+      if (!ok) {
+        console.error("Sessiya localStorage'ga sig'madi — IndexedDB'da saqlanadi.");
+        try { localStorage.removeItem(k); } catch (e3) {}   /* eskisi qolib, yangisiga zid bo'lmasin */
+      }
+      if (k.indexOf("auth-token") > 0) idbYoz("sb_sessiya", v);
+    },
+    removeItem: function (k) {
+      delete _xm[k];
+      try { localStorage.removeItem(k); } catch (e) {}
+      if (k.indexOf("auth-token") > 0) idbYoz("sb_sessiya", null);
+    }
+  };
+  /* Ochilishda: localStorage'da sessiya yo'q, IndexedDB'da bor — qaytaramiz */
+  function sessiyaniIdbdanTikla() {
+    if (_sessiyaBormi()) return Promise.resolve();
+    return idbOl("sb_sessiya").then(function (v) {
+      if (!v) return;
+      var k = "sb-" + SUPA_URL.replace("https://", "").split(".")[0] + "-auth-token";
+      _xm[k] = v;
+      try { localStorage.setItem(k, v); } catch (e) {}
+      console.log("Sessiya IndexedDB'dan tiklandi.");
+    });
+  }
+
   /* Saqlangan sessiya bormi \u2014 to'g'ridan-to'g'ri xotiradan tekshiramiz.
      Bor bo'lsa-yu tarmoq sabab tasdiqlanmasa, kod so'ramaymiz. */
   /* ==========================================================
@@ -2224,13 +2466,21 @@
     return false;
   }
 
+  /* Kirish jarayoni ketayotganda index.html sahifani qayta
+     yuklamasin (yangilanish paytida). Aks holda kalit almashinuvi
+     yarim yo'lda uzilib, sessiya o'lardi. */
+  var _band = true;
+  window.BULUT = window.BULUT || {};
+  window.BULUT.band = function () { return _band; };
+
   function start() {
-    loadSb().then(function () {
+    loadSb().then(function () { return sessiyaniIdbdanTikla(); }).then(function () {
       sb = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
         auth: {
           persistSession: true,
           autoRefreshToken: true,
-          detectSessionInUrl: false
+          detectSessionInUrl: false,
+          storage: xavfsizXotira
         }
       });
 
@@ -2250,9 +2500,10 @@
 
            To'g'ri yo'l: kutubxona o'zi yangilaydi, biz kutamiz. */
         if (!_sessiyaBormi()) {
-          /* Supabase'niki yo'q. Kodni so'rashdan OLDIN zaxirani sinaymiz. */
+          /* Supabase'niki yo'q. Kodni so'rashdan OLDIN zaxirani,
+             so'ng qurilma kalitini sinaymiz. */
           _zaxiradanTikla().then(function (u) {
-            if (u) afterAuth(u); else gate();
+            if (u) afterAuth(u); else oxirgiChora();
           });
           return;
         }
@@ -2271,13 +2522,11 @@
             if (urinish >= 8) {
               clearInterval(kutish);
               if (typeof navigator !== "undefined" && navigator.onLine === false) {
-                console.warn("Internet yo'q \u2014 kirish keyinga qoldirildi.");
-                removeGate();
-                window.addEventListener("online", function () { location.reload(); }, { once: true });
+                tarmoqniKut();
                 return;
               }
-              console.warn("Sessiya tiklanmadi \u2014 kirish so'ralmoqda.");
-              gate();
+              console.warn("Sessiya tiklanmadi \u2014 qurilma kaliti sinaladi.");
+              oxirgiChora();
             }
           });
         }, 1000);
@@ -2297,9 +2546,17 @@
             /* Foydalanuvchi o'zi chiqmagan bo'lsa \u2014 bu kutilmagan
                uzilish. Kod so'rashdan oldin zaxiradan tiklaymiz. */
             if (!_ozimChiqdim) {
+              _band = true;
               setTimeout(function () {
                 _zaxiradanTikla().then(function (u) {
-                  if (u) { console.log("Sessiya avtomatik tiklandi."); afterAuth(u); }
+                  if (u) { console.log("Sessiya avtomatik tiklandi."); afterAuth(u); return; }
+                  /* Zaxira ham o'lgan \u2014 qurilma kaliti bilan yangi sessiya */
+                  qurilmaBilanKir().then(function (n) {
+                    if (n.user) { console.log("Sessiya qurilma kaliti bilan tiklandi."); afterAuth(n.user); return; }
+                    _band = false;
+                    if (n.holat === "yoq") { console.warn("Qurilma kaliti ham yo'q \u2014 kirish so'raladi."); gate(); }
+                    else { badgeHolat("xato"); }   /* tarmoq: keyingi ochilishda yana urinadi */
+                  });
                 });
               }, 1200);
             }
@@ -2307,7 +2564,7 @@
         });
       } catch (e) {}
 
-    }).catch(function (e) { console.warn("Bulut ulanmadi:", e && e.message); });
+    }).catch(function (e) { _band = false; console.warn("Bulut ulanmadi:", e && e.message); });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
