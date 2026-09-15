@@ -372,3 +372,98 @@ b,strong,.htsub,.hero-qator,.hero-halqa,input[type=number]{font-variant-numeric:
 .voice-listening { animation: pulse-ring 1.2s infinite !important; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+/* ==========================================================
+   ILOVANI HAKIYQIY JONLANTIRUVCHI QATLAM (POLISH & MOTION)
+   ========================================================== */
+
+/* 1. Kartochka va tugmalarga silliq hover/active effektlari */
+.card, .hcard, .ritem, .nitem, .fcard, .htile {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), 
+              box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1), 
+              background-color 0.2s ease, 
+              border-color 0.2s ease;
+}
+
+.card:active, .hcard:active, .ritem:active, .htile:active {
+  transform: scale(0.985);
+}
+
+/* 2. Tugmalar bosilganda chiroyli "Ripple" yoki qisilish effekti */
+button:active:not(.pin-btn), .btn:active, .hbtn:active, .nbtn:active {
+  transform: scale(0.95);
+  opacity: 0.9;
+}
+
+/* 3. Bajarilgan elementlar (Done) uchun silliq xiralashish va chizilish */
+.hcard.done, .ritem.rdone, .item:has(.check.done) {
+  opacity: 0.65;
+  border-color: color-mix(in srgb, var(--g) 30%, var(--bd));
+}
+
+/* 4. Sahifalar almashganda yumshoq "Fade & Up" effekti */
+.page {
+  animation: pageSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 5. Cho'zilgan yuklanish va bildirishnoma (Notif) chiqqandagi yumshoqlik */
+.notif {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--navy) 90%, transparent);
+}
+
+/* 6. Asosiy oynadagi kataklar (htile) uchun zamonaviy rang urg'ulari */
+.htile {
+  position: relative;
+  overflow: hidden;
+}
+
+.htile::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.htile:hover::after, .htile:active::after {
+  background: var(--g);
+}
+
+/* 7. Modal oyna ochilganda orqa fonning chuqur xiralashishi (Glassmorphism) */
+.moverlay {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* 8. Scrollbarlarni yashirish va silliq qilish (chiroyli ko'rinish uchun) */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bd);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--t2);
+}
