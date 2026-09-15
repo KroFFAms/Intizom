@@ -7953,6 +7953,91 @@ window.intizomTest = function(){
   return { otdi: otdi, yiqildi: yiqildi.length, jami: jami, royxat: yiqildi };
 };
 
+/* ==================================================================
+   AI HAFTALIK XULOSA — "shaxsiy tahlilchi"              15.09.2026
+   AI raqam o'ylab topmaydi: faktlar ilovada hisoblanadi (_haftaKesim,
+   bogliqliklar, uyqu, kayfiyat), AI faqat ular ustidan 3 jumla yozadi.
+   Server: `ai` edge funksiyasida tur='xulosa' (limit kuniga 1).
+   Kesh: i_ai_xulosa {hafta, matn, sana} — hafta o'zgarmaguncha qayta
+   so'ralmaydi; "Yangilash" kuniga 1 marta. PRO ichida (Hisobot sahifasi).
+   ================================================================== */
+function _aiXulosaFaktlar(){
+  var kunlar=_haftaKunlari(0), oldingi=_haftaKunlari(1);
+  var hb=_haftaKesim(kunlar), ho=_haftaKesim(oldingi);
+  var kunNom=['Yakshanba','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'];
+  var f=[];
+  f.push('Odatlar: '+hb.odatF+'% ('+hb.odatB+'/'+hb.odatJ+'), o\'tgan hafta '+ho.odatF+'%');
+  f.push('Reja: '+hb.rejaF+'% ('+hb.rejaB+'/'+hb.rejaJ+'), o\'tgan hafta '+ho.rejaF+'%');
+  f.push('Namoz: '+hb.namoz+'/42, sport: '+hb.sport+' kun, suv to\'liq: '+hb.suvKun+' kun, kundalik: '+hb.kundalik+' yozuv');
+  if(hb.eng) f.push('Eng kuchli kun: '+kunNom[new Date(hb.eng+'T12:00:00').getDay()]+' ('+hb.engB+' odat)');
+  /* eng zaif kun */
+  try{
+    var od=state.odatlar||[], zaif=null, zaifB=999;
+    kunlar.forEach(function(k){ if(k>bugunKun()) return; var b=0; od.forEach(function(o){ if(o.hist&&o.hist[k]) b++; }); if(b<zaifB){ zaifB=b; zaif=k; } });
+    if(zaif && od.length) f.push('Eng zaif kun: '+kunNom[new Date(zaif+'T12:00:00').getDay()]+' ('+zaifB+'/'+od.length+' odat)');
+  }catch(e){}
+  /* odatlar bo'yicha */
+  try{
+    (state.odatlar||[]).forEach(function(o){
+      var b=kunlar.filter(function(k){ return k<=bugunKun() && o.hist && o.hist[k]; }).length;
+      f.push('Odat "'+o.name+'": '+b+' kun, zanjir '+(o.streak||0));
+    });
+  }catch(e){}
+  /* uyqu */
+  try{
+    var uy=getUyquData().filter(function(u){ return kunlar.indexOf(u.sana)>=0; });
+    if(uy.length){ var s=0; uy.forEach(function(u){ s+=u.soat||0; }); f.push('Uyqu: o\'rtacha '+(s/uy.length).toFixed(1)+' soat ('+uy.length+' kun yozilgan)');
+      var eng=uy.slice().sort(function(a,b){return a.soat-b.soat;})[0]; if(eng && eng.soat<6) f.push('Eng kam uyqu: '+kunNom[new Date(eng.sana+'T12:00:00').getDay()]+' '+eng.soat+' soat'); }
+  }catch(e){}
+  /* kayfiyat */
+  try{
+    var md=S.g('i_mood')||{}, mv=[], past=[];
+    kunlar.forEach(function(k){ if(md[k]&&md[k].val!=null){ mv.push(md[k].val); if(md[k].val<=2) past.push(kunNom[new Date(k+'T12:00:00').getDay()]); } });
+    if(mv.length){ var m=0; mv.forEach(function(v){m+=v;}); f.push('Kayfiyat: o\'rtacha '+(m/mv.length).toFixed(1)+'/5 ('+mv.length+' kun)'+(past.length?', past kunlar: '+past.join(', '):'')); }
+  }catch(e){}
+  /* bog'liqliklar (statistik tekshiruvdan o'tganlar) */
+  try{ bogliqliklar(kunlar.concat(oldingi)).slice(0,2).forEach(function(b){ f.push('Bog\'liqlik: '+String(b.matn).replace(/<[^>]+>/g,'')); }); }catch(e){}
+  return f;
+}
+function aiXulosaChiz(yangila){
+  var el=document.getElementById('ai-xulosa-card'); if(!el) return;
+  var hafta=_haftaKunlari(0)[0];
+  var kesh=S.g('i_ai_xulosa')||null;
+  var bugun=bugunKun();
+  function karta(ich, tugma){
+    return '<div class="card u-mb12" style="border-left:3px solid #875DE5">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
+        '<div class="sec-title" style="margin:0">\uD83E\uDDE0 AI haftalik xulosa</div>'+
+        (tugma||'')+
+      '</div>'+ich+'</div>';
+  }
+  if(!yangila && kesh && kesh.hafta===hafta && kesh.matn){
+    var qayta = kesh.sana!==bugun ? '<button onclick="aiXulosaChiz(true)" class="btn btn-out" style="padding:5px 10px;font-size:12.5px">\uD83D\uDD04 Yangilash</button>' : '<span class="u-t13">bugun yangilangan</span>';
+    el.innerHTML=karta('<div style="font-size:14.5px;line-height:1.6">'+esc(kesh.matn).replace(/\n/g,'<br>')+'</div><div class="u-t13" style="margin-top:6px">Faqat sizning raqamlaringiz asosida. '+esc(kesh.sana)+'</div>', qayta);
+    return;
+  }
+  if(!yangila){
+    el.innerHTML=karta('<div class="u-t14">Haftangiz raqamlaridan 3 jumlali xulosa: asosiy fakt, zaif joy, kelasi haftaga bitta maslahat.</div>',
+      '<button onclick="aiXulosaChiz(true)" class="btn btn-g" style="padding:6px 12px;font-size:13px">Tahlil qil</button>');
+    return;
+  }
+  if(typeof proKerak==='function' && !proKerak('AI haftalik xulosa')) return;
+  var faktlar=_aiXulosaFaktlar();
+  if(faktlar.length<3){ showNotif('\u26A0\uFE0F','Tahlil uchun hali ma\'lumot kam \u2014 bir necha kun belgilab ko\'ring'); return; }
+  el.innerHTML=karta('<div class="u-t14">\u23F3 Tahlil qilinmoqda...</div>');
+  var sys='Siz "Intizom" ilovasining shaxsiy tahlilchisisiz. Foydalanuvchi haftasining FAKTLARI beriladi. Faqat shu raqamlarga tayaning, hech qanday raqam yoki sabab o\'ylab topmang. O\'zbek tilida (lotin), sodda va iliq, lekin maqtovsiz va ayblovsiz \u2014 fakt va oqibat. Aynan 3 jumla, har biri yangi qatordan: 1) haftaning asosiy fakti (raqam bilan); 2) eng zaif joy va u nimaga bog\'liq bo\'lishi mumkin (faqat berilgan bog\'liqlik yoki uyqu/kayfiyat raqami bo\'lsa); 3) kelasi haftaga BITTA aniq, kichik maslahat. Emoji va sarlavha yo\'q.';
+  aiFetch('xulosa', {system:sys, max_tokens:400, messages:[{role:'user', content:'Hafta faktlari:\n- '+faktlar.join('\n- ')}]})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var matn='';
+      try{ matn=(d.content&&d.content[0]&&d.content[0].text)||''; }catch(e){}
+      if(!matn){ el.innerHTML=karta('<div class="u-t14">Javob kelmadi. Keyinroq urinib ko\'ring.</div>','<button onclick="aiXulosaChiz(true)" class="btn btn-out" style="padding:5px 10px;font-size:12.5px">Qayta</button>'); return; }
+      S.s('i_ai_xulosa',{hafta:hafta, matn:matn.trim(), sana:bugun});
+      try{ hodisaYubor('ai_xulosa'); }catch(e){}
+      aiXulosaChiz(false);
+    })
+    .catch(function(){ el.innerHTML=karta('<div class="u-t14">Tarmoq xatosi.</div>','<button onclick="aiXulosaChiz(true)" class="btn btn-out" style="padding:5px 10px;font-size:12.5px">Qayta</button>'); });
+}
 function renderHisobot(period){
   period=period||'kun';
   const el=document.getElementById('hisobot-content');
@@ -8150,6 +8235,7 @@ function renderHisobot(period){
   const ball=Math.round((namozPct+rejaPct+(habitStats.length?habitStats.reduce((s,h)=>s+h.pct,0)/habitStats.length:0))/3);
   const ballColor=ball>=80?'var(--g)':ball>=50?'var(--ora)':'var(--red)';
 
+  if(period==='hafta'){ _yakun = '<div id="ai-xulosa-card"></div>' + _yakun; setTimeout(function(){ try{ aiXulosaChiz(false); }catch(e){} }, 0); }
   el.innerHTML= _yakun +
   '<div style="background:linear-gradient(135deg,rgba(30,140,140,.22),rgba(30,140,140,.09));border:1px solid rgba(30,140,140,.22);border-radius:20px;padding:20px;margin-bottom:14px;color:var(--text);box-shadow:var(--shadow-lg)">'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'+
