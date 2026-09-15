@@ -1845,19 +1845,33 @@ function tilYangiSoz(){renderTilBugun();}
    kitobni 'rejada' holatida ro'yxatga qo'shadi.
    ================================================================== */
 var KITOB_TAVSIYA = [
-  {nom:'Atom odatlar',                         muallif:'James Clear',        sahifa:320, izoh:'Kichik odatlar — katta natija'},
-  {nom:'Odat kuchi',                           muallif:'Charles Duhigg',     sahifa:400, izoh:'Odat qanday paydo bo\'ladi va o\'zgaradi'},
-  {nom:'Chuqur ish (Deep Work)',               muallif:'Cal Newport',        sahifa:300, izoh:'Chalg\'imasdan diqqat bilan ishlash'},
-  {nom:'Yutuqli insonlarning 7 ko\'nikmasi',   muallif:'Stephen R. Covey',   sahifa:430, izoh:'Shaxsiy samaradorlik asoslari'},
-  {nom:'Ertalabki mo\'jiza (Miracle Morning)', muallif:'Hal Elrod',          sahifa:200, izoh:'Kunni erta va tartibli boshlash'},
-  {nom:'Qurbaqani ye (Eat That Frog)',         muallif:'Brian Tracy',        sahifa:140, izoh:'Eng muhim ishni birinchi qilish'},
-  {nom:'Iroda kuchi (Willpower)',              muallif:'Roy Baumeister',     sahifa:300, izoh:'O\'zini boshqarish ilmiy asosda'},
-  {nom:'Intizom — erkinlikdir',                muallif:'Jocko Willink',      sahifa:200, izoh:'Qat\'iy tartib va mas\'uliyat'},
-  {nom:'Fikrlash haqida fikrlash',             muallif:'Daniel Kahneman',    sahifa:500, izoh:'Qaror qabul qilish xatolari'},
-  {nom:'Essensializm',                         muallif:'Greg McKeown',       sahifa:260, izoh:'Kamroq, lekin yaxshiroq'},
-  {nom:'Mahorat (Mastery)',                    muallif:'Robert Greene',      sahifa:350, izoh:'Uzoq yo\'lda ustoz bo\'lish'},
-  {nom:'Hayot mazmuni izlab',                  muallif:'Viktor Frankl',      sahifa:180, izoh:'Qiyinchilikda ma\'no topish'}
+  {nom:'Atom odatlar',                         muallif:'James Clear',      en:'Atomic Habits',                        ru:'Атомные привычки',                 sahifa:320, izoh:'Kichik odatlar — katta natija'},
+  {nom:'Odat kuchi',                           muallif:'Charles Duhigg',   en:'The Power of Habit',                   ru:'Сила привычки',                    sahifa:400, izoh:'Odat qanday paydo bo\'ladi va o\'zgaradi'},
+  {nom:'Chuqur ish',                           muallif:'Cal Newport',      en:'Deep Work',                            ru:'В работу с головой',               sahifa:300, izoh:'Chalg\'imasdan diqqat bilan ishlash'},
+  {nom:'Yutuqli insonlarning 7 ko\'nikmasi',   muallif:'Stephen R. Covey', en:'The 7 Habits of Highly Effective People', ru:'7 навыков высокоэффективных людей', sahifa:430, izoh:'Shaxsiy samaradorlik asoslari'},
+  {nom:'Ertalabki mo\'jiza',                   muallif:'Hal Elrod',        en:'The Miracle Morning',                  ru:'Магия утра',                       sahifa:200, izoh:'Kunni erta va tartibli boshlash'},
+  {nom:'Qurbaqani ye',                         muallif:'Brian Tracy',      en:'Eat That Frog',                        ru:'Съешьте лягушку',                  sahifa:140, izoh:'Eng muhim ishni birinchi qilish'},
+  {nom:'Iroda kuchi',                          muallif:'Roy Baumeister',   en:'Willpower',                            ru:'Сила воли',                        sahifa:300, izoh:'O\'zini boshqarish ilmiy asosda'},
+  {nom:'Intizom — erkinlikdir',                muallif:'Jocko Willink',    en:'Discipline Equals Freedom',            ru:'Дисциплина — это свобода',         sahifa:200, izoh:'Qat\'iy tartib va mas\'uliyat'},
+  {nom:'Fikrlash haqida fikrlash',             muallif:'Daniel Kahneman',  en:'Thinking, Fast and Slow',              ru:'Думай медленно, решай быстро',     sahifa:500, izoh:'Qaror qabul qilish xatolari'},
+  {nom:'Essensializm',                         muallif:'Greg McKeown',     en:'Essentialism',                         ru:'Эссенциализм',                     sahifa:260, izoh:'Kamroq, lekin yaxshiroq'},
+  {nom:'Mahorat',                              muallif:'Robert Greene',    en:'Mastery',                              ru:'Мастер игры',                      sahifa:350, izoh:'Uzoq yo\'lda ustoz bo\'lish'},
+  {nom:'Hayot mazmuni izlab',                  muallif:'Viktor Frankl',    en:"Man's Search for Meaning",             ru:'Сказать жизни «Да!»',              sahifa:180, izoh:'Qiyinchilikda ma\'no topish'}
 ];
+var _kitobTavsiyaOchiq = -1;   /* qaysi kitobning manbalari ochiq */
+/* Kitob uchun manbalar: audio (YouTube uz/ru/en), PDF izlash, sotib olish */
+function _kitobManbalar(k){
+  var q=function(s){ return encodeURIComponent(s); };
+  var uz=k.nom+' '+k.muallif, ru=(k.ru||k.en||k.nom)+' '+k.muallif, en=(k.en||k.nom)+' '+k.muallif;
+  return [
+    {e:'🎧', t:'Audio o\'zbekcha', u:'https://www.youtube.com/results?search_query='+q(uz+' audiokitob'),       r:'#FF0000'},
+    {e:'🎧', t:'Audio ruscha',     u:'https://www.youtube.com/results?search_query='+q(ru+' аудиокнига'),       r:'#FF0000'},
+    {e:'🎧', t:'Audio inglizcha',  u:'https://www.youtube.com/results?search_query='+q(en+' full audiobook'),   r:'#FF0000'},
+    {e:'📄', t:'PDF izlash',       u:'https://www.google.com/search?q='+q(uz+' pdf OR '+ru+' pdf'),            r:'#1E8C8C'},
+    {e:'🛒', t:'Asaxiy',           u:'https://asaxiy.uz/uz/search?key='+q(k.nom),                              r:'#875DE5'},
+    {e:'🛒', t:'Kitobxon',         u:'https://kitobxon.com/uz/search?q='+q(k.nom),                             r:'#875DE5'}
+  ];
+}
 function renderKitobTavsiya(){
   var el=document.getElementById('kitob-tavsiya');
   if(!el) return;
@@ -1865,23 +1879,41 @@ function renderKitobTavsiya(){
   var ochiq=!!el._ochiq;
   var qator=KITOB_TAVSIYA.map(function(k,i){
     var qoshilgan=bor.indexOf(k.nom.toLowerCase())>=0;
-    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd)">'+
-      '<div style="flex:1;min-width:0">'+
-        '<div style="font-size:14px;font-weight:600;color:var(--text)">'+esc(k.nom)+'</div>'+
-        '<div style="font-size:12.5px;color:var(--t2)">'+esc(k.muallif)+' · '+k.sahifa+' bet · '+esc(k.izoh)+'</div>'+
+    var yoyilgan=(_kitobTavsiyaOchiq===i);
+    var manba='';
+    if(yoyilgan){
+      manba='<div style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 0 4px">'+
+        _kitobManbalar(k).map(function(m){
+          return '<a href="'+m.u+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" '+
+            'style="display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:10px;border:1.5px solid '+m.r+';color:'+m.r+';background:'+m.r+'12;text-decoration:none;font-size:12.5px;font-weight:700">'+m.e+' '+m.t+'</a>';
+        }).join('')+
+        (qoshilgan
+          ? '<span style="align-self:center;font-size:12px;color:#1E8C8C;font-weight:700">✓ ro\'yxatingizda</span>'
+          : '<button onclick="event.stopPropagation();kitobTavsiyaQosh('+i+')" style="background:var(--g);color:#fff;border:none;border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:700;cursor:pointer">+ Ro\'yxatga qo\'shish</button>')+
       '</div>'+
-      (qoshilgan
-        ? '<span style="font-size:12px;color:#1E8C8C;font-weight:700;white-space:nowrap">✓ ro\'yxatda</span>'
-        : '<button onclick="kitobTavsiyaQosh('+i+')" style="background:var(--g);color:#fff;border:none;border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap">+ Qo\'shish</button>')+
+      '<div style="font-size:11.5px;color:var(--t2);padding-bottom:6px">Havolalar tashqi manbalarda qidiradi — kitob matni ilova ichida saqlanmaydi.</div>';
+    }
+    return '<div onclick="kitobTavsiyaYoy('+i+')" style="padding:9px 0;border-bottom:1px solid var(--bd);cursor:pointer">'+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-size:14px;font-weight:600;color:var(--text)">'+(qoshilgan?'✓ ':'')+esc(k.nom)+(k.en?' <span style="font-weight:400;color:var(--t2)">('+esc(k.en)+')</span>':'')+'</div>'+
+          '<div style="font-size:12.5px;color:var(--t2)">'+esc(k.muallif)+' · '+k.sahifa+' bet · '+esc(k.izoh)+'</div>'+
+        '</div>'+
+        '<span style="color:var(--t2);font-size:12px">'+(yoyilgan?'▲':'▼')+'</span>'+
+      '</div>'+manba+
     '</div>';
   }).join('');
   el.innerHTML='<div style="background:var(--card);border-radius:18px;padding:12px 14px;box-shadow:var(--shadow)">'+
     '<div onclick="var p=this.parentNode.parentNode;p._ochiq=!p._ochiq;renderKitobTavsiya()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">'+
-      '<div style="font-size:14.5px;font-weight:700;color:var(--text)">🎯 Intizom uchun tavsiya · '+KITOB_TAVSIYA.length+' ta</div>'+
+      '<div style="font-size:14.5px;font-weight:700;color:var(--text)">🎯 Shaxsiy rivojlanish — tavsiya · '+KITOB_TAVSIYA.length+' ta</div>'+
       '<span style="color:var(--t2);font-size:13px">'+(ochiq?'▲':'▼')+'</span>'+
     '</div>'+
-    (ochiq?'<div style="margin-top:6px">'+qator+'</div>':'')+
+    (ochiq?'<div style="margin-top:6px"><div style="font-size:12px;color:var(--t2);margin-bottom:4px">Kitob ustiga bosing — audio va PDF manbalari ochiladi</div>'+qator+'</div>':'')+
   '</div>';
+}
+function kitobTavsiyaYoy(i){
+  _kitobTavsiyaOchiq = (_kitobTavsiyaOchiq===i) ? -1 : i;
+  renderKitobTavsiya();
 }
 function kitobTavsiyaQosh(i){
   var k=KITOB_TAVSIYA[i]; if(!k) return;

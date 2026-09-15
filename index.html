@@ -7357,7 +7357,11 @@ window.intizomTest = function(){
     var hh={}; kunlar.forEach(function(k){ hh['2026-09-'+k]=true; });
     return {hist:hh, dam:{}, streak:0};
   }
-  /* bugun = 2026-09-14 deb faraz qilinadi (bugunKun stub) */
+  /* bugun = 2026-09-14 deb faraz qilinadi — bugunKun vaqtincha almashtiriladi
+     (15.09.2026: ilgari stub yo'q edi, testlar faqat 14-sentabrda o'tardi) */
+  var _bugunAsl = bugunKun;
+  bugunKun = function(){ return '2026-09-14'; };
+  try{
 
   var a1 = odatYasa(['10','11','12','13','14']);
   streakHisobla(a1);
@@ -7383,6 +7387,8 @@ window.intizomTest = function(){
   var a5 = odatYasa([]);
   streakHisobla(a5);
   t('bo\'sh odat streak 0', a5.streak, 0);
+
+  }finally{ bugunKun = _bugunAsl; }
 
   /* ---------- _nomKalit (takrorlanishni topish) ---------- */
   t('nom bir xil', _nomKalit("Namoz o'qish") === _nomKalit('namoz oqish'), true);
