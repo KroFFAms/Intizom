@@ -257,6 +257,7 @@
         </div>
       </div>
     </div>
+    <div id="ochilish-strip"></div>
     <div id="hafta-yakun-strip"></div>
     <div id="oila-taklif-strip"></div>
     <div id="kun-gapi"></div>
@@ -308,7 +309,6 @@
     </div>
     <div class="hsec" data-hsec="kunlik">Kunlik ish</div>
     <div class="hgrid" data-hgrid="kunlik">
-      <div data-hw="xarid" onclick="openM('xarid-modal');renderXaridList()" class="htile"><div class="hticon" style="color:#DE7831"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="20" r="1.4" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.4" fill="currentColor" stroke="none"/><path d="M3 4h2l2.4 11h10l1.8-8H6.2"/></svg></div><div class="htlbl">Xarid</div><div class="htsub" data-hs="xarid"></div></div>
       <div data-hw="eslatma" onclick="openM('eslatma-modal');renderEslatmalar()" class="htile"><div class="hticon" style="color:#64748B"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4"/></svg></div><div class="htlbl">Eslatma</div><div class="htsub" data-hs="eslatma"></div></div>
       <div data-hw="kundalik" onclick="gotoPage('jurnal',null)" class="htile"><div class="hticon" style="color:#1FA4BB"><span class="u-fs22l">&#128214;</span></div><div class="htlbl">Kundalik</div><div class="htsub" data-hs="kundalik"></div></div>
       <div data-hw="moliya" onclick="gotoPage('moliya',document.getElementById('nav-moliya'))" class="htile"><div class="hticon" style="color:#1E8C8C"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.2"/></svg></div><div class="htlbl">Moliya</div><div class="htsub" data-hs="moliya"></div></div>
@@ -322,10 +322,12 @@
       <div data-hw="oila" onclick="gotoPage('oila',null)" class="htile"><div class="hticon" style="color:#E35199"><span class="u-fs22l">&#128104;&#8205;&#128105;&#8205;&#128103;</span></div><div class="htlbl">Oila</div><div class="htsub" data-hs="oila"></div></div>
       <div data-hw="reyting" onclick="reytingOch()" class="htile"><div class="hticon" style="color:#DB9725"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 01-10 0V4z"/><path d="M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3M10 18v-3M14 18v-3M8 21h8"/></svg></div><div class="htlbl">Reyting</div><div class="htsub" data-hs="reyting"></div></div>
     </div>
-    <div class="hsec" data-hsec="vaqt">Bo'sh vaqt</div>
+    <div class="hsec" data-hsec="vaqt">Mukofotlar</div>
     <div class="hgrid" data-hgrid="vaqt">
       <div data-hw="viktorina" onclick="openViktorina()" class="htile"><div class="hticon" style="color:#1FA4BB"><span class="u-fs22l">&#129504;</span></div><div class="htlbl">Viktorina</div><div class="htsub" data-hs="viktorina"></div></div>
       <div data-hw="mashq60" onclick="openMiniChallenge()" class="htile"><div class="hticon" style="color:#1E8C8C"><span class="u-fs22l">&#9889;</span></div><div class="htlbl">60 soniya</div><div class="htsub" data-hs="mashq60"></div></div>
+      <div data-hw="spin" onclick="openSpinWheel()" class="htile"><div class="hticon" style="color:#DB9725"><span class="u-fs22l">&#127905;</span></div><div class="htlbl">Omad g'ildiragi</div><div class="htsub" data-hs="spin"></div></div>
+      <div data-hw="avatar" onclick="openAvatar()" class="htile"><div class="hticon" style="color:#E35199"><span class="u-fs22l">&#129489;</span></div><div class="htlbl">Avatarim</div><div class="htsub" data-hs="avatar"></div></div>
       <div data-hw="kunsir" onclick="openKunSir()" class="htile"><div class="hticon" style="color:#875DE5"><span class="u-fs22l">&#11088;</span></div><div class="htlbl">Kun siri</div><div class="htsub" data-hs="kunsir"></div></div>
     </div>
 
@@ -376,6 +378,7 @@
         <div id="odat-prog-b" style="background:linear-gradient(90deg,var(--g),var(--g2));height:8px;border-radius:8px;width:0%;transition:width .5s"></div>
       </div>
     </div>
+    <div id="odat-kecha"></div>
     <div id="odat-kunlik"><div id="odat-list"></div></div>
     <div id="odat-stat" style="display:none"><div class="card"><div class="sec-title">Haftalik natija</div><div id="odat-stat-list"></div></div></div>
   </div>
@@ -389,6 +392,7 @@
     <div class="topbar-tabs">
       <button class="topbar-tab active" onclick="showRejaTab('bugun',this)">Bugun</button>
       <button class="topbar-tab" onclick="showRejaTab('ertaga',this)">&#127769; Ertaga</button>
+      <button class="topbar-tab" onclick="showRejaTab('hafta',this)">&#128197; Hafta</button>
       <button class="topbar-tab" onclick="showRejaTab('shablon',this)">Shablon</button>
       <button class="topbar-tab" onclick="showRejaTab('maqsad',this)">&#127919; Maqsadlar</button>
     </div>
@@ -420,6 +424,35 @@
           <button onclick="ertagaShablon()" class="btn btn-out" style="flex:1">&#128203; Shablon</button>
         </div>
       </div>
+    </div>
+    <!-- 15.09.2026: HAFTALIK REJA — Du–Yak jadval + haftalik maqsadlar -->
+    <div id="reja-hafta" style="display:none">
+      <div style="background:linear-gradient(135deg,rgba(30,140,140,.22),rgba(30,140,140,.09));border:1px solid rgba(30,140,140,.22);border-radius:20px;padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow-lg)">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <button onclick="haftaSur(-1)" class="btn btn-out" style="padding:6px 12px;min-width:0">&#9664;</button>
+          <div style="text-align:center;flex:1">
+            <div class="u-t14" id="hafta-nom">Bu hafta</div>
+            <div id="hafta-oraliq" style="font-size:17px;font-weight:800;color:var(--text)"></div>
+          </div>
+          <button onclick="haftaSur(1)" class="btn btn-out" style="padding:6px 12px;min-width:0">&#9654;</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+          <div class="u-t14">Bajarildi</div>
+          <div id="hafta-prog-t" style="font-size:20px;font-weight:800;color:var(--text)">0/0</div>
+        </div>
+        <div style="background:rgba(30,140,140,.14);border-radius:6px;height:6px;margin-top:6px">
+          <div id="hafta-prog-b" style="background:linear-gradient(90deg,var(--g),#249DDB);height:6px;border-radius:6px;width:0%;transition:width .5s"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="sec-title" style="margin:0">&#127919; Haftalik maqsadlar</div>
+          <button onclick="openHmModal()" class="btn btn-g" style="padding:6px 12px;font-size:13.5px">+ Maqsad</button>
+        </div>
+        <div class="u-t14" style="margin-bottom:10px">Masalan &laquo;haftada 3 marta sport&raquo; &mdash; ilova kunlarga taqsimlaydi, siz tasdiqlaysiz yoki boshqa kunga ko&#39;chirasiz.</div>
+        <div id="hafta-maqsad-list"></div>
+      </div>
+      <div id="hafta-kunlar"></div>
     </div>
     <div id="reja-shablon" style="display:none">
       <div class="card"><div class="sec-title">Shablon</div><div id="shablon-list"></div>
@@ -1320,41 +1353,6 @@
 <!-- YANGI MODULLAR MODALLARI                 -->
 <!-- ══════════════════════════════════════════ -->
 
-<!-- 💊 DORI ESLATMASI -->
-<div class="moverlay" id="dori-modal">
-  <div class="modal u-sheet">
-    <div style="background:linear-gradient(135deg,#E35050,#DC2626);padding:18px 20px 14px">
-      <div class="mhandle u-bgw30"></div>
-      <div class="u-row-sb">
-        <div><div class="u-h18w">💊 Dori Eslatmasi</div>
-        <div class="u-w75">Kunlik dori nazorati</div></div>
-        <button class="u-close-w" onclick="closeM('dori-modal')">✕</button>
-      </div>
-    </div>
-    <div class="u-sheet-body">
-      <div id="dori-bugun-list" style="margin-bottom:16px"></div>
-      <div class="card u-mb0">
-        <div style="font-size:15px;font-weight:700;color:var(--t2);margin-bottom:12px">➕ Yangi dori qo'shish</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-          <div class="igroup"><label class="ilabel">Dori nomi</label><input class="inp" id="dori-nom" placeholder="Masalan: D vitamini"></div>
-          <div class="igroup"><label class="ilabel">Miqdori</label><input class="inp" id="dori-miq" placeholder="1 dona"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-          <div class="igroup"><label class="ilabel">Vaqt</label><input type="time" class="inp" id="dori-vaqt" value="08:00"></div>
-          <div class="igroup"><label class="ilabel">Kun</label>
-            <select class="inp" id="dori-kun" style="cursor:pointer">
-              <option value="har">Har kun</option>
-              <option value="juft">Juft kunlar</option>
-              <option value="toq">Toq kunlar</option>
-            </select>
-          </div>
-        </div>
-        <button onclick="addDori()" class="btn btn-g btn-block">+ Qo'shish</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- 💧 SUV TRACKER -->
 <div class="moverlay" id="suv-modal">
   <div class="modal u-c">
@@ -1437,71 +1435,6 @@
         </div>
       </div>
       <button onclick="tilYangiSoz()" style="width:100%;padding:13px;border-radius:16px;background:linear-gradient(135deg,#1E8C8C,#166B6B);color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer">🔄 Yangi so'zlar ko'rish</button>
-    </div>
-  </div>
-</div>
-
-<!-- 🛒 XARID RO'YXATI -->
-<div class="moverlay" id="xarid-modal">
-  <div class="modal u-sheet">
-    <div style="background:linear-gradient(135deg,#DE7831,#D45F22);padding:18px 20px 14px">
-      <div class="mhandle u-bgw30"></div>
-      <div class="u-row-sb">
-        <div><div class="u-h18w">🛒 Xarid Ro'yxati</div>
-        <div class="u-w75" id="xarid-stat-lbl">0 ta mahsulot</div></div>
-        <button class="u-close-w" onclick="closeM('xarid-modal')">✕</button>
-      </div>
-    </div>
-    <div class="u-sheet-body">
-      <!-- Tezkor qo'shish -->
-      <div style="display:flex;gap:8px;margin-bottom:14px">
-        <input class="inp" id="xarid-inp" placeholder="Mahsulot nomi..." style="flex:1;font-size:15px" onkeydown="if(event.key==='Enter')addXarid()">
-        <button onclick="addXarid()" style="background:var(--g);color:#fff;border:none;padding:0 18px;border-radius:14px;font-size:18px;cursor:pointer;font-weight:700">+</button>
-      </div>
-      <!-- Kategoriyalar -->
-      <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;scrollbar-width:none">
-        <button onclick="setXaridKat('barchasi',this)" class="xarid-kat" style="padding:6px 14px;border-radius:20px;border:none;background:var(--g);color:#fff;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">Barchasi</button>
-        <button onclick="setXaridKat('oziq',this)" class="xarid-kat" style="padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">🥦 Oziq-ovqat</button>
-        <button onclick="setXaridKat('maishiy',this)" class="xarid-kat" style="padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">🧹 Maishiy</button>
-        <button onclick="setXaridKat('kiyim',this)" class="xarid-kat" style="padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">👕 Kiyim</button>
-        <button onclick="setXaridKat('dori',this)" class="xarid-kat" style="padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;cursor:pointer;white-space:nowrap">💊 Dori-darmon</button>
-      </div>
-      <div id="xarid-xulosa"></div>
-      <div id="xarid-list"></div>
-      <button onclick="clearXaridDone()" style="width:100%;margin-top:12px;padding:11px;border-radius:14px;background:var(--bg);border:1.5px solid var(--bd);color:var(--t2);font-size:15px;cursor:pointer">🗑️ Bajarilganlarni o'chirish</button>
-    </div>
-  </div>
-</div>
-
-<!-- 👨‍👩‍👧 OILA ESLATMALARI -->
-<div class="moverlay" id="oila-modal">
-  <div class="modal u-sheet">
-    <div style="background:linear-gradient(135deg,#E35199,#B81E5E);padding:18px 20px 14px">
-      <div class="mhandle u-bgw30"></div>
-      <div class="u-row-sb">
-        <div><div class="u-h18w">👨‍👩‍👧 Oila & Do'stlar</div>
-        <div class="u-w75">Tug'ilgan kun va eslatmalar</div></div>
-        <button class="u-close-w" onclick="closeM('oila-modal')">✕</button>
-      </div>
-    </div>
-    <div class="u-sheet-body">
-      <div class="u-mb14" id="oila-yaqin"></div>
-      <div class="u-mb14" id="oila-list"></div>
-      <div class="card">
-        <div style="font-size:15px;font-weight:700;color:var(--t2);margin-bottom:12px">+ Yangi a'zo qo'shish</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-          <div class="igroup"><label class="ilabel">Ismi</label><input class="inp" id="oila-ism" placeholder="Anvar"></div>
-          <div class="igroup"><label class="ilabel">Munosabat</label>
-            <select class="inp" id="oila-munosabat">
-              <option>Ota</option><option>Ona</option><option>Aka/Uka</option>
-              <option>Opa/Singil</option><option>Turmush o'rtog'i</option>
-              <option>Farzand</option><option>Do'st</option><option>Boshqa</option>
-            </select>
-          </div>
-        </div>
-        <div class="igroup"><label class="ilabel">Tug'ilgan kuni</label><input type="date" class="inp" id="oila-tug"></div>
-        <button onclick="addOilaAzo()" class="btn btn-g btn-block">+ Qo'shish</button>
-      </div>
     </div>
   </div>
 </div>
@@ -1822,6 +1755,45 @@
   </div>
 </div>
 
+<!-- 15.09.2026: HAFTALIK MAQSAD MODALI -->
+<div class="moverlay" id="hmaqsad-modal">
+  <div class="modal">
+    <div class="mhandle"></div><div class="mtitle" id="hm-title">Haftalik maqsad</div>
+    <div class="igroup"><label class="ilabel">Nima qilasiz?</label>
+      <div class="u-fg8">
+        <input class="inp" id="hm-icon" placeholder="&#127947;" maxlength="2" value="&#127947;" style="width:56px;text-align:center;flex-shrink:0">
+        <input class="inp u-f1" id="hm-name" placeholder="Masalan: Sport">
+      </div>
+    </div>
+    <div class="igroup"><label class="ilabel">Haftada necha marta</label>
+      <div style="display:flex;gap:6px" id="hm-marta-row">
+        <button onclick="hmMartaTanla(1,this)" class="hm-marta">1</button><button onclick="hmMartaTanla(2,this)" class="hm-marta">2</button><button onclick="hmMartaTanla(3,this)" class="hm-marta">3</button><button onclick="hmMartaTanla(4,this)" class="hm-marta">4</button><button onclick="hmMartaTanla(5,this)" class="hm-marta">5</button><button onclick="hmMartaTanla(6,this)" class="hm-marta">6</button><button onclick="hmMartaTanla(7,this)" class="hm-marta">7</button>
+      </div>
+      <input type="hidden" id="hm-marta" value="3">
+    </div>
+    <div class="igroup"><label class="ilabel">Qaysi kunlar (ixtiyoriy &mdash; tanlamasangiz ilova o&#39;zi taqsimlaydi)</label>
+      <div style="display:flex;gap:6px" id="hm-kun-row">
+        <button onclick="hmKunToggle(0,this)" class="hm-kun">Du</button><button onclick="hmKunToggle(1,this)" class="hm-kun">Se</button><button onclick="hmKunToggle(2,this)" class="hm-kun">Ch</button><button onclick="hmKunToggle(3,this)" class="hm-kun">Pa</button><button onclick="hmKunToggle(4,this)" class="hm-kun">Ju</button><button onclick="hmKunToggle(5,this)" class="hm-kun">Sh</button><button onclick="hmKunToggle(6,this)" class="hm-kun">Ya</button>
+      </div>
+    </div>
+    <div class="u-g2">
+      <div class="igroup"><label class="ilabel">Boshlanish</label><input class="inp" type="time" id="hm-start" value="07:00"></div>
+      <div class="igroup"><label class="ilabel">Tugash</label><input class="inp" type="time" id="hm-end" value="08:00"></div>
+    </div>
+    <div class="mactions"><button class="btn btn-out" onclick="closeM('hmaqsad-modal')">Bekor</button><button class="btn btn-g" onclick="saveHm()">Saqlash</button></div>
+  </div>
+</div>
+<style>
+.hm-marta,.hm-kun{flex:1;min-width:0;padding:9px 0;border-radius:10px;border:2px solid var(--bd);background:var(--bg);color:var(--t2);font-size:14px;font-weight:700;cursor:pointer}
+.hm-marta.on,.hm-kun.on{border-color:var(--g);background:rgba(30,140,140,.12);color:var(--g)}
+.hk-kun{background:var(--card);border-radius:18px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--shadow)}
+.hk-kun.bugun{border:1.5px solid var(--g)}
+.hk-kun.otgan{opacity:.72}
+.hk-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--bd)}
+.hk-item .hk-chk{width:22px;height:22px;border-radius:7px;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;font-size:13px;color:#fff}
+.hk-item .hk-chk.done{background:var(--g);border-color:var(--g)}
+.hk-item .hk-btn{width:26px;height:26px;border-radius:8px;border:none;background:var(--bg);color:var(--t2);cursor:pointer;font-size:13px;flex-shrink:0}
+</style>
 <div class="moverlay" id="reja-modal">
   <div class="modal">
     <div class="mhandle"></div><div class="mtitle" id="rj-title">Reja qo&#39;shish</div>
@@ -2240,14 +2212,11 @@ var HOME_WIDGETS=[
   {k:'moliya',   i:'\uD83D\uDCB3', n:'Moliya'},
   {k:'kayfiyat', i:'\uD83D\uDE0A', n:'Kayfiyat'},
   {k:'suv',      i:'\uD83D\uDCA7', n:'Suv'},
-  {k:'dori',     i:'\uD83D\uDC8A', n:'Dori'},
   {k:'eslatma',  i:'\uD83D\uDCDD', n:'Eslatma'},
-  {k:'xarid',    i:'\uD83D\uDED2', n:'Xarid ro\'yxati'},
   {k:'kundalik', i:'\uD83D\uDCD6', n:'Kundalik'},
   {k:'kitoblar', i:'\uD83D\uDCDA', n:'Kitoblar'},
   {k:'inglizcha',i:'\uD83D\uDCAC', n:'Inglizcha'},
   {k:'oila',     i:'\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67', n:'Oila'},
-  {k:'tugilgankun',i:'\uD83C\uDF82', n:'Tug\'ilgan kunlar'},
   {k:'dua',      i:'\uD83E\uDD32', n:'Dua'},
   {k:'aireja',   i:'\uD83E\uDD16', n:'AI Reja'},
   {k:'missiya',  i:'\uD83C\uDFAF', n:'Missiya'},
@@ -2264,10 +2233,11 @@ var HW_TAVSIYA=['odat','reja','bugunreja','namoz','moliya','suv','kayfiyat','mot
 /* Guruhlar — sozlash oynasida shu tartibda ko'rinadi */
 var HW_GURUH=[
   {n:'Asosiy',      k:['odat','reja','bugunreja','namoz','moliya','suv','kayfiyat','motiv','obhavo','eslatma']},
-  {n:'Qo\'shimcha', k:['dori','xarid','kundalik','oila','tugilgankun','dua']},
-  {n:'PRO',         k:['kitoblar','inglizcha','aireja','missiya','reyting','spin','viktorina','mashq60','avatar','kunsir']}
+  {n:'Qo\'shimcha', k:['kundalik','oila','dua','inglizcha']},
+  {n:'Mukofotlar',  k:['viktorina','mashq60','spin','avatar','kunsir']},
+  {n:'PRO',         k:['kitoblar','aireja','missiya','reyting']}
 ];
-var MALUMOT_VERSIYA = 4;
+var MALUMOT_VERSIYA = 5;
 var MIGRATSIYALAR = [
   { v:1, nom:'reja: massiv \u2192 {shablon,bugun}', fn:function(){
       var d = S.g('i_reja');
@@ -2313,7 +2283,31 @@ var MIGRATSIYALAR = [
       var cfg = {};
       HOME_WIDGETS.forEach(function(w){ cfg[w.k] = eski ? true : (HW_TAVSIYA.indexOf(w.k)!==-1); });
       S.s('i_home_widgets', cfg);
+  }},
+  /* 15.09.2026: PROGRESSIV OCHILISH. Yangi foydalanuvchi 1-kuni faqat
+     Odat, Reja, Namoz bilan boshlaydi; qolgan bo'limlar 3-, 7-, 14-kunda
+     "yangi bo'lim ochildi" kartasi bilan qo'shiladi (OCHILISH_BOSQICH).
+     ESKI foydalanuvchida (ma'lumoti bor) ochilish o'chiq — hech narsa
+     o'zgarmaydi. Sozlamadan istalgan payt hammasini yoqsa bo'ladi. */
+  { v:5, nom:'progressiv ochilish', fn:function(){
+      if(S.g('i_ochilish')) return;
+      var eski = false;
+      try{ eski = (S.g('i_odatlar')||[]).some(function(o){ return o.hist && Object.keys(o.hist).length; })
+                  || Object.keys((S.g('i_reja')||{}).bugun||{}).length>0
+                  || (S.g('i_trans')||[]).length>0 || !!S.g('i_din') || !!S.g('i_ilk_oqim'); }catch(e){}
+      if(eski){ S.s('i_ochilish', {yopildi:true}); return; }
+      var cfg = {}, birinchi = OCHILISH_BOSQICH[0].k;
+      HOME_WIDGETS.forEach(function(w){ cfg[w.k] = birinchi.indexOf(w.k)!==-1; });
+      S.s('i_home_widgets', cfg);
+      S.s('i_ochilish', {bosh: bugunKun(), ochilgan: birinchi.slice(), korsatilgan: 0});
   }}
+];
+/* Progressiv ochilish bosqichlari: kun = ro'yxatdan o'tgandan keyingi kun */
+var OCHILISH_BOSQICH=[
+  {kun:0,  nom:'Boshlang\'ich',   k:['odat','reja','bugunreja','namoz','motiv'],                nav:['nav-bosh','nav-odat','nav-reja','nav-din','nav-sozlama']},
+  {kun:3,  nom:'3-kun',           k:['suv','kayfiyat','kundalik','dua'],                           nav:[]},
+  {kun:7,  nom:'1 hafta',         k:['oila','eslatma','obhavo'],                                   nav:['nav-sport']},
+  {kun:14, nom:'2 hafta',         k:['moliya','kitoblar','missiya','aireja','reyting','inglizcha','viktorina','mashq60','kunsir','avatar','spin'], nav:['nav-moliya','nav-ratsion']}
 ];
 function _migrZaxira(kalit){
   try{ var v = localStorage.getItem(kalit); if(v!=null) localStorage.setItem('i_zx_'+kalit, v); }catch(e){}
@@ -3185,7 +3179,6 @@ var QOL_BOLIM = [
   { emo:'\uD83D\uDCA7', nom:'Suv', matn:'Kuniga qancha suv ichganingiz. Bir bosish = bir stakan.' },
   { emo:'\uD83C\uDF4E', nom:'Ratsion', matn:'Ovqat va kaloriya. Kunlik normangiz vazn, bo\'y, yosh va maqsadingizdan hisoblanadi — avval Sport bo\'limidan vazningizni kiriting.' },
   { emo:'\uD83C\uDFC3', nom:'Sport', matn:'Mashqlar, vazn va uyqu. Vaznni haftada bir marta kiritsangiz o\'zgarish grafigi chiqadi.' },
-  { emo:'\uD83D\uDC8A', nom:'Dori', matn:'Dori qabul qilish vaqtlari va eslatma.' },
   { emo:'\uD83D\uDCCA', nom:'Hisobot', matn:'Haftalik va oylik o\'sishingiz, grafiklar. Qaysi odat mustahkam, qaysi biri qoqilyapti — shu yerda ko\'rinadi.' },
   { emo:'\uD83D\uDD12', nom:'PIN qulf', matn:'Ilovani 4 xonali kod bilan yopish. Kod telefoningizdan chiqmaydi va serverga yuborilmaydi.' },
   { emo:'\u2601\uFE0F', nom:'Bulut', matn:'Ma\'lumotlaringiz serverga saqlanadi. Telefon almashsa yoki yo\'qolsa, o\'sha raqam bilan hammasini qaytarasiz.' }
@@ -3306,7 +3299,10 @@ function renderOila(){
   else if(tab==='taqvim') body=renderOilaTaqvim();
   el.innerHTML = bar + body;
 }
-function switchOilaTab(t){ var el=document.getElementById('oila-body'); if(el){ el.setAttribute('data-tab',t); renderOila(); } }
+function switchOilaTab(t){
+  if(t==='chal' && typeof proKerak==='function' && !proKerak('Oilaviy challenge')) return;   /* 15.09.2026: PRO */
+  var el=document.getElementById('oila-body'); if(el){ el.setAttribute('data-tab',t); renderOila(); }
+}
 
 function renderOilaAzo(){
   var ms=state.oila.members;
@@ -4376,6 +4372,94 @@ function haftaYakunStrip(){
    Sozlama/Oila ichida yashiringan edi. Ilovadan 7 kun o'tgach, guruhda
    bo'lmagan foydalanuvchiga bosh sahifada BIR MARTA karta chiqadi.
    ================================================================== */
+/* ==================================================================
+   PROGRESSIV OCHILISH                                  15.09.2026
+   i_ochilish = {bosh, ochilgan:[k], korsatilgan:kun} yoki {yopildi:true}
+   ================================================================== */
+function ochilishHolat(){ var o=S.g('i_ochilish'); return (o && typeof o==='object') ? o : null; }
+function ochilishKun(o){
+  try{ return Math.floor((new Date(bugunKun()+'T12:00:00')-new Date(o.bosh+'T12:00:00'))/86400000); }catch(e){ return 99; }
+}
+/* Toza yadro (test qilinadi): bosqichlar ichidan kun bo'yicha ochilishi kerak, lekin hali ochilmagan kalitlar */
+function _ochilishYangi(bosqichlar, kun, ochilgan){
+  var out=[];
+  bosqichlar.forEach(function(b){
+    if(b.kun>kun) return;
+    b.k.forEach(function(k){ if(ochilgan.indexOf(k)<0 && out.indexOf(k)<0) out.push(k); });
+  });
+  return out;
+}
+/* Kun o'tishi bilan yangi bo'limlarni yoqadi; ochilgan bo'lsa strip ko'rsatadi */
+/* Ma'lumoti bor foydalanuvchi (masalan, yangi qurilmadan kirgan eski akkaunt):
+   bulutdan ma'lumot kelgach ochilish o'z-o'zidan yopiladi va yashirilgan bo'limlar qaytadi */
+function _ochilishEskiAkkaunt(bosh){
+  try{
+    var od=S.g('i_odatlar')||[];
+    if(od.some(function(o){ return o.hist && Object.keys(o.hist).some(function(k){ return o.hist[k] && k<bosh; }); })) return true;
+    var r=S.g('i_reja')||{}; if(Object.keys(r.bugun||{}).some(function(k){ return k<bosh; })) return true;
+    var d=S.g('i_din')||{}; if(Object.keys(d.namoz||{}).some(function(k){ return k<bosh; })) return true;
+    if((S.g('i_trans')||[]).some(function(t){ return t && t.date && String(t.date).slice(0,10)<bosh; })) return true;
+  }catch(e){}
+  return false;
+}
+function ochilishTekshir(){
+  var o=ochilishHolat(); if(!o || o.yopildi) { ochilishNav(null); return; }
+  var kun=ochilishKun(o);
+  if(_ochilishEskiAkkaunt(o.bosh)){
+    o.yopildi=true; delete o.yangi; S.s('i_ochilish',o);
+    var cfgE=getHWCfg(); OCHILISH_BOSQICH.forEach(function(b){ b.k.forEach(function(k){ cfgE[k]=true; }); }); S.s('i_home_widgets',cfgE);
+    try{ applyHomeWidgets(); }catch(e){} ochilishNav(null); return;
+  }
+  var yangi=_ochilishYangi(OCHILISH_BOSQICH, kun, o.ochilgan||[]);
+  if(yangi.length){
+    var cfg=getHWCfg();
+    yangi.forEach(function(k){ cfg[k]=true; });
+    S.s('i_home_widgets',cfg);
+    o.ochilgan=(o.ochilgan||[]).concat(yangi); o.yangi=yangi; o.yangiKun=kun;
+    S.s('i_ochilish',o);
+    try{ applyHomeWidgets(); }catch(e){}
+    try{ hodisaYubor('ochilish_'+kun); }catch(e){}
+  }
+  /* hammasi ochilgach — tugadi */
+  var jami=[]; OCHILISH_BOSQICH.forEach(function(b){ jami=jami.concat(b.k); });
+  if(jami.every(function(k){ return (o.ochilgan||[]).indexOf(k)>=0; }) && !o.yangi){ o.yopildi=true; S.s('i_ochilish',o); }
+  ochilishNav(o);
+}
+/* Pastki menyu: hali ochilmagan sahifalar ko'rinmaydi */
+function ochilishNav(o){
+  var barcha=['nav-moliya','nav-sport','nav-ratsion'];
+  var ruxsat=[];
+  if(!o || o.yopildi) ruxsat=barcha;
+  else { var kun=ochilishKun(o); OCHILISH_BOSQICH.forEach(function(b){ if(b.kun<=kun) ruxsat=ruxsat.concat(b.nav||[]); }); }
+  barcha.forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display = ruxsat.indexOf(id)>=0 ? '' : 'none'; });
+}
+function ochilishStrip(){
+  var el=document.getElementById('ochilish-strip'); if(!el) return;
+  el.innerHTML='';
+  var o=ochilishHolat(); if(!o || o.yopildi || !o.yangi || !o.yangi.length) return;
+  var nomlar=o.yangi.map(function(k){ var w=hwWidget(k); return w ? w.i+' '+w.n : k; });
+  var keyingi=null; var kun=ochilishKun(o);
+  for(var i=0;i<OCHILISH_BOSQICH.length;i++){ if(OCHILISH_BOSQICH[i].kun>kun){ keyingi=OCHILISH_BOSQICH[i]; break; } }
+  el.innerHTML=
+    '<div style="background:linear-gradient(135deg,rgba(30,140,140,.18),rgba(30,140,140,.06));border:1px solid rgba(30,140,140,.25);border-radius:var(--r-md);padding:13px 15px;margin-bottom:12px">'+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+        '<div style="font-size:24px">\uD83C\uDF89</div>'+
+        '<div class="u-f1"><div style="font-size:14.5px;font-weight:800">'+(o.yangiKun||kun)+'-kun \u2014 yangi bo\u2018limlar ochildi</div>'+
+        '<div style="font-size:13px;color:var(--t2);margin-top:3px;line-height:1.5">'+nomlar.map(esc).join(' \u00B7 ')+'</div>'+
+        (keyingi?'<div style="font-size:12.5px;color:var(--t2);margin-top:4px">Keyingisi: '+keyingi.kun+'-kunda. <a href="#" onclick="ochilishHammasi();return false" style="color:var(--g)">Hammasini hozir ochish</a></div>':'')+
+        '</div>'+
+        '<button onclick="ochilishStripYop()" aria-label="Yopish" style="width:28px;height:28px;border:none;border-radius:50%;background:var(--bg);color:var(--t2);font-size:15px;cursor:pointer">&times;</button>'+
+      '</div>'+
+    '</div>';
+}
+function ochilishStripYop(){ var o=ochilishHolat(); if(o){ delete o.yangi; S.s('i_ochilish',o); } ochilishStrip(); }
+function ochilishHammasi(){
+  var o=ochilishHolat()||{}; o.yopildi=true; delete o.yangi; S.s('i_ochilish',o);
+  var cfg=getHWCfg(); var jami=[]; OCHILISH_BOSQICH.forEach(function(b){ jami=jami.concat(b.k); });
+  jami.forEach(function(k){ cfg[k]=true; }); S.s('i_home_widgets',cfg);
+  try{ applyHomeWidgets(); }catch(e){} ochilishNav(null); ochilishStrip();
+  showNotif('\u2705 Hammasi ochildi','Bo\u2018limlarni Sozlama \u2192 Asosiy oynani sozlash dan boshqarasiz');
+}
 function oilaTaklifStrip(){
   var el=document.getElementById('oila-taklif-strip'); if(!el) return;
   el.innerHTML='';
@@ -4553,12 +4637,6 @@ function kataklarniYangila(){
     chiq.kayfiyat = mo ? [(mo.emoji||'')+' '+(mo.label||''), 'bajarildi'] : ['belgilanmagan','kutmoqda'];
   }catch(e){}
 
-  /* --- Xarid --- */
-  try{
-    var xr = S.g('i_xarid')||[];
-    var xq = xr.filter(function(x){return !x.done;}).length;
-    if(xr.length) chiq.xarid = [xq?xq+' ta qoldi':'tugadi', xq?'':'bajarildi'];
-  }catch(e){}
 
   /* --- Eslatma --- */
   try{
@@ -4606,8 +4684,17 @@ function kataklarniYangila(){
       : ['bugun yo\'q','kutmoqda'];
   }catch(e){}
 
+  /* --- Mukofotlar (15.09.2026): plitkada nima uchun yopiqligi ko'rinadi --- */
+  try{
+    [['spin','openSpinWheel'],['kunsir','openKunSir'],['viktorina','openViktorina'],['mashq60','openMiniChallenge']].forEach(function(p){
+      var m=mukofotQisqa(p[1]);
+      if(m.qisqa) chiq[p[0]] = [m.ok ? '\u2728 '+m.qisqa : '\uD83D\uDD12 '+m.qisqa, m.ok?'bajarildi':'kutmoqda'];
+    });
+  }catch(e){}
+
   /* --- Ekranga yozamiz --- */
   try{ guruhSarlavhalari(); }catch(e){}
+  try{ ochilishTekshir(); ochilishStrip(); }catch(e){}
   try{ haftaYakunStrip(); }catch(e){}
   try{ oilaTaklifStrip(); }catch(e){}
   try{ kunGapi(); }catch(e){}
@@ -5141,6 +5228,68 @@ function sportOl(){
 }
 function sportSaqla(){ S.s('i_sport', state.sport); }
 
+/* ==================================================================
+   KECHKI HISOBOT                                       15.09.2026
+   Kecha belgilanmay qolgan odatni ertalab 10:00 gacha "kecha
+   bajargandim" deb belgilash mumkin — zanjir bekorga uzilmasin.
+   Faqat manbasiz (qo'lda belgilanadigan) odatlar. Toza yadro
+   _kechaRoyxat(odatlar, kecha, soat) test qilinadi.
+   ================================================================== */
+/* 15.09.2026: VAQTIDAN OLDIN BELGILAB BO'LMAYDI. vaqt 'HH:MM' (bo'sh bo'lsa
+   cheklov yo'q), hozirDaq = kun boshidan o'tgan daqiqa. Toza yadro. */
+function _vaqtiKeldimi(vaqt, hozirDaq){
+  if(!vaqt || !/^\d{1,2}:\d{2}$/.test(vaqt)) return true;
+  var p=vaqt.split(':'); var d=parseInt(p[0],10)*60+parseInt(p[1],10);
+  return hozirDaq >= d;
+}
+function _hozirDaq(){ var n=new Date(); return n.getHours()*60+n.getMinutes(); }
+function _kechaRoyxat(odatlar, kecha, soat){
+  if(soat>=10) return [];
+  return (odatlar||[]).filter(function(o){
+    if(o.manba) return false;
+    if(o.dam && o.dam[kecha]) return false;
+    return !(o.hist && o.hist[kecha]);
+  });
+}
+function kechaStrip(){
+  var el=document.getElementById('odat-kecha'); if(!el) return;
+  el.innerHTML='';
+  try{
+    var kecha=kechaKun(), soat=new Date().getHours();
+    if(localStorage.getItem('i_kecha_yopildi')===bugunKun()) return;
+    var od=S.g('i_odatlar')||state.odatlar||[];
+    /* Kecha umuman hech narsa belgilanmagan yangi foydalanuvchiga chiqmaydi */
+    var kechaBor=od.some(function(o){ return o.hist && Object.keys(o.hist).some(function(k){ return k<kecha && o.hist[k]; }); });
+    if(!kechaBor) return;
+    var r=_kechaRoyxat(od, kecha, soat);
+    if(!r.length) return;
+    el.innerHTML='<div style="background:var(--card);border:1px solid var(--bd);border-left:3px solid #DB9725;border-radius:var(--r-md);padding:12px 14px;margin-bottom:12px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<div style="font-size:14.5px;font-weight:800">\uD83C\uDF19 Kechki hisobot \u2014 kecha belgilanmagan</div>'+
+        '<button onclick="kechaYop()" aria-label="Yopish" style="width:26px;height:26px;border:none;border-radius:50%;background:var(--bg);color:var(--t2);cursor:pointer">&times;</button>'+
+      '</div>'+
+      '<div style="font-size:13px;color:var(--t2);margin:2px 0 8px">Bajargan bo\u2018lsangiz belgilang \u2014 zanjir uzilmaydi. Soat 10:00 gacha.</div>'+
+      r.map(function(o){
+        return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--bd)">'+
+          '<span style="font-size:18px">'+(o.icon||'\uD83D\uDD25')+'</span><div class="u-f1" style="font-size:14.5px;font-weight:600">'+esc(o.name)+'</div>'+
+          '<button onclick="kechaBelgila('+o.id+')" style="padding:6px 12px;border:none;border-radius:999px;background:var(--g);color:#fff;font-size:13px;font-weight:700;cursor:pointer">\u2713 Kecha bajardim</button>'+
+        '</div>';
+      }).join('')+
+    '</div>';
+  }catch(e){}
+}
+function kechaYop(){ try{ localStorage.setItem('i_kecha_yopildi', bugunKun()); }catch(e){} kechaStrip(); }
+function kechaBelgila(id){
+  state.odatlar = S.g('i_odatlar') || state.odatlar || [];
+  var o=state.odatlar.find(function(x){return x.id===id;}); if(!o) return;
+  if(!o.hist) o.hist={};
+  o.hist[kechaKun()]=true;
+  streakHisobla(o); odatStreakYangila();
+  S.s('i_odatlar',state.odatlar);
+  try{ hodisaYubor('kecha_belgilandi'); }catch(e){}
+  showNotif('\u2705 '+o.name, 'Kecha uchun belgilandi \u2014 zanjir: '+(o.streak||0)+' kun');
+  renderOdat(); try{ renderBosh(); }catch(e){}
+}
 function toggleOdat(id){
   const today=bugunKun();
   state.odatlar = S.g('i_odatlar') || state.odatlar || [];
@@ -5153,7 +5302,10 @@ function toggleOdat(id){
   }
   if(!o.hist)o.hist={};
   if(o.hist[today]) delete o.hist[today];
-  else o.hist[today]=true;
+  else {
+    if(!_vaqtiKeldimi(o.time, _hozirDaq())){ showNotif('\u23F0 Hali vaqti emas', o.name+' \u2014 '+o.time+' dan keyin belgilanadi'); return; }
+    o.hist[today]=true;
+  }
   /* Streak endi tarixdan qayta hisoblanadi \u2014 qo'lda
      +1/\u22121 qilinmaydi. */
   streakHisobla(o);
@@ -5177,6 +5329,7 @@ function showOdatTab(tab,el){
   if(tab==='stat')renderOdatStat();
 }
 function renderOdat(){
+  try{ kechaStrip(); }catch(e){}
   try{ odatlarniAvtoYangila(); }catch(e){}
   try{ odatStreakYangila(); }catch(e){}
   const today=bugunKun();
@@ -5251,7 +5404,11 @@ function setRS(val,btn){
    ================================================================== */
 var _rejaFaolKun = 'bugun';   /* 'bugun' | 'ertaga' — FAB va modal qaysi kunga qo'shadi */
 function ertagaKun(){ var d=new Date(); d.setDate(d.getDate()+1); return kunKal(d); }
-function _rejaKunKalit(){ return _rejaFaolKun==='ertaga' ? ertagaKun() : bugunKun(); }
+function _rejaKunKalit(){
+  if(_rejaFaolKun==='ertaga') return ertagaKun();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(_rejaFaolKun)) return _rejaFaolKun;   /* 15.09.2026: Hafta tabidan aniq sana */
+  return bugunKun();
+}
 function _rejaNusxa(list){
   return (list||[]).map(function(r){ return Object.assign({}, r, {id: Date.now()+Math.random(), done:false}); });
 }
@@ -5265,7 +5422,8 @@ function _rejaKunYangi(b, shablon, kun){
   /* Faqat kechagi (yoki oxirgi) kunni ko'chiramiz — bir haftadan eski reja emas */
   if(oldingi){
     var farq = Math.round((new Date(kun+'T12:00:00') - new Date(oldingi+'T12:00:00'))/86400000);
-    if(farq <= 7) yangi = _rejaNusxa(b[oldingi]);
+    /* 15.09.2026: haftalik maqsad yozuvlari (hm) ko'chmaydi — ular taqsimlashdan keladi */
+    if(farq <= 7) yangi = _rejaNusxa(b[oldingi].filter(function(r){ return !r.hm; }));
   }
   shablon.forEach(function(sh){
     var bor = yangi.some(function(r){ return r.name===sh.name && r.start===sh.start; });
@@ -5295,6 +5453,7 @@ function rejaKunTekshir(){
   var birinchi = (_rejaKunKuz === null);
   _rejaKunKuz = k;
   var oz = rejaKunTayyorla(k);
+  try{ if(typeof rejaObyekt==='function' && hmHammasiTaqsimla(haftaBoshi(k))) oz = true; }catch(e){}   /* 15.09.2026: haftalik maqsadlar */
   if(!birinchi){ try{ renderReja(); renderBosh(); }catch(e){} }
   else if(oz){ try{ renderReja(); }catch(e){} }
 }
@@ -5330,7 +5489,7 @@ function renderErtaga(){
 }
 function ertagaBugundanNusxa(){
   var t=bugunKun(), e=ertagaKun(); state.reja=rejaObyekt();
-  var bugungi=state.reja.bugun[t]||[];
+  var bugungi=(state.reja.bugun[t]||[]).filter(function(r){ return !r.hm; });
   if(!bugungi.length){ showNotif('\u26A0\uFE0F','Bugungi reja bo\u2018sh'); return; }
   if(!state.reja.bugun[e]) state.reja.bugun[e]=[];
   var q=0;
@@ -5352,9 +5511,262 @@ function ertagaShablon(){
   S.s('i_reja',state.reja); renderErtaga(); showNotif('\uD83D\uDCCB Tayyor','Shablon ertangi kunga qo\u2018llandi');
 }
 
+
+/* ==================================================================
+   HAFTALIK REJA                                       15.09.2026
+   • "Hafta" tabi: Du–Yak 7 kun, har kunning rejasi bir joyda;
+     ish qo'shish, bajarildi deb belgilash, ◀ ▶ bilan boshqa kunga
+     ko'chirish, o'chirish.
+   • Haftalik maqsad ("haftada 3 marta sport") — i_hafta_maqsad
+     kalitida ALOHIDA saqlanadi (i_reja ichiga qo'yib bo'lmaydi:
+     bulut.js i_reja ni yozuvlardan {shablon,bugun} qilib qayta
+     yig'adi, qo'shimcha maydon yo'qolardi).
+   • Taqsimlash: maqsad hafta kunlariga oddiy reja yozuvi sifatida
+     tushadi (state.reja.bugun[sana] ichida, `hm: maqsadId` belgisi
+     bilan). Shu sababli Bugun/Ertaga/bosh sahifa/sinxron o'zgarmaydi.
+   • Kundan kunga ko'chish (_rejaKunYangi) `hm` yozuvlarni NUSXA
+     olmaydi — ular haftalik maqsaddan boshqariladi.
+   ================================================================== */
+var _haftaOfset = 0;                   /* 0 bu hafta, 1 keyingi, -1 o'tgan */
+var _hmTanlKunlar = [];                /* modaldagi tanlangan hafta kunlari (0=Du) */
+var _hmTahrirId = null;
+
+/* Dushanba bilan boshlanadigan hafta boshi (YYYY-MM-DD) */
+function haftaBoshi(kun){
+  var d = new Date((kun||bugunKun())+'T12:00:00');
+  var h = (d.getDay()+6)%7;            /* Du=0 ... Ya=6 */
+  d.setDate(d.getDate()-h);
+  return kunKal(d);
+}
+function haftaKunlari(bosh){
+  var out=[], d=new Date(bosh+'T12:00:00');
+  for(var i=0;i<7;i++){ out.push(kunKal(d)); d.setDate(d.getDate()+1); }
+  return out;
+}
+function _kunQosh(kun, n){ var d=new Date(kun+'T12:00:00'); d.setDate(d.getDate()+n); return kunKal(d); }
+
+function hmOl(){ var d=S.g('i_hafta_maqsad'); return Array.isArray(d)?d:[]; }
+function hmSaqla(list){ S.s('i_hafta_maqsad', list); }
+
+/* Toza yadro (test qilinadi): maqsad qaysi kunlarga tushadi.
+   goal = {marta, kunlar:[0..6]}, kunlar = haftaning 7 sanasi,
+   bugun = 'YYYY-MM-DD'. O'tgan kunlarga qo'yilmaydi.
+   Kunlar tanlangan bo'lsa — ular (marta tagacha); bo'lmasa —
+   qolgan kunlar ichida teng taqsim (3 ta → Du, Chor, Ju kabi). */
+function _hmTaqsim(goal, kunlar, bugun){
+  var marta = Math.max(1, Math.min(7, parseInt(goal.marta)||1));
+  var ochiq = kunlar.map(function(k,i){ return {k:k,i:i}; }).filter(function(x){ return x.k>=bugun; });
+  if(!ochiq.length) return [];
+  if(goal.kunlar && goal.kunlar.length){
+    return ochiq.filter(function(x){ return goal.kunlar.indexOf(x.i)>=0; }).slice(0, marta).map(function(x){ return x.k; });
+  }
+  var n = Math.min(marta, ochiq.length), out=[];
+  for(var j=0;j<n;j++){
+    var idx = Math.floor(j*ochiq.length/n);
+    out.push(ochiq[idx].k);
+  }
+  return out;
+}
+/* Bitta maqsadni haftaga tushirish. qayta=true bo'lsa bajarilmagan
+   eski yozuvlari olib tashlanib qaytadan taqsimlanadi. */
+function hmTaqsimla(goal, bosh, qayta){
+  state.reja = rejaObyekt();
+  var kunlar = haftaKunlari(bosh), bugun = bugunKun(), q=0;
+  if(qayta){
+    kunlar.forEach(function(k){
+      if(!state.reja.bugun[k]) return;
+      state.reja.bugun[k] = state.reja.bugun[k].filter(function(r){ return !(r.hm===goal.id && !r.done && k>=bugun); });
+    });
+  }
+  var bor = {};
+  kunlar.forEach(function(k){ (state.reja.bugun[k]||[]).forEach(function(r){ if(r.hm===goal.id) bor[k]=true; }); });
+  var soni = Object.keys(bor).length;
+  if(soni >= (parseInt(goal.marta)||1)) return 0;   /* yetarli — masalan qo'lda ko'chirilgan */
+  var nishon = _hmTaqsim(goal, kunlar, bugun);
+  nishon.forEach(function(k){
+    if(bor[k]) return;
+    if(soni >= (parseInt(goal.marta)||1)) return;
+    if(!state.reja.bugun[k]) state.reja.bugun[k]=[];
+    state.reja.bugun[k].push({id:Date.now()+Math.random(), name:goal.name, start:goal.start||'07:00', end:goal.end||'', icon:goal.icon||'🏋', color:goal.color||'#1E8C8C', signal:-1, done:false, hm:goal.id});
+    bor[k]=true; soni++; q++;
+  });
+  if(q) S.s('i_reja', state.reja);
+  return q;
+}
+function hmHammasiTaqsimla(bosh){
+  var q=0; hmOl().forEach(function(g){ q+=hmTaqsimla(g, bosh, false); });
+  return q;
+}
+/* Maqsad haftada nechta bajarildi / rejalashtirildi */
+function hmHolat(goal, bosh){
+  var kunlar=haftaKunlari(bosh), b=0, r=0;
+  kunlar.forEach(function(k){ (state.reja.bugun[k]||[]).forEach(function(x){ if(x.hm===goal.id){ r++; if(x.done) b++; } }); });
+  return {bajarildi:b, reja:r};
+}
+
+/* ---- Modal ---- */
+function openHmModal(id){
+  _hmTahrirId = id||null; _hmTanlKunlar=[];
+  var g = id ? hmOl().filter(function(x){return x.id===id;})[0] : null;
+  document.getElementById('hm-title').textContent = g ? 'Maqsadni tahrirlash' : 'Haftalik maqsad';
+  document.getElementById('hm-name').value = g ? g.name : '';
+  document.getElementById('hm-icon').value = g ? (g.icon||'🏋') : '🏋';
+  document.getElementById('hm-start').value = g ? (g.start||'07:00') : '07:00';
+  document.getElementById('hm-end').value = g ? (g.end||'08:00') : '08:00';
+  document.getElementById('hm-marta').value = g ? g.marta : 3;
+  if(g && g.kunlar) _hmTanlKunlar = g.kunlar.slice();
+  document.querySelectorAll('#hm-marta-row .hm-marta').forEach(function(b,i){ b.classList.toggle('on', i+1===(g?g.marta:3)); });
+  document.querySelectorAll('#hm-kun-row .hm-kun').forEach(function(b,i){ b.classList.toggle('on', _hmTanlKunlar.indexOf(i)>=0); });
+  openM('hmaqsad-modal');
+}
+function hmMartaTanla(n, btn){
+  document.getElementById('hm-marta').value=n;
+  document.querySelectorAll('#hm-marta-row .hm-marta').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+}
+function hmKunToggle(i, btn){
+  var p=_hmTanlKunlar.indexOf(i);
+  if(p>=0) _hmTanlKunlar.splice(p,1); else _hmTanlKunlar.push(i);
+  btn.classList.toggle('on', p<0);
+}
+function saveHm(){
+  var name=(document.getElementById('hm-name').value||'').trim();
+  if(!name){ showNotif('⚠️','Maqsad nomini kiriting'); return; }
+  var marta=parseInt(document.getElementById('hm-marta').value)||3;
+  var kunlar=_hmTanlKunlar.slice().sort();
+  if(kunlar.length && kunlar.length<marta){
+    showNotif('⚠️', marta+' marta uchun '+kunlar.length+' ta kun tanlandi — kunlarni ko‘paytiring yoki tanlamang');
+    return;
+  }
+  var list=hmOl(), g;
+  if(_hmTahrirId){ g=list.filter(function(x){return x.id===_hmTahrirId;})[0]; }
+  if(!g){ g={id:Date.now(), color:'#1E8C8C'}; list.push(g); }
+  g.name=name; g.marta=marta; g.kunlar=kunlar;
+  g.icon=(document.getElementById('hm-icon').value||'🏋').slice(0,2);
+  g.start=document.getElementById('hm-start').value||'07:00';
+  g.end=document.getElementById('hm-end').value||'';
+  hmSaqla(list);
+  closeM('hmaqsad-modal');
+  var bosh=haftaBoshi(_kunQosh(bugunKun(), _haftaOfset*7));
+  var q=hmTaqsimla(g, bosh, !!_hmTahrirId);
+  showNotif('🎯 '+name, q ? q+' ta kunga qo‘yildi' : 'Saqlandi');
+  renderHafta();
+}
+function delHm(id){
+  var g=hmOl().filter(function(x){return x.id===id;})[0]; if(!g) return;
+  confirmDel('🎯','Maqsadni o‘chirish?', g.name+' — bajarilmagan kunlardan ham olib tashlanadi', function(){
+    hmSaqla(hmOl().filter(function(x){return x.id!==id;}));
+    state.reja=rejaObyekt(); var bugun=bugunKun();
+    Object.keys(state.reja.bugun).forEach(function(k){
+      if(k<bugun) return;
+      state.reja.bugun[k]=(state.reja.bugun[k]||[]).filter(function(r){ return !(r.hm===id && !r.done); });
+    });
+    S.s('i_reja',state.reja); renderHafta();
+  });
+}
+function hmQaytaTaqsimla(id){
+  var g=hmOl().filter(function(x){return x.id===id;})[0]; if(!g) return;
+  var bosh=haftaBoshi(_kunQosh(bugunKun(), _haftaOfset*7));
+  var q=hmTaqsimla(g, bosh, true);
+  showNotif('🔄 Qayta taqsimlandi', q+' ta kun'); renderHafta();
+}
+
+/* ---- Kun ichidagi amallar ---- */
+function toggleRejaKun(id, kun){
+  state.reja=rejaObyekt();
+  var r=(state.reja.bugun[kun]||[]).filter(function(x){return x.id===id;})[0];
+  if(!r) return;
+  if(kun>bugunKun()){ showNotif('⏳','Kelajakdagi ishni hali belgilab bo‘lmaydi'); return; }
+  if(!r.done && kun===bugunKun() && !_vaqtiKeldimi(r.start, _hozirDaq())){ showNotif('\u23F0 Hali vaqti emas', r.name+' \u2014 '+r.start+' dan keyin belgilanadi'); return; }
+  r.done=!r.done; S.s('i_reja',state.reja);
+  renderHafta(); try{ renderReja(); renderBosh(); }catch(e){}
+}
+function rejaKunKoch(id, kun, yon){
+  state.reja=rejaObyekt();
+  var list=state.reja.bugun[kun]||[];
+  var r=list.filter(function(x){return x.id===id;})[0]; if(!r) return;
+  var yangiKun=_kunQosh(kun, yon);
+  if(yangiKun<bugunKun()){ showNotif('⚠️','O‘tgan kunga ko‘chirib bo‘lmaydi'); return; }
+  state.reja.bugun[kun]=list.filter(function(x){return x.id!==id;});
+  if(!state.reja.bugun[yangiKun]) state.reja.bugun[yangiKun]=[];
+  state.reja.bugun[yangiKun].push(Object.assign({}, r, {id:Date.now()+Math.random(), done:false}));
+  S.s('i_reja',state.reja);
+  renderHafta(); try{ renderReja(); }catch(e){}
+}
+function rejaKunQosh(kun){
+  _rejaFaolKun = kun;                  /* _rejaKunKalit sana qatorini ham tushunadi */
+  openRejaModal();
+}
+function haftaSur(n){
+  _haftaOfset = Math.max(-1, Math.min(4, _haftaOfset+n));
+  renderHafta();
+}
+
+/* ---- Render ---- */
+function renderHafta(){
+  var wrap=document.getElementById('hafta-kunlar'); if(!wrap) return;
+  state.reja=rejaObyekt();
+  var bugun=bugunKun();
+  var bosh=haftaBoshi(_kunQosh(bugun, _haftaOfset*7));
+  if(_haftaOfset>=0) hmHammasiTaqsimla(bosh);
+  var kunlar=haftaKunlari(bosh);
+  var nomEl=document.getElementById('hafta-nom');
+  if(nomEl) nomEl.textContent = _haftaOfset===0?'Bu hafta':(_haftaOfset===1?'Keyingi hafta':(_haftaOfset<0?'O‘tgan hafta':_haftaOfset+' haftadan keyin'));
+  var orEl=document.getElementById('hafta-oraliq');
+  if(orEl) orEl.textContent = sanaUz(new Date(kunlar[0]+'T12:00:00'),'oy')+' — '+sanaUz(new Date(kunlar[6]+'T12:00:00'),'oy');
+
+  var jami=0, baj=0;
+  kunlar.forEach(function(k){ (state.reja.bugun[k]||[]).forEach(function(r){ jami++; if(r.done) baj++; }); });
+  var pt=document.getElementById('hafta-prog-t'); if(pt) pt.textContent=baj+'/'+jami;
+  var pb=document.getElementById('hafta-prog-b'); if(pb) pb.style.width=(jami?baj/jami*100:0)+'%';
+
+  /* Maqsadlar */
+  var mEl=document.getElementById('hafta-maqsad-list');
+  var goals=hmOl();
+  if(mEl){
+    if(!goals.length) mEl.innerHTML='<div class="empty" style="padding:10px 0">Haftalik maqsad yo‘q<br><small>“+ Maqsad” bilan qo‘shing</small></div>';
+    else mEl.innerHTML=goals.map(function(g){
+      var h=hmHolat(g,bosh);
+      var nuqta=''; for(var i=0;i<g.marta;i++){ nuqta+='<span style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:3px;background:'+(i<h.bajarildi?'var(--g)':(i<h.reja?'rgba(30,140,140,.3)':'var(--bd)'))+'"></span>'; }
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--bd)">'+
+        '<div style="width:38px;height:38px;border-radius:12px;background:'+(g.color||'#1E8C8C')+';display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0">'+esc(g.icon||'🏋')+'</div>'+
+        '<div class="u-f1" style="min-width:0"><div class="u-b15">'+esc(g.name)+'</div>'+
+          '<div class="u-t14">'+h.bajarildi+'/'+g.marta+' marta · '+nuqta+'</div></div>'+
+        '<button onclick="hmQaytaTaqsimla('+g.id+')" title="Qayta taqsimlash" class="hk-btn" style="width:28px;height:28px;border-radius:8px;border:none;background:var(--bg);color:var(--t2);cursor:pointer">🔄</button>'+
+        '<button onclick="openHmModal('+g.id+')" class="hk-btn" style="width:28px;height:28px;border-radius:8px;border:none;background:var(--bg);color:var(--t2);cursor:pointer">✏️</button>'+
+        '<button onclick="delHm('+g.id+')" style="width:28px;height:28px;border-radius:8px;border:none;background:rgba(244,63,94,.1);color:var(--red);cursor:pointer">🗑</button>'+
+      '</div>';
+    }).join('');
+  }
+
+  /* Kunlar */
+  wrap.innerHTML=kunlar.map(function(k,i){
+    var items=(state.reja.bugun[k]||[]).slice().sort(function(a,b){return (a.start||'').localeCompare(b.start||'');});
+    var d=new Date(k+'T12:00:00');
+    var cls='hk-kun'+(k===bugun?' bugun':'')+(k<bugun?' otgan':'');
+    var done=items.filter(function(r){return r.done;}).length;
+    var sar='<div style="display:flex;justify-content:space-between;align-items:center">'+
+      '<div><span class="u-b15">'+haftaKunUz(d)+'</span> <span class="u-t14">'+sanaUz(d,'oy')+(k===bugun?' · bugun':'')+'</span></div>'+
+      '<div style="display:flex;align-items:center;gap:8px"><span class="u-t14">'+(items.length?done+'/'+items.length:'')+'</span>'+
+      (k>=bugun?'<button onclick="rejaKunQosh(\''+k+'\')" style="width:28px;height:28px;border-radius:8px;border:none;background:rgba(30,140,140,.12);color:var(--g);font-weight:800;cursor:pointer">+</button>':'')+
+      '</div></div>';
+    var tana=items.length ? items.map(function(r){
+      return '<div class="hk-item">'+
+        '<div class="hk-chk'+(r.done?' done':'')+'" onclick="toggleRejaKun('+r.id+',\''+k+'\')">'+(r.done?'✓':'')+'</div>'+
+        '<span style="font-size:16px">'+esc(r.icon||'📌')+'</span>'+
+        '<div class="u-f1" style="min-width:0"><div style="font-size:14.5px;font-weight:600;'+(r.done?'text-decoration:line-through;color:var(--t2)':'color:var(--text)')+'">'+esc(r.name)+(r.hm?' <span style="font-size:11px;color:var(--g)">🎯</span>':'')+'</div>'+
+          '<div class="u-t14">'+esc(r.start||'')+(r.end?' - '+esc(r.end):'')+'</div></div>'+
+        (k>=bugun && !r.done ? '<button class="hk-btn" onclick="rejaKunKoch('+r.id+',\''+k+'\',-1)" title="Oldingi kunga">◀</button><button class="hk-btn" onclick="rejaKunKoch('+r.id+',\''+k+'\',1)" title="Keyingi kunga">▶</button>' : '')+
+        '<button class="hk-btn" onclick="delReja('+r.id+',\''+k+'\')" style="color:var(--red);background:rgba(244,63,94,.1)">🗑</button>'+
+      '</div>';
+    }).join('') : '<div class="u-t14" style="padding:6px 0 0">—</div>';
+    return '<div class="'+cls+'">'+sar+tana+'</div>';
+  }).join('');
+}
+
 function openRejaModal(){
   _rejaColor='#1E8C8C';
-  try{ var tt=document.getElementById('rj-title'); if(tt) tt.textContent = _rejaFaolKun==='ertaga' ? '\uD83C\uDF19 Ertaga uchun reja' : 'Reja qo\u2018shish'; }catch(e){}
+  try{ var tt=document.getElementById('rj-title'); if(tt) tt.textContent = _rejaFaolKun==='ertaga' ? '\uD83C\uDF19 Ertaga uchun reja' : (/^\d{4}-/.test(_rejaFaolKun) ? '\uD83D\uDCC5 '+sanaUz(new Date(_rejaFaolKun+'T12:00:00'),'toliq') : 'Reja qo\u2018shish'); }catch(e){}
   document.getElementById('rj-name').value='';
   document.getElementById('rj-icon').value='📌';
   document.getElementById('rj-start').value='09:00';
@@ -5381,22 +5793,26 @@ function _addRejaDavom(name,start){
   if(document.getElementById('rj-shablon').checked)state.reja.shablon.push({...item});
   S.s('i_reja',state.reja);closeM('reja-modal');renderReja();
   if(_rejaFaolKun==='ertaga') renderErtaga();
+  if(/^\d{4}-/.test(_rejaFaolKun)){ renderHafta(); _rejaFaolKun='bugun'; }
 }
 function toggleReja(id){
   const today=bugunKun();
   state.reja = rejaObyekt();     /* diskdagi eng yangi nusxa */
   const items=state.reja.bugun[today]||[];
-  const r=items.find(r=>r.id===id);if(r)r.done=!r.done;
+  const r=items.find(r=>r.id===id);if(!r)return;
+  if(!r.done && !_vaqtiKeldimi(r.start, _hozirDaq())){ showNotif('\u23F0 Hali vaqti emas', r.name+' \u2014 '+r.start+' dan keyin belgilanadi'); return; }
+  r.done=!r.done;
   S.s('i_reja',state.reja);renderReja();renderBosh();
 }
 function delReja(id, kun){
-  const today=(kun==='ertaga') ? ertagaKun() : bugunKun();   /* 14.09.2026: ertangi ro'yxatdan ham */
+  const today=(kun==='ertaga') ? ertagaKun() : (/^\d{4}-\d{2}-\d{2}$/.test(kun||'') ? kun : bugunKun());   /* 14.09.2026: ertangi; 15.09.2026: hafta */
   state.reja = rejaObyekt();
   const r=(state.reja.bugun[today]||[]).find(r=>r.id===id);if(!r)return;
   confirmDel('📋',"Rejani o\'chirish?",r.name,()=>{
     state.reja.bugun[today]=(state.reja.bugun[today]||[]).filter(r=>r.id!==id);
     S.s('i_reja',state.reja);renderReja();
     if(kun==='ertaga') renderErtaga();
+    if(/^\d{4}-/.test(kun||'')) renderHafta();
   });
 }
 function applyToday(){
@@ -5415,6 +5831,8 @@ function showRejaTab(tab,el){
   var ertaga=document.getElementById('reja-ertaga');
   var shablon=document.getElementById('reja-shablon');
   var maqsad=document.getElementById('reja-maqsad');
+  var hafta=document.getElementById('reja-hafta');
+  if(hafta)hafta.style.display=tab==='hafta'?'block':'none';
   if(bugun)bugun.style.display=tab==='bugun'?'block':'none';
   if(ertaga)ertaga.style.display=tab==='ertaga'?'block':'none';
   if(shablon)shablon.style.display=tab==='shablon'?'block':'none';
@@ -5424,6 +5842,7 @@ function showRejaTab(tab,el){
   if(fab)fab.onclick=tab==='maqsad'?function(){openM('maqsad-modal');}:function(){openRejaModal();};
   if(tab==='maqsad')renderMaqsad();
   if(tab==='ertaga')renderErtaga();
+  if(tab==='hafta'){ _haftaOfset=0; renderHafta(); }
 }
 function renderShablon(){
   const el=document.getElementById('shablon-list');
@@ -6117,36 +6536,6 @@ function renderKitobXulosa(){
         ? '<div style="border-top:1px solid var(--bd);margin-top:13px;padding-top:12px;font-size:14px;line-height:1.6">' +
             'Tugashiga eng yaqini \u2014 <b>'+esc(yaqin.k.nom)+'</b>: yana '+yaqin.qolgan+' bet.' +
             (yaqin.qolgan<=20 ? ' Bugun tugatsangiz ham bo\'ladi.' : '') +
-          '</div>'
-        : '') +
-    '</div>';
-}
-
-/* --- Xarid: ro'yxat holati --- */
-function renderXaridXulosa(){
-  var el = document.getElementById('xarid-xulosa');
-  if(!el) return;
-  var xr = S.g('i_xarid') || [];
-  if(!xr.length){ el.innerHTML=''; return; }
-  var qolgan = xr.filter(function(x){ return !x.done; });
-  var bajarildi = xr.length - qolgan.length;
-
-  /* Bo'limlar bo'yicha */
-  var bol = {};
-  qolgan.forEach(function(x){ var b = x.bolim || 'Boshqa'; bol[b] = (bol[b]||0)+1; });
-  var royxat = Object.keys(bol).sort(function(a,b){ return bol[b]-bol[a]; });
-
-  el.innerHTML =
-    '<div class="card">' +
-      '<div style="font-size:15px;line-height:1.7">' +
-        (qolgan.length
-          ? 'Ro\'yxatda <b>'+qolgan.length+' ta narsa</b> qoldi.'
-          : '\u2705 Hammasi olindi.') +
-        (bajarildi ? ' <span class="u-t2">'+bajarildi+' tasi olingan.</span>' : '') +
-      '</div>' +
-      (royxat.length > 1
-        ? '<div style="font-size:13.5px;color:var(--t2);margin-top:8px">' +
-            royxat.map(function(b){ return esc(b)+' \u00b7 '+bol[b]; }).join('  |  ') +
           '</div>'
         : '') +
     '</div>';
@@ -7454,6 +7843,43 @@ window.intizomTest = function(){
   t('reja 7 kunlik ko\'chadi', (_rejaKunYangi({'2026-09-07':RB['2026-09-13']},[],'2026-09-14')||[]).length, 2);
   t('reja bo\'sh + shablon', (_rejaKunYangi({},RS,'2026-09-14')||[]).length, 2);
   t('reja bo\'sh + shablonsiz', _rejaKunYangi({},[],'2026-09-14'), null);
+
+  /* ---------- Haftalik reja (15.09.2026) ---------- */
+  t('hafta boshi dushanba', haftaBoshi('2026-09-17'), '2026-09-14');       /* payshanba → dushanba */
+  t('hafta boshi yakshanba', haftaBoshi('2026-09-20'), '2026-09-14');
+  t('hafta 7 kun', haftaKunlari('2026-09-14').length, 7);
+  var HK=haftaKunlari('2026-09-14');
+  t('hm 3 marta teng taqsim', _hmTaqsim({marta:3},HK,'2026-09-14'), ['2026-09-14','2026-09-16','2026-09-18']);
+  t('hm o\'tgan kunga tushmaydi', _hmTaqsim({marta:2},HK,'2026-09-19')[0]>='2026-09-19', true);
+  t('hm qolgan kundan ko\'p emas', _hmTaqsim({marta:5},HK,'2026-09-19').length, 2);
+  t('hm tanlangan kunlar', _hmTaqsim({marta:2,kunlar:[1,4]},HK,'2026-09-14'), ['2026-09-15','2026-09-18']);
+  t('hm hafta o\'tgan bo\'lsa bo\'sh', _hmTaqsim({marta:3},HK,'2026-09-21'), []);
+  /* ---------- Progressiv ochilish (15.09.2026) ---------- */
+  var OB=[{kun:0,k:['a','b']},{kun:3,k:['c']},{kun:7,k:['d','e']}];
+  t('ochilish 0-kun', _ochilishYangi(OB,0,[]), ['a','b']);
+  t('ochilish 2-kun yangi yo\'q', _ochilishYangi(OB,2,['a','b']), []);
+  t('ochilish 3-kun', _ochilishYangi(OB,3,['a','b']), ['c']);
+  t('ochilish o\'tkazib yuborilgan kunlar ham', _ochilishYangi(OB,9,['a','b']), ['c','d','e']);
+  t('ochilish bosqich kalitlari vidjetda bor', OCHILISH_BOSQICH.every(function(b){ return b.k.every(function(k){ return !!hwWidget(k); }); }), true);
+  /* ---------- Mukofotlar (15.09.2026) ---------- */
+  t('omad hammasi bajarilmagan', _mukofotHolat('openSpinWheel',{odB:3,jami:5,streak:0}).ok, false);
+  t('omad hammasi bajarildi', _mukofotHolat('openSpinWheel',{odB:5,jami:5,streak:0}).ok, true);
+  t('omad odat yo\'q', _mukofotHolat('openSpinWheel',{odB:0,jami:0,streak:0}).ok, false);
+  t('kun siri 2 kun yopiq', _mukofotHolat('openKunSir',{odB:0,jami:1,streak:2}).ok, false);
+  t('kun siri 3 kun ochiq', _mukofotHolat('openKunSir',{odB:0,jami:1,streak:3}).ok, true);
+  t('viktorina 0 odat yopiq', _mukofotHolat('openViktorina',{odB:0,jami:4,streak:0}).ok, false);
+  t('viktorina 1 odat ochiq', _mukofotHolat('openMiniChallenge',{odB:1,jami:4,streak:0}).ok, true);
+  t('viktorina odatsiz foydalanuvchiga ochiq', _mukofotHolat('openViktorina',{odB:0,jami:0,streak:0}).ok, true);
+  t('PRO plitkalar mavjud', PRO_TILE.every(function(k){ return !!document.querySelector('.htile[data-hw="'+k+'"]'); }), true);
+  /* ---------- Kechki hisobot (15.09.2026) ---------- */
+  var KO=[{id:1,name:'A',hist:{'2026-09-13':true}},{id:2,name:'B',hist:{'2026-09-13':true,'2026-09-14':true}},{id:3,name:'C',manba:'suv',hist:{}},{id:4,name:'D',hist:{},dam:{'2026-09-14':true}}];
+  t('kecha belgilanmaganlar', _kechaRoyxat(KO,'2026-09-14',8).map(function(o){return o.name;}), ['A']);
+  t('kecha 10:00 dan keyin yo\'q', _kechaRoyxat(KO,'2026-09-14',10), []);
+  t('vaqt yo\'q — belgilash mumkin', _vaqtiKeldimi('', 0), true);
+  t('vaqtidan oldin — yo\'q', _vaqtiKeldimi('21:00', 20*60+59), false);
+  t('vaqti kelgan — ha', _vaqtiKeldimi('21:00', 21*60), true);
+  t('9:05 shakli', _vaqtiKeldimi('9:05', 9*60+5), true);
+  t('reja hm ko\'chmaydi', (_rejaKunYangi({'2026-09-13':[{id:1,name:'Sport',start:'07:00',hm:5},{id:2,name:'Bank',start:'09:00'}]},[],'2026-09-14')||[]).map(function(r){return r.name;}), ['Bank']);
 
   /* ---------- Oila kunlik topshiriq (14.09.2026) ---------- */
   var OT={takror:'kunlik',bajarilgan:{}};
@@ -11205,69 +11631,6 @@ function renderZikrlar(){
   }).join('');
 }
 // ════════════════════════════════════════════
-// 💊 DORI ESLATMASI
-// ════════════════════════════════════════════
-function addDori(){
-  var nom=(document.getElementById('dori-nom').value||'').trim();
-  var miq=(document.getElementById('dori-miq').value||'').trim();
-  var vaqt=document.getElementById('dori-vaqt').value||'08:00';
-  var kun=document.getElementById('dori-kun').value||'har';
-  if(!nom){showNotif('⚠️','Dori nomini kiriting');return;}
-  var dorilar=S.g('i_dorilar')||[];
-  dorilar.push({id:Date.now(),nom:nom,miq:miq||'1 dona',vaqt:vaqt,kun:kun,faol:true});
-  S.s('i_dorilar',dorilar);
-  document.getElementById('dori-nom').value='';
-  document.getElementById('dori-miq').value='';
-  renderDoriList();
-  showNotif('✅',nom+' qo\'shildi!');
-}
-
-function renderDoriList(){
-  var el=document.getElementById('dori-bugun-list');
-  if(!el)return;
-  var dorilar=S.g('i_dorilar')||[];
-  var today=bugunKun();
-  var done=S.g('i_dori_done')||{};
-  var todayDone=done[today]||{};
-  if(!dorilar.length){
-    el.innerHTML='<div class="empty">💊<br><br>Dori qo\'shilmagan</div>';return;
-  }
-  el.innerHTML='<div style="font-size:15px;font-weight:700;color:var(--t2);margin-bottom:10px;letter-spacing:.5px">📋 BUGUNGI DORILAR</div>'+
-    dorilar.map(function(d){
-      var isDone=!!todayDone[d.id];
-      return '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:16px;margin-bottom:8px;border:1.5px solid '+(isDone?'var(--g)':'var(--bd)')+';box-shadow:var(--shadow)">'+
-        '<div class="u-fs28">'+(isDone?'✅':'💊')+'</div>'+
-        '<div class="u-f1">'+
-          '<div style="font-size:15px;font-weight:700;color:var(--text);'+(isDone?'text-decoration:line-through;opacity:.5':'')+'">'+esc(d.nom)+'</div>'+
-          '<div class="u-t135">'+d.miq+' · '+d.vaqt+' · '+
-            (d.kun==='har'?'Har kun':d.kun==='juft'?'Juft kunlar':'Toq kunlar')+
-          '</div>'+
-        '</div>'+
-        '<div style="display:flex;gap:6px">'+
-          '<button onclick="toggleDori('+d.id+')" style="padding:8px 14px;border-radius:12px;border:none;background:'+(isDone?'var(--g)':'var(--bg)')+';color:'+(isDone?'#fff':'var(--g)')+';font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid var(--g)">'+(isDone?'✓':'Oldim')+'</button>'+
-          '<button onclick="deleteDori('+d.id+')" style="width:32px;height:32px;border-radius:10px;border:none;background:rgba(239,68,68,.1);color:var(--red);cursor:pointer;font-size:15px">🗑</button>'+
-        '</div>'+
-      '</div>';
-    }).join('');
-}
-
-function toggleDori(id){
-  var today=bugunKun();
-  var done=S.g('i_dori_done')||{};
-  if(!done[today])done[today]={};
-  done[today][id]=!done[today][id];
-  S.s('i_dori_done',done);
-  renderDoriList();
-  if(done[today][id]) showNotif('✅','Dori olindi!');
-}
-
-function deleteDori(id){
-  var dorilar=(S.g('i_dorilar')||[]).filter(function(d){return d.id!==id;});
-  S.s('i_dorilar',dorilar);
-  renderDoriList();
-}
-
-// ════════════════════════════════════════════
 // 💧 SUV TRACKER
 // ════════════════════════════════════════════
 function openSuvModal(){
@@ -11313,155 +11676,6 @@ function addSuv(ml){
 }
 
 /* --- KITOBLAR va INGLIZCHA --- 14.09.2026 dan pro.js faylida (kerak bo'lganda yuklanadi) --- */
-// ════════════════════════════════════════════
-// 🛒 XARID RO'YXATI
-// ════════════════════════════════════════════
-var _xaridKat='barchasi';
-function addXarid(){
-  var nom=(document.getElementById('xarid-inp').value||'').trim();
-  if(!nom)return;
-  var xarid=S.g('i_xarid')||[];
-  xarid.push({id:Date.now(),nom:nom,kat:_xaridKat==='barchasi'?'oziq':_xaridKat,done:false});
-  S.s('i_xarid',xarid);
-  document.getElementById('xarid-inp').value='';
-  renderXaridList();
-}
-
-function setXaridKat(kat,btn){
-  _xaridKat=kat;
-  document.querySelectorAll('.xarid-kat').forEach(function(b){
-    b.style.background='var(--bg)';b.style.color='var(--t2)';b.style.borderColor='var(--bd)';b.style.border='1px solid var(--bd)';
-  });
-  btn.style.background='var(--g)';btn.style.color='#fff';btn.style.border='none';
-  renderXaridList();
-}
-
-function renderXaridList(){
-  try{ renderXaridXulosa(); }catch(e){}
-  var el=document.getElementById('xarid-list');
-  var statEl=document.getElementById('xarid-stat-lbl');
-  if(!el)return;
-  var xarid=S.g('i_xarid')||[];
-  var filtered=_xaridKat==='barchasi'?xarid:xarid.filter(function(x){return x.kat===_xaridKat;});
-  var done=xarid.filter(function(x){return x.done;}).length;
-  if(statEl) statEl.textContent=(xarid.length-done)+' ta qoldi · '+done+' ta olindi';
-  var katEmoji={oziq:'🥦',maishiy:'🧹',kiyim:'👕',dori:'💊',boshqa:'📦'};
-  if(!filtered.length){el.innerHTML='<div class="empty">🛒<br><br>Ro\'yxat bo\'sh</div>';return;}
-  el.innerHTML=filtered.map(function(x){
-    return '<div style="display:flex;align-items:center;gap:12px;padding:13px;background:var(--card);border-radius:14px;margin-bottom:8px;border:1.5px solid '+(x.done?'var(--g)':'var(--bd)')+';box-shadow:var(--shadow)">'+
-      '<button onclick="toggleXarid('+x.id+')" style="width:26px;height:26px;border-radius:50%;border:2px solid '+(x.done?'var(--g)':'var(--bd)')+';background:'+(x.done?'var(--g)':'transparent')+';color:#fff;cursor:pointer;font-size:15px;flex-shrink:0">'+(x.done?'✓':'')+'</button>'+
-      '<div style="font-size:15px;color:var(--text);flex:1;'+(x.done?'text-decoration:line-through;opacity:.5':'')+'">'+
-        (katEmoji[x.kat]||'📦')+' '+esc(x.nom)+
-      '</div>'+
-      '<button onclick="deleteXarid('+x.id+')" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:16px">✕</button>'+
-    '</div>';
-  }).join('');
-}
-
-function toggleXarid(id){
-  var xarid=S.g('i_xarid')||[];
-  xarid.forEach(function(x){if(x.id===id)x.done=!x.done;});
-  S.s('i_xarid',xarid);
-  renderXaridList();
-}
-
-function deleteXarid(id){
-  S.s('i_xarid',(S.g('i_xarid')||[]).filter(function(x){return x.id!==id;}));
-  renderXaridList();
-}
-
-function clearXaridDone(){
-  S.s('i_xarid',(S.g('i_xarid')||[]).filter(function(x){return !x.done;}));
-  renderXaridList();
-}
-
-// ════════════════════════════════════════════
-// 👨‍👩‍👧 OILA A'ZOLARI
-// ════════════════════════════════════════════
-/* Tug'ilgan kun ro'yxati ilgari 'i_oila' kalitida turardi, lekin
-   bulutli oila moduli ham o'sha kalitga OBYEKT yozadi. Ro'yxat esa
-   massiv kutadi \u2014 shu sababli push() xato berib, saqlash
-   umuman ishlamasdi. Endi alohida kalit: i_tugkun. */
-function tugkunOl(){
-  var d=S.g('i_tugkun');
-  if(Array.isArray(d)) return d;
-  /* Eski ma'lumot i_oila da massiv bo'lib qolgan bo'lsa ko'chiramiz */
-  var eski=S.g('i_oila');
-  if(Array.isArray(eski) && eski.length){ S.s('i_tugkun', eski); return eski; }
-  return [];
-}
-
-function addOilaAzo(){
-  var ism=(document.getElementById('oila-ism').value||'').trim();
-  var munosabat=document.getElementById('oila-munosabat').value;
-  var tug=document.getElementById('oila-tug').value;
-  if(!ism){showNotif('⚠️','Ismni kiriting');return;}
-  var oila=tugkunOl();
-  oila.push({id:Date.now(),ism:ism,munosabat:munosabat,tug:tug});
-  S.s('i_tugkun',oila);
-  document.getElementById('oila-ism').value='';
-  document.getElementById('oila-tug').value='';
-  renderOilaList();
-  showNotif('✅',ism+' qo\'shildi!');
-}
-
-function renderOilaList(){
-  var el=document.getElementById('oila-list');
-  var yaqinEl=document.getElementById('oila-yaqin');
-  if(!el)return;
-  var oila=tugkunOl();
-  if(!oila.length){el.innerHTML='<div class="empty">👨‍👩‍👧<br><br>A\'zo qo\'shing</div>';return;}
-  var today=new Date();
-  var todayMD=String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-  // Yaqin tug'ilgan kunlar
-  var yaqin=oila.filter(function(a){
-    if(!a.tug)return false;
-    var md=a.tug.slice(5);
-    var diff=getDaysDiff(a.tug);
-    return diff>=0&&diff<=7;
-  });
-  if(yaqinEl&&yaqin.length){
-    yaqinEl.innerHTML='<div style="background:linear-gradient(135deg,#E35199,#B81E5E);border-radius:16px;padding:14px;margin-bottom:12px">'+
-      '<div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:8px">🎂 YAQIN TUG\'ILGAN KUNLAR</div>'+
-      yaqin.map(function(a){
-        var diff=getDaysDiff(a.tug);
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.15)">'+
-          '<div style="font-size:15px;font-weight:700;color:#fff">'+esc(a.ism)+'</div>'+
-          '<div style="font-size:14px;color:rgba(255,255,255,.8)">'+(diff===0?'🎉 Bugun!':diff+' kunda')+'</div>'+
-        '</div>';
-      }).join('')+
-    '</div>';
-  } else if(yaqinEl) yaqinEl.innerHTML='';
-  var munosabatEmoji={
-    'Ota':'👨','Ona':'👩','Aka/Uka':'👦','Opa/Singil':'👧',
-    'Turmush o\'rtog\'i':'💑','Farzand':'👶','Do\'st':'🤝','Boshqa':'👤'
-  };
-  el.innerHTML=oila.map(function(a){
-    var diff=a.tug?getDaysDiff(a.tug):-1;
-    return '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border-radius:16px;margin-bottom:8px;box-shadow:var(--shadow);border:1.5px solid var(--bd)">'+
-      '<div style="font-size:32px">'+(munosabatEmoji[a.munosabat]||'👤')+'</div>'+
-      '<div class="u-f1">'+
-        '<div class="u-b15t">'+esc(a.ism)+'</div>'+
-        '<div class="u-t14">'+a.munosabat+(a.tug?' · 🎂 '+a.tug.slice(5).replace('-','/')+(diff>=0&&diff<=30?' ('+diff+' kun)':''):'')+'</div>'+
-      '</div>'+
-      '<button onclick="deleteOila('+a.id+')" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:18px">🗑</button>'+
-    '</div>';
-  }).join('');
-}
-
-function getDaysDiff(tugDate){
-  if(!tugDate)return -1;
-  var today=new Date();
-  var nextBday=new Date(today.getFullYear(),parseInt(tugDate.slice(5,7))-1,parseInt(tugDate.slice(8)));
-  if(nextBday<today){nextBday.setFullYear(today.getFullYear()+1);}
-  return Math.round((nextBday-today)/86400000);
-}
-
-function deleteOila(id){
-  S.s('i_tugkun', tugkunOl().filter(function(a){return a.id!==id;}));
-  renderOilaList();
-}
-
 // ════════════════════════════════════════════
 // 📝 TEZKOR ESLATMA
 // ════════════════════════════════════════════
@@ -12047,6 +12261,7 @@ function hwSetAll(v){
   var cfg={};
   HOME_WIDGETS.forEach(function(w){ cfg[w.k]=!!v; });
   S.s('i_home_widgets',cfg);
+  if(v){ try{ var o=ochilishHolat()||{}; o.yopildi=true; delete o.yangi; S.s('i_ochilish',o); ochilishNav(null); }catch(e){} }   /* 15.09.2026 */
   applyHomeWidgets(); renderHomeConfig();
 }
 function hwMove(k,dir){
@@ -12060,6 +12275,7 @@ function hwTavsiya(){
   var cfg={};
   HOME_WIDGETS.forEach(function(w){ cfg[w.k]=HW_TAVSIYA.indexOf(w.k)!==-1; });
   S.s('i_home_widgets',cfg);
+  try{ var o=ochilishHolat()||{}; o.yopildi=true; delete o.yangi; S.s('i_ochilish',o); ochilishNav(null); }catch(e){}
   applyHomeWidgets(); renderHomeConfig();
   showNotif('\u2705 Tavsiya to\u2018plami','10 ta asosiy bo\u2018lim qoldi. Qolganini shu yerdan qo\u2018shasiz.');
 }
@@ -12188,8 +12404,8 @@ try{
 
 /* ==================================================================
    PRO / PAYWALL  —  04.09.2026
-   Bepul: odat, reja, namoz, kundalik, suv, kayfiyat, dua, dori,
-          eslatma, oila, tug'ilgan kun, xarid, moliya, sport
+   Bepul: odat, reja, namoz, kundalik, suv, kayfiyat, dua,
+          eslatma, oila, moliya, sport
    PRO:   AI reja, kaloriya skaneri, ratsion, hisobot, missiya,
           viktorina, kitoblar, inglizcha, 60 soniya, omad, reyting,
           avatarim, kun siri
@@ -12237,9 +12453,15 @@ var PRO_MODUL_FUNKS = ["_leaderBosh", "addAiTask", "addKitob", "aiKitobTavsiya",
       /* PRO bo'lmasa avval paywall — 165 KB bekorga yuklanmasin.
          pro.js dagi hamma narsa PRO, shuning uchun bepul foydalanuvchida
          yuklamaymiz ham (nomi PRO_FUNKS da bo'lsa paywall ochiladi). */
-      if(typeof proHolat==='function' && !proHolat()){
-        if(typeof PRO_FUNKS!=='undefined' && PRO_FUNKS[nom] && typeof proKerak==='function') proKerak(PRO_FUNKS[nom]);
+      /* 15.09.2026: pro.js da endi bepul o'yinlar ham bor — faqat PRO_FUNKS dagi
+         funksiya bepul foydalanuvchida paywall ochadi, qolgani yuklanadi */
+      if(typeof proHolat==='function' && !proHolat() && typeof PRO_FUNKS!=='undefined' && PRO_FUNKS[nom]){
+        if(typeof proKerak==='function') proKerak(PRO_FUNKS[nom]);
         return;
+      }
+      if(typeof MUKOFOT_FUNKS!=='undefined' && MUKOFOT_FUNKS.indexOf(nom)>=0){
+        var mh=_mukofotHolat(nom,_mukofotHozir());
+        if(!mh.ok){ showNotif('\uD83C\uDF81 Hali ochilmagan', mh.matn); return; }
       }
       return proModulYukla().then(function(){
         var real = window[nom];
@@ -12255,14 +12477,63 @@ var PRO_MODUL_FUNKS = ["_leaderBosh", "addAiTask", "addKitob", "aiKitobTavsiya",
   }, 4000);
 })();
 
+/* 15.09.2026: PRO qayta qurildi. PRO = oila kengaytmasi (challenge, reyting),
+   hisobot/tahlil, AI reja + kaloriya skaneri + ratsion, kitoblar + missiyalar.
+   Viktorina, 60 soniya, omad, kun siri, avatar, inglizcha — BEPUL, lekin
+   omad/kun siri/viktorina/60 soniya NATIJAGA bog'langan (MUKOFOT quyida). */
 var PRO_SAHIFA = { ratsion:'Ratsion dasturi', hisobot:'Hisobot va tahlil' };
-var PRO_MODAL  = { 'ai-reja-modal':'AI kunlik reja', 'kitob-modal':'Kitoblar', 'til-modal':'Inglizcha' };
+var PRO_MODAL  = { 'ai-reja-modal':'AI kunlik reja', 'kitob-modal':'Kitoblar' };
 var PRO_FUNKS  = {
-  openMissionModal:'Missiyalar', openViktorina:'Viktorina', openMiniChallenge:'60 soniya',
-  openSpinWheel:'Omad g\u2018ildiragi', reytingOch:'Reyting', openAvatar:'Avatarim',
-  openKunSir:'Kun siri', openKaloriyaScaner:'Kaloriya skaneri'
+  openMissionModal:'Missiyalar', reytingOch:'Reyting', openKaloriyaScaner:'Kaloriya skaneri'
 };
-var PRO_TILE = ['aireja','kitoblar','inglizcha','missiya','reyting','spin','viktorina','mashq60','avatar','kunsir'];
+var PRO_TILE = ['aireja','kitoblar','missiya','reyting'];
+
+/* ==================================================================
+   MUKOFOTLAR — o'yin elementlari asosiy ishga bog'langan  15.09.2026
+   Omad g'ildiragi: bugungi odatlarning HAMMASI bajarilgach (kuniga 1).
+   Kun siri: biror odatda 3 kunlik zanjir.
+   Viktorina va 60 soniya: bugun kamida 1 ta odat bajarilgach.
+   Avatar: har doim ochiq (ball bilan o'sadi).
+   ================================================================== */
+/* Toza yadro (test qilinadi): h = {odB, jami, streak} */
+function _mukofotHolat(kalit, h){
+  if(kalit==='openSpinWheel'){
+    if(!h.jami) return {ok:false, matn:'Avval kamida bitta odat qo\u2018shing \u2014 g\u2018ildirak odatlar bajarilgach aylanadi'};
+    if(h.odB<h.jami) return {ok:false, matn:'Bugungi odatlarni tugating: '+h.odB+'/'+h.jami+' \u2014 hammasi bajarilgach g\u2018ildirak ochiladi', qisqa:h.odB+'/'+h.jami+' odat'};
+    return {ok:true, qisqa:'ochiq'};
+  }
+  if(kalit==='openKunSir'){
+    if(h.streak<3) return {ok:false, matn:'Kun siri 3 kunlik zanjirdan keyin ochiladi (hozir '+h.streak+' kun)', qisqa:h.streak+'/3 kun'};
+    return {ok:true, qisqa:'ochiq'};
+  }
+  if(kalit==='openViktorina' || kalit==='openMiniChallenge'){
+    if(!h.jami) return {ok:true};
+    if(h.odB<1) return {ok:false, matn:'Avval bugungi birinchi odatni bajaring \u2014 keyin o\u2018yin', qisqa:'1 odatdan keyin'};
+    return {ok:true, qisqa:'ochiq'};
+  }
+  return {ok:true};
+}
+function _mukofotHozir(){
+  var bugun=bugunKun(), od=state.odatlar||[];
+  var odB=od.filter(function(o){ return o.hist && o.hist[bugun]; }).length, st=0;
+  od.forEach(function(o){ if((o.streak||0)>st) st=o.streak||0; });
+  return {odB:odB, jami:od.length, streak:st};
+}
+var MUKOFOT_FUNKS=['openSpinWheel','openKunSir','openViktorina','openMiniChallenge'];
+function mukofotOralar(){
+  MUKOFOT_FUNKS.forEach(function(fn){
+    var asl=window[fn];
+    if(typeof asl!=='function' || asl._proStub || asl._mukofotOralgan) return;
+    var o=function(){
+      var h=_mukofotHolat(fn, _mukofotHozir());
+      if(!h.ok){ showNotif('\uD83C\uDF81 Hali ochilmagan', h.matn); try{ hodisaYubor('mukofot_yopiq_'+fn); }catch(e){} return; }
+      return asl.apply(this,arguments);
+    };
+    o._mukofotOralgan=true; window[fn]=o;
+  });
+}
+/* Bosh sahifadagi mukofot plitkalari uchun qisqa holat */
+function mukofotQisqa(fn){ try{ return _mukofotHolat(fn,_mukofotHozir()); }catch(e){ return {ok:true}; } }
 
 /* isPro() bulut.js dan keladi. Bulut hali yuklanmagan bo'lsa PRO deb
    hisoblaymiz \u2014 tarmoq nosozligi to'lagan odamni qulflab qo'ymasin. */
@@ -12445,6 +12716,7 @@ function proKerak(nomi){
    qayta chaqiriladi (14.09.2026), chunki haqiqiy funksiyalar o'rinbosarni
    almashtirgan bo'ladi. O'rinbosar (_proStub) o'ralmaydi — u o'zi tekshiradi. */
 function proModulOralar(){
+  try{ mukofotOralar(); }catch(e){}     /* 15.09.2026: bepul o'yinlar natijaga bog'lanadi */
   Object.keys(PRO_FUNKS).forEach(function(fn){
     var asl=window[fn], nom=PRO_FUNKS[fn];
     if(typeof asl!=='function' || asl._proStub || asl._proOralgan) return;
@@ -13346,7 +13618,6 @@ window.INTIZOM_YANGILA = function(){
   if(joriy && chiz[joriy] && joriy!=='bosh' && joriy!=='odat' && joriy!=='reja'){
     try{ if(typeof window[chiz[joriy]]==='function') window[chiz[joriy]](); }catch(e){}
   }
-  try{ if(typeof renderXarid==='function') renderXarid(); }catch(e){}
   try{ window.rasmlarniKorsat && window.rasmlarniKorsat(); }catch(e){}
   try{ window.intizomTilQoll && window.intizomTilQoll(); }catch(e){}
 };
@@ -15073,14 +15344,11 @@ window.QRKod=M["index"];
   <div style="background:var(--bg);border-radius:16px;padding:14px 16px;margin-bottom:14px">
     <div style="font-size:14px;font-weight:700;color:var(--t2);letter-spacing:.5px;margin-bottom:10px">PRO ICHIDA</div>
     <div style="font-size:14.5px;line-height:2;color:var(--text)">
-      &#129302; AI kunlik reja<br>
-      &#128247; Kaloriya skaneri (rasmdan)<br>
-      &#127859; Ratsion dasturi<br>
+      &#128106; Oila kengaytmasi: challenge, reyting, oylik umumiy maqsad<br>
       &#128202; Hisobot va chuqur tahlil<br>
-      &#127919; Missiyalar &middot; &#129504; Viktorina<br>
-      &#128218; Kitoblar &middot; &#128172; Inglizcha<br>
-      &#9889; 60 soniya &middot; &#127905; Omad &middot; &#127942; Reyting<br>
-      &#129489; Avatarim &middot; &#11088; Kun siri
+      &#129302; AI kunlik reja<br>
+      &#128247; Kaloriya skaneri (rasmdan) &middot; &#127859; Ratsion dasturi<br>
+      &#128218; Kitoblar &middot; &#127919; Missiyalar
     </div>
   </div>
   <div style="text-align:center;margin-bottom:6px">
@@ -15091,7 +15359,7 @@ window.QRKod=M["index"];
     <div style="font-size:14px;color:var(--t2);margin-top:2px"><span id="pro-oylik">Oyiga 8 250 so'm</span> &mdash; bir chashka choy puli</div>
   </div>
   <div style="font-size:14px;color:var(--t2);text-align:center;line-height:1.6;margin:10px 0 4px">
-    Odat, reja, namoz, kundalik, suv, kayfiyat, dua, dori,<br>eslatma, oila, xarid va moliya <b>doim bepul</b>.
+    Odat, reja, namoz, kundalik, suv, kayfiyat, dua, eslatma,<br>oila asosi, moliya, inglizcha va mukofot o&#39;yinlari <b>doim bepul</b>.
   </div>
   <!-- 14.09.2026: Paynet QR to'lov bo'limi (havola bo'lsa ko'rinadi) -->
   <div id="paynet-box" style="display:none;background:var(--bg);border-radius:16px;padding:14px 16px;margin:10px 0 12px;text-align:center">
@@ -15181,7 +15449,7 @@ window.QRKod=M["index"];
     <b>Oila bo&#39;limi</b><br>
     Guruh a&#39;zolari bir-birining <b>faqat sonlarini</b> ko&#39;radi:
     nechta odat bajarildi, nechta namoz o&#39;qildi, ball, ketma-ketlik.
-    Kundalik, kayfiyat, moliya va dori &mdash; bularni guruh a&#39;zolari
+    Kundalik, kayfiyat va moliya &mdash; bularni guruh a&#39;zolari
     ko&#39;rmaydi. Guruhdan chiqsangiz sonlaringiz ham o&#39;chadi.<br><br>
 
     <b>Telegram eslatmalari</b><br>
