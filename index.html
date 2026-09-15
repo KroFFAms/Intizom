@@ -15549,5 +15549,21 @@ window.QRKod=M["index"];
 </div></div>
 
 <script src="bulut.js"></script>
+<script>
+/* 15.09.2026: Tugmalar bosilganda yengil tebranish (faqat telefonda, vibrate bo'lsa).
+   Sozlama → i_tebranish=false bo'lsa o'chadi. */
+function clickFeedback(){
+  try{
+    if(localStorage.getItem('i_tebranish')==='0') return;
+    if(navigator.vibrate) navigator.vibrate(25);
+  }catch(e){}
+}
+document.addEventListener('click', function(e){
+  try{
+    var t=e.target && e.target.closest ? e.target.closest('button, .hcard, .ritem, .nitem, .htile, .nav-item, .check, .hk-chk') : null;
+    if(t) clickFeedback();
+  }catch(e){}
+});
+</script>
 </body>
 </html>
