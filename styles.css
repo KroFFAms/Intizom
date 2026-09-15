@@ -401,7 +401,9 @@ button:active:not(.pin-btn), .btn:active, .hbtn:active, .nbtn:active {
 }
 
 /* 4. Sahifalar almashganda yumshoq "Fade & Up" effekti */
-.page {
+.page.active {
+  animation: pageSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
   animation: pageSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -466,4 +468,9 @@ button:active:not(.pin-btn), .btn:active, .hbtn:active, .nbtn:active {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--t2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page.active { animation: none; }
+  .card, .hcard, .ritem, .nitem, .fcard, .htile, button, .btn { transition: none; }
 }
