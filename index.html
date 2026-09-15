@@ -71,6 +71,19 @@
 .u-t115m2.u-t115m2.u-t115m2{font-size:11.5px;color:var(--t2);margin-top:2px}
 .u-bgw30.u-bgw30.u-bgw30{background:rgba(255,255,255,.3)}
 .u-py14.u-py14.u-py14{padding:14px 0}
+
+/* 15.09.2026: tuzilma — bitta katta raqam, chapdan ikonka yorlig'i, soatlik ustunlar */
+.hero-katta{font-size:42px;font-weight:900;color:var(--g);line-height:1;letter-spacing:-1.5px;margin:4px 0 2px}
+.hero-katta span{font-size:20px;font-weight:700;color:var(--t2);letter-spacing:0;margin-left:2px}
+.hero-izoh{font-size:13.5px;color:var(--t2);margin-bottom:4px}
+.card-ikon.card-ikon{position:relative;padding-left:64px}
+.card-ikon .cikon{position:absolute;left:-8px;top:14px;width:46px;height:46px;border-radius:14px;background:var(--navy,#0D1B2A);color:#fff;display:flex;align-items:center;justify-content:center;font-size:21px;box-shadow:0 6px 14px rgba(13,27,42,.22)}
+.soatlik{display:flex;align-items:flex-end;gap:2px;height:64px;margin:10px 0 4px}
+.soatlik i{flex:1;display:block;background:var(--bd);border-radius:3px 3px 0 0;min-height:3px;position:relative}
+.soatlik i.reja{background:var(--navy,#0D1B2A);opacity:.35}
+.soatlik i.done{background:var(--g);opacity:1}
+.soatlik i.hozir:after{content:'';position:absolute;left:50%;bottom:-8px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--g)}
+.soatlik-x{display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-top:8px}
 </style>
 </head>
 <body>
@@ -262,17 +275,13 @@
     <div id="oila-taklif-strip"></div>
     <div id="kun-gapi"></div>
     <div class="hero" onclick="gotoPage('hisobot',null)" style="cursor:pointer" title="Bugun nima qildim">
-      <div class="hero-halqa"><span id="b-foiz">0%</span></div>
       <div class="u-f1m">
         <div class="hero-sarlavha">Bugun</div>
-        <div class="hero-qator">
-          <span><b id="b-st1">0</b> reja</span>
-          <span><b id="b-st2">0</b> odat</span>
-          <span><b id="b-st3">0</b> namoz</span>
-        </div>
-        <div class="hero-streak">&#128293; <b id="b-st4">0</b> kunlik ketma-ketlik</div>
-        <div style="font-size:12.5px;color:var(--g);font-weight:700;margin-top:6px">Bugun nima qildim &rsaquo;</div>
+        <div class="hero-katta"><b id="b-katta">0</b><span id="b-jami">/0</span></div>
+        <div class="hero-izoh"><span id="b-st1">0</span> reja &middot; <span id="b-st2">0</span> odat &middot; <span id="b-st3">0</span> namoz</div>
+        <div class="hero-streak">&#128293; <b id="b-st4">0</b> kunlik ketma-ketlik <span style="opacity:.6;font-weight:400">&middot; batafsil &rsaquo;</span></div>
       </div>
+      <div class="hero-halqa"><span id="b-foiz">0%</span></div>
     </div>
   </div>
   <div class="u-p16">
@@ -334,7 +343,8 @@
     <!-- 14.09.2026: yashirin bo'limlar borligini eslatuvchi qator -->
     <div id="hw-qoshish" onclick="openHomeConfig()" style="display:none;text-align:center;font-size:14px;color:var(--t2);padding:10px 0 4px;cursor:pointer">&#10133; Bo'lim qo'shish &middot; <span id="hw-qoshish-n"></span> ta yashirin</div>
 
-    <div data-hw="bugunreja" class="card">
+    <div data-hw="bugunreja" class="card card-ikon">
+      <div class="cikon">&#128203;</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <div class="sec-title u-mb0">Bugungi reja</div>
         <button onclick="gotoPage('reja',document.getElementById('nav-reja'))" style="font-size:14px;color:var(--g);background:none;border:none;cursor:pointer;font-weight:700">Hammasi &rarr;</button>
@@ -4784,6 +4794,7 @@ function renderBosh(){
     var ulush = jamiK ? bajK/jamiK : 0;
     var foizEl = document.getElementById('b-foiz');
     if(foizEl) foizEl.textContent = Math.round(ulush*100)+'%';
+    setEl('b-katta', bajK); setEl('b-jami', '/'+jamiK);   /* 15.09.2026: bitta katta raqam */
     var hero = document.querySelector('.hero');
     if(hero) hero.style.setProperty('--kun', ulush.toFixed(3));
   }catch(e){}
@@ -7913,6 +7924,11 @@ window.intizomTest = function(){
   t('vaqtidan oldin — yo\'q', _vaqtiKeldimi('21:00', 20*60+59), false);
   t('vaqti kelgan — ha', _vaqtiKeldimi('21:00', 21*60), true);
   t('9:05 shakli', _vaqtiKeldimi('9:05', 9*60+5), true);
+  /* ---------- Soatlik ustunlar (15.09.2026) ---------- */
+  var SH=_soatlikHisob([{start:'09:00',done:true},{start:'9:30',done:false},{start:'21:00',done:true}],{bomdod:'05:10',peshin:'12:40',tahajjud:'03:00'},{bomdod:true});
+  t('soatlik 9 da 2 reja 1 done', [SH[9].reja,SH[9].done], [2,1]);
+  t('soatlik namoz qo\'shildi', [SH[5].reja,SH[5].done,SH[12].reja,SH[12].done], [1,1,1,0]);
+  t('soatlik tahajjud hisobga olinmaydi', SH[3].reja, 0);
   t('reja hm ko\'chmaydi', (_rejaKunYangi({'2026-09-13':[{id:1,name:'Sport',start:'07:00',hm:5},{id:2,name:'Bank',start:'09:00'}]},[],'2026-09-14')||[]).map(function(r){return r.name;}), ['Bank']);
 
   /* ---------- Oila kunlik topshiriq (14.09.2026) ---------- */
@@ -7997,7 +8013,32 @@ function _aiXulosaFaktlar(){
   }catch(e){}
   /* bog'liqliklar (statistik tekshiruvdan o'tganlar) */
   try{ bogliqliklar(kunlar.concat(oldingi)).slice(0,2).forEach(function(b){ f.push('Bog\'liqlik: '+String(b.matn).replace(/<[^>]+>/g,'')); }); }catch(e){}
+  /* 15.09.2026: o'tgan haftadagi xulosa va maslahat — AI uni tekshiradi, takrorlamaydi */
+  try{
+    var tr=S.g('i_ai_xulosa_tarix')||[], ot=null;
+    for(var i=0;i<tr.length;i++){ if(tr[i].hafta===oldingi[0]){ ot=tr[i]; break; } }
+    if(ot && ot.matn){
+      var qatorlar=String(ot.matn).split('\n').filter(function(x){return x.trim();});
+      f.push('O\'TGAN HAFTADAGI XULOSA: '+qatorlar.join(' '));
+      if(qatorlar.length) f.push('O\'TGAN HAFTADAGI MASLAHAT: '+qatorlar[qatorlar.length-1]);
+    }
+  }catch(e){}
   return f;
+}
+var _aiTarixOchiq=false;
+function _aiXulosaTarix(joriyHafta){
+  var tr=(S.g('i_ai_xulosa_tarix')||[]).filter(function(x){ return x.hafta!==joriyHafta && x.matn; });
+  if(!tr.length) return '';
+  var ich='';
+  if(_aiTarixOchiq){
+    ich='<div style="margin-top:6px">'+tr.map(function(x){
+      var d=new Date(x.hafta+'T12:00:00'), d2=new Date(d); d2.setDate(d2.getDate()+6);
+      return '<div style="padding:8px 0;border-top:1px solid var(--bd)"><div class="u-t13" style="font-weight:700">'+sanaUz(d,'oy')+' \u2014 '+sanaUz(d2,'oy')+'</div>'+
+        '<div style="font-size:13.5px;line-height:1.55;margin-top:2px">'+esc(x.matn).replace(/\n/g,'<br>')+'</div></div>';
+    }).join('')+'</div>';
+  }
+  return '<div style="margin-top:10px;border-top:1px solid var(--bd);padding-top:8px">'+
+    '<a href="#" onclick="_aiTarixOchiq=!_aiTarixOchiq;aiXulosaChiz(false);return false" style="font-size:13.5px;color:var(--g);font-weight:700;text-decoration:none">\uD83D\uDCDA Oldingi xulosalar ('+tr.length+') '+(_aiTarixOchiq?'\u25B2':'\u25BC')+'</a>'+ich+'</div>';
 }
 function aiXulosaChiz(yangila){
   var el=document.getElementById('ai-xulosa-card'); if(!el) return;
@@ -8013,11 +8054,11 @@ function aiXulosaChiz(yangila){
   }
   if(!yangila && kesh && kesh.hafta===hafta && kesh.matn){
     var qayta = kesh.sana!==bugun ? '<button onclick="aiXulosaChiz(true)" class="btn btn-out" style="padding:5px 10px;font-size:12.5px">\uD83D\uDD04 Yangilash</button>' : '<span class="u-t13">bugun yangilangan</span>';
-    el.innerHTML=karta('<div style="font-size:14.5px;line-height:1.6">'+esc(kesh.matn).replace(/\n/g,'<br>')+'</div><div class="u-t13" style="margin-top:6px">Faqat sizning raqamlaringiz asosida. '+esc(kesh.sana)+'</div>', qayta);
+    el.innerHTML=karta('<div style="font-size:14.5px;line-height:1.6">'+esc(kesh.matn).replace(/\n/g,'<br>')+'</div><div class="u-t13" style="margin-top:6px">Faqat sizning raqamlaringiz asosida. '+esc(kesh.sana)+'</div>'+_aiXulosaTarix(hafta), qayta);
     return;
   }
   if(!yangila){
-    el.innerHTML=karta('<div class="u-t14">Haftangiz raqamlaridan 3 jumlali xulosa: asosiy fakt, zaif joy, kelasi haftaga bitta maslahat.</div>',
+    el.innerHTML=karta('<div class="u-t14">Haftangiz raqamlaridan 3 jumlali xulosa: asosiy fakt, zaif joy, kelasi haftaga bitta maslahat.</div>'+_aiXulosaTarix(hafta),
       '<button onclick="aiXulosaChiz(true)" class="btn btn-g" style="padding:6px 12px;font-size:13px">Tahlil qil</button>');
     return;
   }
@@ -8025,7 +8066,7 @@ function aiXulosaChiz(yangila){
   var faktlar=_aiXulosaFaktlar();
   if(faktlar.length<3){ showNotif('\u26A0\uFE0F','Tahlil uchun hali ma\'lumot kam \u2014 bir necha kun belgilab ko\'ring'); return; }
   el.innerHTML=karta('<div class="u-t14">\u23F3 Tahlil qilinmoqda...</div>');
-  var sys='Siz "Intizom" ilovasining shaxsiy tahlilchisisiz. Foydalanuvchi haftasining FAKTLARI beriladi. Faqat shu raqamlarga tayaning, hech qanday raqam yoki sabab o\'ylab topmang. O\'zbek tilida (lotin), sodda va iliq, lekin maqtovsiz va ayblovsiz \u2014 fakt va oqibat. Aynan 3 jumla, har biri yangi qatordan: 1) haftaning asosiy fakti (raqam bilan); 2) eng zaif joy va u nimaga bog\'liq bo\'lishi mumkin (faqat berilgan bog\'liqlik yoki uyqu/kayfiyat raqami bo\'lsa); 3) kelasi haftaga BITTA aniq, kichik maslahat. Emoji va sarlavha yo\'q.';
+  var sys='Siz "Intizom" ilovasining shaxsiy tahlilchisisiz. Foydalanuvchi haftasining FAKTLARI beriladi. Faqat shu raqamlarga tayaning, hech qanday raqam yoki sabab o\'ylab topmang. O\'zbek tilida (lotin), sodda va iliq, lekin maqtovsiz va ayblovsiz \u2014 fakt va oqibat. Aynan 3 jumla, har biri yangi qatordan: 1) haftaning asosiy fakti (raqam bilan); 2) eng zaif joy va u nimaga bog\'liq bo\'lishi mumkin (faqat berilgan bog\'liqlik yoki uyqu/kayfiyat raqami bo\'lsa); 3) kelasi haftaga BITTA aniq, kichik maslahat. Agar "O\'TGAN HAFTADAGI MASLAHAT" berilgan bo\'lsa, 2-jumlada u bajarilgan-bajarilmaganini raqam bilan ayting va 3-jumlada o\'sha maslahatni takrorlamang \u2014 yangisini bering yoki bajarilmagan bo\'lsa, uni osonroq ko\'rinishda qaytaring. Emoji va sarlavha yo\'q.';
   aiFetch('xulosa', {system:sys, max_tokens:400, messages:[{role:'user', content:'Hafta faktlari:\n- '+faktlar.join('\n- ')}]})
     .then(function(r){ return r.json(); })
     .then(function(d){
@@ -8033,10 +8074,48 @@ function aiXulosaChiz(yangila){
       try{ matn=(d.content&&d.content[0]&&d.content[0].text)||''; }catch(e){}
       if(!matn){ el.innerHTML=karta('<div class="u-t14">Javob kelmadi. Keyinroq urinib ko\'ring.</div>','<button onclick="aiXulosaChiz(true)" class="btn btn-out" style="padding:5px 10px;font-size:12.5px">Qayta</button>'); return; }
       S.s('i_ai_xulosa',{hafta:hafta, matn:matn.trim(), sana:bugun});
+      /* 15.09.2026: oldingi xulosalar yo'qolmaydi — tarix (26 hafta) */
+      try{
+        var tr=(S.g('i_ai_xulosa_tarix')||[]).filter(function(x){ return x.hafta!==hafta; });
+        tr.unshift({hafta:hafta, matn:matn.trim(), sana:bugun});
+        S.s('i_ai_xulosa_tarix', tr.slice(0,26));
+      }catch(e){}
       try{ hodisaYubor('ai_xulosa'); }catch(e){}
       aiXulosaChiz(false);
     })
     .catch(function(){ el.innerHTML=karta('<div class="u-t14">Tarmoq xatosi.</div>','<button onclick="aiXulosaChiz(true)" class="btn btn-out" style="padding:5px 10px;font-size:12.5px">Qayta</button>'); });
+}
+/* 15.09.2026: kun soatlar bo'yicha — reja (boshlanish soati) va namoz (vaqti).
+   Navy ustun = rejalashtirilgan, feruza = bajarilgan. Toza yadro _soatlikHisob test qilinadi. */
+function _soatlikHisob(rejalar, namozVaqt, namozBajarilgan){
+  var h=[]; for(var i=0;i<24;i++) h.push({reja:0, done:0});
+  (rejalar||[]).forEach(function(r){
+    var m=/^(\d{1,2}):/.exec(r.start||''); if(!m) return;
+    var k=parseInt(m[1],10)%24; h[k].reja++; if(r.done) h[k].done++;
+  });
+  Object.keys(namozVaqt||{}).forEach(function(n){
+    if(n==='tahajjud') return;
+    var m=/^(\d{1,2}):/.exec(namozVaqt[n]||''); if(!m) return;
+    var k=parseInt(m[1],10)%24; h[k].reja++; if(namozBajarilgan && namozBajarilgan[n]) h[k].done++;
+  });
+  return h;
+}
+function _soatlikChiz(bugun){
+  try{
+    var rj=(state.reja&&state.reja.bugun&&state.reja.bugun[bugun])||[];
+    var nv={}; try{ nv=NAMOZ_VAQT_CALC()||{}; }catch(e){}
+    var nb=(state.din&&state.din.namoz&&state.din.namoz[bugun])||{};
+    var h=_soatlikHisob(rj, nv, nb);
+    var maxN=1; h.forEach(function(x){ if(x.reja>maxN) maxN=x.reja; });
+    var hozir=new Date().getHours();
+    var bars=h.map(function(x,i){
+      var cls=x.done ? 'done' : (x.reja ? 'reja' : '');
+      var hh=x.reja ? Math.max(18, Math.round(x.reja/maxN*100)) : 5;
+      return '<i class="'+cls+(i===hozir?' hozir':'')+'" style="height:'+hh+'%" title="'+i+':00 \u2014 '+x.done+'/'+x.reja+'"></i>';
+    }).join('');
+    return '<div class="soatlik">'+bars+'</div><div class="soatlik-x"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>'+
+      '<div class="u-t13" style="margin-top:4px">Soatlar bo\'yicha: <span style="color:var(--g);font-weight:700">\u25A0</span> bajarildi \u00B7 <span style="opacity:.5">\u25A0</span> rejalashtirilgan</div>';
+  }catch(e){ return ''; }
 }
 function renderHisobot(period){
   period=period||'kun';
@@ -8051,13 +8130,14 @@ function renderHisobot(period){
                  : soat<18 ? 'Kunning yarmi o\'tdi'
                  : soat<22 ? 'Kun yakunlanmoqda' : 'Kun tugadi';
 
-    var chiq = '<div class="card u-mb12">' +
+    var chiq = '<div class="card u-mb12 card-ikon"><div class="cikon">\uD83D\uDCC5</div>' +
       '<div class="u-t13">'+sanaUz(new Date(),'toliq')+'</div>' +
       '<div style="font-size:20px;font-weight:800;margin:3px 0 2px">'+sarlavha+'</div>' +
-      '<div class="u-t14">Bugun o\'zingiz uchun nima qildingiz</div></div>';
+      '<div class="u-t14">Bugun o\'zingiz uchun nima qildingiz</div>' +
+      _soatlikChiz(bugun) + '</div>';
 
     if(d.qildim.length){
-      chiq += '<div class="card u-mb12">' +
+      chiq += '<div class="card u-mb12 card-ikon"><div class="cikon" style="background:var(--g)">\u2713</div>' +
         '<div class="sec-title" style="color:var(--g)">Bajarildi</div>' +
         d.qildim.map(function(x){
           return '<div style="display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--bd);font-size:14.5px;line-height:1.5">' +
