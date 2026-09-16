@@ -110,6 +110,23 @@
 #qaytish-ovl .q-k{width:100%;max-width:420px}
 #qaytish-ovl .q-od{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;margin-top:9px;border:1.5px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.06);color:#fff;font-size:15px;font-weight:700;text-align:left;cursor:pointer;font-family:inherit}
 #qaytish-ovl .q-od:active{background:rgba(30,140,140,.35)}
+
+/* 16.09.2026: telefon — bosh ekran ixcham */
+.hero.hero{flex-wrap:wrap;row-gap:0}
+.hero .hero-keyingi{flex:0 0 100%;margin-top:12px}
+.hero-keyingi .hk-matn{flex:1;min-width:0;line-height:1.35}
+.niyat.niyat{padding:9px 12px;margin-bottom:10px}
+.niyat .niyat-m{font-size:13.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media (max-width:480px){
+  .hero-katta{font-size:36px}
+  .niyat .niyat-m span{display:none}
+}
+
+.ai-kun{background:var(--card);border:1px solid var(--bd);border-left:3px solid #875DE5;border-radius:var(--r-md,16px);padding:12px 14px;margin-bottom:12px;cursor:pointer}
+.ai-kun .ak-sar{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--t2);margin-bottom:6px}
+.ai-kun .ak-m{font-size:14.5px;line-height:1.55;color:var(--text)}
+.ai-kun .ak-x{margin-left:auto;width:24px;height:24px;border:none;border-radius:50%;background:var(--bg);color:var(--t2);cursor:pointer}
+.ai-kun.kutish .ak-m{color:var(--t2);font-style:italic}
 </style>
 </head>
 <body>
@@ -307,12 +324,13 @@
         <div class="hero-katta"><b id="b-katta">0</b><span id="b-jami">/0</span></div>
         <div class="hero-izoh"><span id="b-st1">0</span> reja &middot; <span id="b-st2">0</span> odat &middot; <span id="b-st3">0</span> namoz</div>
         <div class="hero-streak">&#128293; <b id="b-st4">0</b> kunlik ketma-ketlik <span style="opacity:.6;font-weight:400">&middot; batafsil &rsaquo;</span></div>
-        <div class="hero-keyingi" id="b-keyingi" style="display:none"></div>
       </div>
       <div class="hero-halqa"><span id="b-foiz">0%</span></div>
+      <div class="hero-keyingi" id="b-keyingi" style="display:none"></div>
     </div>
   </div>
   <div class="u-p16">
+    <div id="ai-kunlik" style="display:none"></div>
 
     <div data-hw="obhavo" onclick="shaharTanla()" class="hstrip" style="cursor:pointer">
       <div id="ob-icon" style="font-size:26px;line-height:1">&#127780;&#65039;</div>
@@ -2208,7 +2226,7 @@ function aiFetch(tur, body, opts){
                : (r.status===402 || r.status===403) ? '\u2B50 PRO kerak'
                : r.status===429 ? '\u23F3 Bugungi limit tugadi'
                : '\u26A0\uFE0F AI xatosi ('+r.status+')';
-      try{ showNotif(sarl, String(xabar).slice(0,140)); }catch(e){}
+      if(!opts.jim){ try{ showNotif(sarl, String(xabar).slice(0,140)); }catch(e){} }
       try{ console.warn('AI', tur, r.status, d); }catch(e){}
       return { ok:false, status:r.status, json:function(){ return Promise.resolve(d); } };
     });
@@ -4845,7 +4863,9 @@ function kataklarniYangila(){
   try{ ochilishTekshir(); ochilishStrip(); }catch(e){}
   try{ haftaYakunStrip(); }catch(e){}
   try{ oilaTaklifStrip(); }catch(e){}
-  try{ kunGapi(); }catch(e){}
+  /* 16.09.2026: kun-gapi yashirildi — "Bugun" kartasi va keyingi ish qatori
+     xuddi shu ma'lumotni beradi, ikkalasi ekranni pastga surib yuborardi */
+  try{ var kg=document.getElementById('kun-gapi'); if(kg){ kg.innerHTML=''; kg.style.display='none'; } }catch(e){}
   var hammasi = document.querySelectorAll('.htsub[data-hs]');
   for(var i=0;i<hammasi.length;i++){
     var el = hammasi[i];
@@ -4908,10 +4928,10 @@ function keyingiIshChiz(today){
     if(k.kechikkan){ el.className='hero-keyingi'; el.style.display='flex'; el.innerHTML='<span>\u23F3 <b>'+k.kechikkan+'</b> ta ish vaqtidan o\u2018tdi</span>'+tugma('Ko\u2018rish','reja','nav-reja'); return; }
     el.style.display='none'; return;
   }
-  var farq=k.keyingi.daq-hozir, vaqtM = farq<1 ? 'hozir' : (farq<60 ? farq+' daqiqadan keyin' : Math.floor(farq/60)+' soat '+(farq%60)+' daqiqadan keyin');
+  var farq=k.keyingi.daq-hozir, vaqtM = farq<1 ? 'hozir' : (farq<60 ? farq+' daq' : Math.floor(farq/60)+' soat '+(farq%60)+' daq') + (farq<1?'':' keyin');
   var sahifa = k.keyingi.tur==='din' ? 'din' : (k.keyingi.tur==='odat' ? 'odat' : 'reja');
   el.className='hero-keyingi'; el.style.display='flex';
-  el.innerHTML='<span>\u23F1 <b>'+vaqtM+'</b> \u2014 '+esc(k.keyingi.nom)+(k.kechikkan?' <span class="u-t13">\u00B7 '+k.kechikkan+' ta kechikdi</span>':'')+'</span>'+tugma('Ochish',sahifa,'nav-'+sahifa);
+  el.innerHTML='<span class="hk-matn"><b>'+esc(k.keyingi.nom)+'</b> \u00B7 '+vaqtM+(k.kechikkan?' <span class="u-t13">\u00B7 '+k.kechikkan+' ta kechikdi</span>':'')+'</span>'+tugma('Ochish',sahifa,'nav-'+sahifa);
 }
 var _vaqtTartibSoat=-1;
 function vaqtTartib(){
@@ -5032,6 +5052,98 @@ function guvohTanla(){
     };
   });
 }
+/* ==================================================================
+   AI KUNLIK XULOSA — o'zi chiqadi                       16.09.2026
+   • 20:00 dan keyin ilova ochilsa — BUGUNGI kun xulosasi yoziladi.
+   • Kechqurun ochilmagan bo'lsa — ertasi 12:00 gacha KECHAGI xulosa.
+   • Tugma yo'q: bosh ekranda "Bugun" kartasidan keyin o'zi paydo bo'ladi.
+   • Faktlar ilovada hisoblanadi, AI faqat ular ustidan 3 jumla yozadi;
+     kechagi maslahat bajarilganmi — tekshiradi, niyatga bog'laydi.
+   • Server: ai edge LIMIT ga `kunlik: 1`. PRO bo'lmasa jim o'tadi.
+   • Saqlash: i_ai_kunlik {sana:{matn,vaqt}} — oxirgi 30 kun.
+   ================================================================== */
+/* Toza yadro: qaysi kun uchun, yaratish kerakmi */
+function _kunlikReja(soat, bugun, kecha, kesh, yopildi){
+  kesh=kesh||{};
+  if(soat>=20){
+    if(kesh[bugun]) return {kun:bugun, yarat:false, korsat:yopildi!==bugun};
+    return {kun:bugun, yarat:true, korsat:false};
+  }
+  if(soat<12){
+    if(kesh[kecha]) return {kun:kecha, yarat:false, korsat:yopildi!==kecha};
+    return {kun:kecha, yarat:true, korsat:false};
+  }
+  return {kun:null, yarat:false, korsat:false};
+}
+function _kunFaktlar(k){
+  var f=[], od=state.odatlar||[], bajO=[], qolO=[];
+  od.forEach(function(o){ if(o.hist&&o.hist[k]) bajO.push(o.name); else if(!(o.dam&&o.dam[k])) qolO.push(o.name); });
+  var rj=(state.reja&&state.reja.bugun&&state.reja.bugun[k])||[];
+  var bajR=rj.filter(function(r){return r.done;}), qolR=rj.filter(function(r){return !r.done;});
+  var nz=0; try{ nz=Object.keys((state.din&&state.din.namoz&&state.din.namoz[k])||{}).length; }catch(e){}
+  var jami=od.length+rj.length;
+  if(!jami && !nz) return null;
+  f.push('Odatlar: '+bajO.length+'/'+od.length+(bajO.length?' (bajarildi: '+bajO.slice(0,5).join(', ')+')':'')+(qolO.length?'; qoldi: '+qolO.slice(0,5).join(', '):''));
+  if(rj.length) f.push('Reja: '+bajR.length+'/'+rj.length+(qolR.length?'; bajarilmadi: '+qolR.slice(0,5).map(function(r){return r.name+' ('+(r.start||'')+')';}).join(', '):''));
+  f.push('Namoz: '+nz+'/6');
+  try{ var sv=(S.g('i_suv')||{})[k]||0; if(sv) f.push('Suv: '+Math.round(sv/250)+'/8 stakan'); }catch(e){}
+  try{ var md=(S.g('i_mood')||{})[k]; if(md) f.push('Kayfiyat: '+(md.label||'')+' ('+md.val+'/5)'+(md.note?' — izoh: '+String(md.note).slice(0,80):'')); }catch(e){}
+  try{ var uy=getUyquData().filter(function(u){return u.sana===k;})[0]; if(uy) f.push('Uyqu: '+uy.soat+' soat'); }catch(e){}
+  try{ var st=0; od.forEach(function(o){ if((o.streak||0)>st) st=o.streak||0; }); if(st) f.push('Eng uzun zanjir: '+st+' kun'); }catch(e){}
+  try{ if(yengilOl()[k]) f.push('Bu kun foydalanuvchi "yengil kun" deb belgilagan (og\'ir kun)'); }catch(e){}
+  try{
+    var kk=_kunQosh(k,-1), oldO=od.filter(function(o){return o.hist&&o.hist[kk];}).length;
+    f.push('Oldingi kun odatlar: '+oldO+'/'+od.length);
+    var ot=(S.g('i_ai_kunlik')||{})[kk];
+    if(ot && ot.matn){ var q=String(ot.matn).split('\n').filter(function(x){return x.trim();}); if(q.length) f.push('OLDINGI KUNGI MASLAHAT: '+q[q.length-1]); }
+  }catch(e){}
+  try{ if(niyatOl()) f.push('Foydalanuvchining niyati: '+niyatOl()); }catch(e){}
+  return f;
+}
+var _aiKunlikJarayon=false;
+function aiKunlikChiz(){
+  var el=document.getElementById('ai-kunlik'); if(!el) return;
+  var n=new Date(), bugun=bugunKun(), kecha=kechaKun();
+  var kesh=S.g('i_ai_kunlik')||{}, yop=localStorage.getItem('i_ai_kunlik_yopildi');
+  var r=_kunlikReja(n.getHours(), bugun, kecha, kesh, yop);
+  if(r.korsat && kesh[r.kun]){
+    el.style.display='block';
+    el.innerHTML='<div class="ai-kun" onclick="gotoPage(\'hisobot\',null)"><div class="ak-sar">🧠 '+(r.kun===bugun?'Bugungi xulosa':'Kechagi kun xulosasi')+
+      '<button class="ak-x" onclick="event.stopPropagation();try{localStorage.setItem(\'i_ai_kunlik_yopildi\',\''+r.kun+'\');}catch(e){};aiKunlikChiz()">&times;</button></div>'+
+      '<div class="ak-m">'+esc(kesh[r.kun].matn).replace(/\n/g,'<br>')+'</div></div>';
+    return;
+  }
+  el.style.display='none'; el.innerHTML='';
+  if(!r.yarat || _aiKunlikJarayon) return;
+  /* kuniga ko'pi bilan 2 urinish, ruxsat yo'q bo'lsa o'sha kun boshqa urinmaydi */
+  var ur=localStorage.getItem('i_ai_kunlik_urinish')||''; var p=ur.split('|');
+  if(p[0]===r.kun && (p[1]==='yoq' || +p[1]>=2)) return;
+  if(!window.intizomSb && !(window.BULUT&&window.BULUT.rpc)) return;
+  var faktlar=_kunFaktlar(r.kun); if(!faktlar) return;
+  _aiKunlikJarayon=true;
+  localStorage.setItem('i_ai_kunlik_urinish', r.kun+'|'+((p[0]===r.kun?(+p[1]||0):0)+1));
+  el.style.display='block';
+  el.innerHTML='<div class="ai-kun kutish"><div class="ak-sar">🧠 '+(r.kun===bugun?'Bugungi xulosa':'Kechagi kun xulosasi')+'</div><div class="ak-m">Kuningiz tahlil qilinmoqda…</div></div>';
+  var sys='Siz "Intizom" ilovasining shaxsiy murabbiyisiz. Foydalanuvchining BIR KUNLIK faktlari beriladi. Faqat shu faktlarga tayaning, raqam yoki sabab o\'ylab topmang. O\'zbek tilida (lotin), sodda va iliq, maqtovsiz va ayblovsiz. Aynan 3 jumla, har biri yangi qatordan: 1) kunning eng yaxshi fakti (nomi yoki raqami bilan); 2) nima qoldi va, agar "OLDINGI KUNGI MASLAHAT" berilgan bo\'lsa, u bajarildimi; 3) ertaga uchun BITTA aniq, kichik qadam — agar niyat berilgan bo\'lsa, shu niyatga bog\'lang. Og\'ir kun bo\'lsa, yumshoqroq bo\'ling. Emoji va sarlavha yo\'q.';
+  aiFetch('kunlik', {system:sys, max_tokens:300, messages:[{role:'user', content:'Sana: '+r.kun+'\nFaktlar:\n- '+faktlar.join('\n- ')}]}, {jim:true})
+    .then(function(res){
+      if(!res || res.ok===false){
+        if(res && (res.status===403 || res.status===402)) localStorage.setItem('i_ai_kunlik_urinish', r.kun+'|yoq');
+        throw new Error('ai');
+      }
+      return res.json();
+    })
+    .then(function(d){
+      var matn=''; try{ matn=(d.content&&d.content[0]&&d.content[0].text)||''; }catch(e){}
+      if(!matn) throw new Error('bo\'sh');
+      var k2=S.g('i_ai_kunlik')||{}; k2[r.kun]={matn:matn.trim(), vaqt:new Date().toISOString()};
+      var kalitlar=Object.keys(k2).sort(); while(kalitlar.length>30){ delete k2[kalitlar.shift()]; }
+      S.s('i_ai_kunlik',k2);
+      try{ hodisaYubor('ai_kunlik'); }catch(e){}
+    })
+    .catch(function(){})
+    .then(function(){ _aiKunlikJarayon=false; aiKunlikChiz(); });
+}
 function renderBosh(){
   const p=state.profil,today=bugunKun();
   const h=new Date().getHours();
@@ -5055,6 +5167,7 @@ function renderBosh(){
   setEl('b-st3',doneN+'/6');
   setEl('b-st4',maxS);
   try{ keyingiIshChiz(today); vaqtTartib(); zanjirBayram(maxS); niyatChiz(); }catch(e){}
+  setTimeout(function(){ try{ aiKunlikChiz(); }catch(e){} }, 3500);   /* sessiya tayyor bo'lsin */
   /* Kunning umumiy o'lchovi \u2014 reja, odat va namoz birga.
      Ilgari to'rtta alohida raqam turardi va ulardan kun qanday
      ketayotgani darhol bilinmasdi. */
@@ -8317,6 +8430,12 @@ window.intizomTest = function(){
   (function(){ var _b=bugunKun; bugunKun=function(){return '2026-09-15';}; try{ streakHisobla(YS); }finally{ bugunKun=_b; } })();
   t('yengil kun zanjirni uzmaydi', YS.streak, 2);
   t('daq → vaqt', [_daqDanVaqt(330),_daqDanVaqt(1445)], ['05:30','00:05']);
+  /* ---------- AI kunlik (16.09.2026) ---------- */
+  t('kunlik 21:00 yaratadi', _kunlikReja(21,'2026-09-14','2026-09-13',{},null), {kun:'2026-09-14',yarat:true,korsat:false});
+  t('kunlik 21:00 bor — ko\'rsatadi', _kunlikReja(21,'2026-09-14','2026-09-13',{'2026-09-14':{matn:'x'}},null).korsat, true);
+  t('kunlik ertalab kechagini', _kunlikReja(8,'2026-09-14','2026-09-13',{},null).kun, '2026-09-13');
+  t('kunlik tushdan keyin yo\'q', _kunlikReja(15,'2026-09-14','2026-09-13',{'2026-09-13':{matn:'x'}},null).korsat, false);
+  t('kunlik yopilgan', _kunlikReja(9,'2026-09-14','2026-09-13',{'2026-09-13':{matn:'x'}},'2026-09-13').korsat, false);
   t('reja hm ko\'chmaydi', (_rejaKunYangi({'2026-09-13':[{id:1,name:'Sport',start:'07:00',hm:5},{id:2,name:'Bank',start:'09:00'}]},[],'2026-09-14')||[]).map(function(r){return r.name;}), ['Bank']);
 
   /* ---------- Oila kunlik topshiriq (14.09.2026) ---------- */
@@ -8522,6 +8641,7 @@ function renderHisobot(period){
       '<div class="u-t13">'+sanaUz(new Date(),'toliq')+'</div>' +
       '<div style="font-size:20px;font-weight:800;margin:3px 0 2px">'+sarlavha+'</div>' +
       '<div class="u-t14">Bugun o\'zingiz uchun nima qildingiz</div>' +
+      (function(){ try{ var kk=(S.g('i_ai_kunlik')||{})[bugun]; return kk&&kk.matn ? '<div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(135,93,229,.08);font-size:14px;line-height:1.55">\uD83E\uDDE0 '+esc(kk.matn).replace(/\n/g,'<br>')+'</div>' : ''; }catch(e){ return ''; } })() +
       (niyatOl() ? '<div style="margin-top:8px;font-size:14px;font-style:italic;color:var(--navy,#0D1B2A)">\uD83C\uDFAF Bularning hammasi \u2014 '+esc(niyatOl().toLowerCase())+' uchun.</div>' : '') +
       _soatlikChiz(bugun) + '</div>';
 
