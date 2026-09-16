@@ -2430,50 +2430,18 @@ const MOTIVLAR=[
 
 if(state.dark)document.body.classList.add('dark');
 if(!S.g('i_inited3')){
-  const t=bugunKun();
-  /* BOSHLANG'ICH ODATLAR \u2014 5 ta, o'zini rivojlantirish uchun.
-     Kerak bo'lsa odam o'zi qo'shadi: ko'p bo'lgani yordam bermaydi.
-
-     Namoz ataylab yo'q \u2014 uning o'z bo'limi bor (Din), u yerda
-     besh vaqt alohida belgilanadi. Ikki joyda turgani faqat
-     chalkashlik tug'diradi.
-
-     streak: 0 va hist bo'sh \u2014 ilgari bu yerda 3, 7, 8 kabi
-     soxta raqamlar turardi. Odam birinchi kirganda o'zi
-     qilmagan ketma-ketlikni ko'rardi, bu esa streakning butun
-     ma'nosini yo'qotadi. */
-  state.odatlar=[
-    {id:1,name:"Vaqtli uyg\'onish",icon:'🌅',color:'linear-gradient(135deg,#DB9725,#DE7831)',time:'04:00',streak:0,hist:{}},
-    {id:2,name:'1 stakan suv ichish',icon:'💧',color:'linear-gradient(135deg,#4F86E2,#3268DE)',time:'',streak:0,hist:{}},
-    {id:3,name:"20 varaq kitob o\'qish",icon:'📚',color:'linear-gradient(135deg,#875DE5,#7F46E1)',time:'21:00',streak:0,hist:{}},
-    {id:4,name:'20 daqiqa mashq',icon:'🏃',color:'linear-gradient(135deg,#1E8C8C,#166B6B)',time:'07:00',streak:0,hist:{}},
-    {id:5,name:'Kunni ehson bilan boshlash',icon:'🤲',color:'linear-gradient(135deg,#E76FAE,#E35199)',time:'',streak:0,hist:{}},
-  ];
-  /* Moliya bo'sh boshlanadi. Ilgari bu yerda namuna sifatida
-     "Oylik maosh 3 500 000", "Oziq-ovqat", "Transport",
-     "Jamg'arma" turardi. Ular haqiqiy yozuvga o'xshab ko'rinar
-     va foydalanuvchi o'z pulini yozganda soxta raqamlar bilan
-     aralashib ketardi. Pul \u2014 o'ylab topilmaydigan narsa. */
+  /* 16.09.2026: NAMUNA ENDI QO'YILMAYDI.
+     Ilgari har yangi qurilmada (yoki ilova qayta o'rnatilganda) 5 ta
+     namunaviy odat va 7 ta namunaviy reja yaratilib, DARHOL serverga
+     yuborilardi — bulutdan haqiqiy ma'lumot kelishidan oldin. Natijada
+     bitta hisobda bir xil 5 odatning 6 ta nusxasi paydo bo'ldi.
+     Endi: yangi foydalanuvchi kirish suhbatida BITTA odatini o'zi
+     tanlaydi (kirishSuhbati), mavjud hisob esa odatlarini bulutdan
+     oladi. Bo'sh ro'yxat — "+" bilan qo'shiladi; namuna kerak bo'lsa
+     Sozlama → "Namunani qayta qo'yish" (namunaniQoy). */
+  state.odatlar=[];
   state.trans=[];
-  /* REJA \u2014 faqat BUGUN tugaydigan ishlar.
-     Ilgari bu yerda shablon turardi: yugurish, kitob, arab tili
-     \u2014 ya'ni har kuni takrorlanadigan ishlar, aynan Odatning
-     ishi. Shuning uchun ikki bo'lim bir xil ko'rinardi.
-     Endi shablon bo'sh: misol uchun qo'yilgan uchta ish
-     bugun bajarilsa tamom, ertaga ro'yxat bo'shab qoladi. */
   state.reja.shablon=[];
-  /* Kun taqsimoti \u2014 MISOL. Har kim o'z kasbiga qarab
-     o'zgartiradi: bu yerdagi "hisobot" va "hujjat" o'rniga
-     o'z ishingizni yozasiz. */
-  state.reja.bugun[t]=[
-    {id:Date.now()+1,name:"Uyg\'onish",start:'04:00',end:'04:30',icon:'🌅',color:'#DB9725',signal:-1,done:false},
-    {id:Date.now()+2,name:'Ishga borish',start:'08:00',end:'08:30',icon:'🚗',color:'#64748B',signal:10,done:false},
-    {id:Date.now()+3,name:'Hisobot tayyorlash',start:'08:30',end:'09:00',icon:'📊',color:'#4F86E2',signal:5,done:false},
-    {id:Date.now()+4,name:'Hujjatlarni tikish',start:'09:00',end:'10:00',icon:'📄',color:'#875DE5',signal:-1,done:false},
-    {id:Date.now()+5,name:'Ish',start:'10:00',end:'18:00',icon:'💼',color:'#DE7831',signal:-1,done:false},
-    {id:Date.now()+6,name:'Farzandlar bilan vaqt',start:'18:00',end:'20:00',icon:'👨‍👩‍👧',color:'#E35199',signal:10,done:false},
-    {id:Date.now()+7,name:'Uyqu',start:'22:00',end:'22:30',icon:'🌙',color:'#6062E5',signal:15,done:false},
-  ];
   S.s('i_odatlar',state.odatlar);S.s('i_reja',state.reja);S.s('i_trans',state.trans);
   S.s('i_inited3',true);
 }
@@ -3090,15 +3058,25 @@ var NIYAT_NAMUNA=[
   ['\u23F3','Vaqtimni o\u2018zim boshqarish'],
   ['\uD83C\uDFAF','Katta maqsadimga yetish']
 ];
+var NIYAT_KUCHLI=[
+  'Motivatsiya tugaydi. Intizom qoladi.',
+  'Intizom \u2014 kayfiyat yo\u2018q kuni ham o\u2018zingizga bergan so\u2018zni bajarish.',
+  'Odam bir kunda emas \u2014 har kuni quriladi.',
+  'Bugun qoldirgan ish ertaga ikki barobar og\u2018ir bo\u2018ladi.',
+  'Katta o\u2018zgarish \u2014 kichik ishni har kuni takrorlash.',
+  'Siz kim bo\u2018lishni xohlasangiz, bugun o\u2018sha odamdek yashang.',
+  'Erkinlik intizomdan boshlanadi: o\u2018zini boshqargan odam vaqtini boshqaradi.'
+];
 function niyatOl(){ var v=S.g('i_niyat'); return (typeof v==='string') ? v.trim() : ''; }
 function niyatChiz(){
   var el=document.getElementById('b-niyat'); if(!el) return;
   var v=niyatOl();
   if(v){ el.innerHTML='<span class="niyat-b">\uD83C\uDFAF</span><span class="niyat-m">'+esc(v)+'</span>'; el.className='niyat'; el.style.display='flex'; return; }
-  /* yozilmagan — yumshoq taklif (yopilsa 7 kun ko'rinmaydi) */
-  try{ var y=localStorage.getItem('i_niyat_yopildi'); if(y && (Date.now()-(+y))<7*86400000){ el.style.display='none'; return; } }catch(e){}
-  el.className='niyat bosh'; el.style.display='flex';
-  el.innerHTML='<span class="niyat-b">\uD83C\uDFAF</span><span class="niyat-m">Intizomni nima uchun ochasiz? Bir jumla yozing \u2014 har kuni ko\u2018rinib turadi</span><span class="niyat-x" onclick="event.stopPropagation();try{localStorage.setItem(\'i_niyat_yopildi\',String(Date.now()));}catch(e){};niyatChiz()">&times;</span>';
+  /* 16.09.2026: yozilmagan bo'lsa — kuchli standart jumla (har kuni boshqasi);
+     bosilsa o'zinikini yozadi. Endi "bir jumla yozing" degan bo'sh taklif emas. */
+  var kunIdx=Math.floor(Date.now()/86400000)%NIYAT_KUCHLI.length;
+  el.className='niyat'; el.style.display='flex';
+  el.innerHTML='<span class="niyat-b">\uD83C\uDFAF</span><span class="niyat-m">'+esc(NIYAT_KUCHLI[kunIdx])+' <span style="font-style:normal;font-size:12px;color:var(--t2);opacity:.75">\u00B7 o\u2018zingiznikini yozish \u203A</span></span>';
 }
 function niyatTahrir(){
   var v=niyatOl();
@@ -3277,8 +3255,9 @@ function kirishSuhbati(qayta){
     function saqla(){
       state.odatlar = S.g('i_odatlar') || state.odatlar || [];
       var yangiOdat={id:Date.now(), name:tanlangan.nom, icon:tanlangan.icon, color:tanlangan.color, time:vaqt||'', streak:0, hist:{}, manba:'', sabab:''};
-      if(yangi) state.odatlar=[yangiOdat];
-      else {
+      /* 16.09.2026: ro'yxat endi ALMASHTIRILMAYDI (namuna qo'yilmaydi, mavjud
+         hisobning odatlari bulutdan keladi) — faqat qo'shiladi, nom bo'yicha takrorsiz */
+      {
         var bor=state.odatlar.some(function(o){ return String(o.name).toLowerCase()===tanlangan.nom.toLowerCase(); });
         if(!bor) state.odatlar.push(yangiOdat); else yangiOdat=state.odatlar.find(function(o){ return String(o.name).toLowerCase()===tanlangan.nom.toLowerCase(); });
       }
