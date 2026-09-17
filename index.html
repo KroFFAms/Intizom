@@ -2140,6 +2140,7 @@ const S={
     try{
       if(!window.intizomYozuv || !window.intizomYozuv.yubor) return;
       oxirgi = Date.now();
+      try{ localStorage.setItem('i_oxirgi_jonatish', String(oxirgi)); }catch(e){}
       window.intizomYozuv.yubor();
     }catch(e){}
   }
@@ -14202,6 +14203,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
+var NASHR = '46';   /* qaysi fayl ishlayotganini bilish uchun */
 
 /* ==================================================================
    SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
@@ -14318,6 +14320,16 @@ function _sinxronTuzat(){
 }
 setTimeout(function(){ try{ _sinxronTuzat(); }catch(e){} }, 6000);
 
+function _jonatishVaqti(){
+  try{
+    var t = parseInt(localStorage.getItem('i_oxirgi_jonatish') || '0', 10);
+    if(!t) return 'hali bo\u2018lmagan';
+    var d = new Date(t), p = function(n){ return (n<10?'0':'')+n; };
+    var farq = Math.round((Date.now() - t)/60000);
+    return p(d.getHours())+':'+p(d.getMinutes())+
+           (farq < 1 ? ' (hozirgina)' : ' ('+farq+' daqiqa oldin)');
+  }catch(e){ return '\u2014'; }
+}
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
   var mos = (b === ILOVA_VERSIYA);
@@ -14389,7 +14401,9 @@ function versiyaKorsat(){
 
   var xabar = mos
     ? 'Ikkala fayl ham yangi (v'+ILOVA_VERSIYA+').\n\n'+
-      'Sessiya: '+kalit+
+      'Nashr: '+NASHR+
+      '\nOxirgi jo\u2018natish: '+_jonatishVaqti()+
+      '\nSessiya: '+kalit+
       '\nServerdagi yozuv: '+yozuv+
       '\nXotira: '+xotira+
       '\n\nENG KATTA BO\u2018LIMLAR:\n'+kattalar+
