@@ -13736,14 +13736,44 @@ function xatoYubor(xabar, joy){
 }
 
 /* Hodisa: ochildi, ornatildi, pro_korildi, tolov_bosildi ... */
-function hodisaYubor(nom){
+/* 17.09.2026: hodisa yo'qolib ketardi.
+   Ilgari BULUT tayyor bo'lmasa funksiya jimgina qaytardi — ochilish
+   hodisasi 4 soniyada jo'natilardi, sessiya esa ko'pincha kechroq
+   tiklanardi. Natijada `hodisa` jadvali butunlay bo'sh qoldi va
+   statistika nol ko'rsatdi.
+   Endi hodisa navbatga qo'yiladi va bulut tayyor bo'lgach jo'natiladi;
+   server xato qaytarsa bir marta qayta urinadi. */
+var _hodisaNavbat = [];
+var _hodisaQayta = {};
+function _hodisaUrin(){
   try{
+    if(!_hodisaNavbat.length) return;
     if(!window.BULUT || !window.BULUT.rpc) return;
-    window.BULUT.rpc('hodisa_yoz', {
-      p_qurilma: _qurilmaId(), p_nom: nom
-    }).catch(function(){});
+    if(window.BULUT.kirganmi && !window.BULUT.kirganmi()) return;
+    var nusxa = _hodisaNavbat.slice();
+    _hodisaNavbat.length = 0;
+    nusxa.forEach(function(nom){
+      try{
+        window.BULUT.rpc('hodisa_yoz', { p_qurilma: _qurilmaId(), p_nom: nom })
+          .then(function(r){
+            if(r && r.error && !_hodisaQayta[nom]){
+              _hodisaQayta[nom] = 1;
+              if(_hodisaNavbat.length < 50) _hodisaNavbat.push(nom);
+            }
+          })
+          .catch(function(){});
+      }catch(e){}
+    });
   }catch(e){}
 }
+function hodisaYubor(nom){
+  try{
+    if(!nom) return;
+    if(_hodisaNavbat.length < 50) _hodisaNavbat.push(nom);
+    _hodisaUrin();
+  }catch(e){}
+}
+setInterval(function(){ try{ _hodisaUrin(); }catch(e){} }, 5000);
 
 /* --- Global tutqichlar --- */
 window.addEventListener('error', function(e){
@@ -14203,7 +14233,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
-var NASHR = '46';   /* qaysi fayl ishlayotganini bilish uchun */
+var NASHR = '47';   /* qaysi fayl ishlayotganini bilish uchun */
 
 /* ==================================================================
    SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
