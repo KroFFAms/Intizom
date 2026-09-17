@@ -1014,6 +1014,7 @@
       <div class="sitem" onclick="openHomeConfig()"><div class="sicon" style="background:rgba(139,92,246,.12)">🏠</div><div class="u-f1"><div class="u-b15">Asosiy oynani sozlash</div><div class="u-t14">Qaysi bo'limlar ko'rinsin — tanlang</div></div><span class="u-t2">›</span></div>
       <div class="sitem" onclick="qollanmaOch()"><div class="sicon" style="background:rgba(59,130,246,.12)">📘</div><div class="u-f1"><div class="u-b15">Qo'llanma</div><div class="u-t14">Har bo'lim nima uchun kerak</div></div><span class="u-t2">›</span></div>
       <div class="sitem" onclick="testlarniKorsat()"><div class="sicon" style="background:rgba(30,140,140,.12)">&#129514;</div><div class="u-f1"><div class="u-b15">O'z-o'zini tekshirish</div><div class="u-t13" id="s-test">Hisob funksiyalarini sinaydi</div></div><span class="u-t2">&rsaquo;</span></div>
+      <div class="sitem" onclick="sinxronTiklash()"><div class="sicon" style="background:rgba(30,140,140,.12)">&#128260;</div><div class="u-f1"><div class="u-b15">Sinxronni tiklash</div><div class="u-t13">Telefondagi hamma yozuvni serverga qayta yuboradi</div></div><span class="u-t2">&rsaquo;</span></div>
       <div class="sitem" onclick="versiyaKorsat()"><div class="sicon" style="background:rgba(148,163,184,.15)">ℹ️</div><div class="u-f1"><div class="u-b15">Versiya</div><div class="u-t13" id="s-versiya">Tekshirish uchun bosing</div></div><span class="u-t2">›</span></div>
       <div class="sitem" onclick="zaxiraOch()"><div class="sicon" style="background:rgba(30,140,140,.14)">🔄</div><div class="u-f1"><div class="u-b15">Ma'lumotni tiklash</div><div class="u-t13">Avvalgi holatga qaytarish</div></div><span class="u-t2">›</span></div>
       <div class="sitem" onclick="openM('maxfiy-modal')"><div class="sicon" style="background:rgba(148,163,184,.15)">🔒</div><div class="u-f1"><div class="u-b15">Maxfiylik siyosati</div><div class="u-t14">Ma'lumotingiz qanday saqlanadi</div></div><span class="u-t2">›</span></div>
@@ -10698,7 +10699,15 @@ var DARAJALAR = [
   {nom:'Chempion',         min:3000, max:99999,emoji:'👑', rang:'#DBBE24'},
 ];
 
-function getBall(){return S.g('i_ball')||0;}
+/* 17.09.2026: ball hech qachon manfiy bo'lmaydi. Jazolar tufayli
+   hisob −45 gacha tushib ketgan edi — bu daraja hisobini ham buzadi
+   va hech qanday ma'no bermaydi. Eski manfiy qiymat bir marta 0 ga
+   tuzatiladi (o'qishda ham, saqlashda ham chegara qo'yilgan). */
+function getBall(){
+  var b = S.g('i_ball') || 0;
+  if(b < 0){ b = 0; try{ S.s('i_ball', 0); }catch(e){} }
+  return b;
+}
 function getDaraja(ball){
   return DARAJALAR.find(function(d){return ball>=d.min&&ball<=d.max;})||DARAJALAR[0];
 }
@@ -10706,7 +10715,7 @@ function getDaraja(ball){
 function addBall(amount, sabab){
   var cur=getBall();
   var oldDaraja=getDaraja(cur);
-  var newBall=cur+amount;
+  var newBall=Math.max(0, cur+amount);      /* 17.09.2026: quyi chegara 0 */
   S.s('i_ball',newBall);
   var newDaraja=getDaraja(newBall);
   if(oldDaraja.nom!==newDaraja.nom){
@@ -10903,7 +10912,9 @@ function checkStreakProtection(){
     var rek = S.g('i_streak_rekord') || 0;
     if(streak > rek){ rek = streak; S.s('i_streak_rekord', rek); }
     S.s('i_streak', 0);
-    addBall(-50, 'Streak uzildi');
+    /* 17.09.2026: −50 ball olib tashlandi. Ketma-ketlikning uzilishi
+       o'zi oqibat; ustiga ball ayirish jazoga o'xshaydi va rekord
+       saqlangani haqidagi xabarga zid keladi. */
     showStreakBreak(streak, rek);
   }
   S.s('i_last_active', today);
@@ -10966,9 +10977,11 @@ function checkRejaJazo(){
   
   if(bajarilmagan.length > 0 && yesterday !== ''){
     S.s('i_last_jazo', yesterday);
-    var jazo = bajarilmagan.length * 10;
+    /* 17.09.2026: har reja uchun −10 edi, bir kunda −70 gacha tushardi.
+       Endi −5 va kuniga ko'pi bilan −15; hisob 0 dan pastga tushmaydi. */
+    var jazo = Math.min(15, bajarilmagan.length * 5);
     addBall(-jazo, 'Reja bajrilmadi');
-    showNotif('😔 Kecha ' + bajarilmagan.length + ' reja o\'tdi', '-' + jazo + ' ball');
+    showNotif('Kecha ' + bajarilmagan.length + ' reja o\'tdi', '−' + jazo + ' ball');
   }
 }
 function checkVaqtOgohlantirish(){
@@ -14153,6 +14166,49 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
+
+/* ==================================================================
+   SINXRONNI TIKLASH                                   17.09.2026
+   Muammo: telefon "bu yozuv allaqachon yuborilgan" degan belgini
+   (i_yozuv_holat_*) saqlaydi. Agar serverdagi yozuv boshqa yo'l
+   bilan o'chsa yoki belgilar haqiqatdan chetga chiqsa, telefon
+   o'zgarishni qayta yubormay qo'yadi — belgilash serverga bormaydi.
+   Bu tugma o'sha belgilarni tozalaydi va hamma narsani noldan
+   jo'natadi. Ma'lumot o'chmaydi: faqat "yuborilgan" belgisi o'chadi.
+   ================================================================== */
+function sinxronTiklash(){
+  dlg.tasdiq('Sinxronni tiklash',
+    'Telefondagi hamma odat, reja va belgilar serverga qayta yuboriladi.\n\nMa\u2019lumot o\u2019chmaydi \u2014 faqat "yuborilgan" belgisi tozalanadi. Bir necha soniya ketadi.',
+    {ha:'Ha, qayta yubor', emoji:'\uD83D\uDD04'}).then(function(ok){
+    if(!ok) return;
+    var tozalandi = 0;
+    try{
+      var ochirish = [];
+      for(var i=0;i<localStorage.length;i++){
+        var k = localStorage.key(i);
+        if(k && k.indexOf('i_yozuv_holat_')===0) ochirish.push(k);
+      }
+      ochirish.forEach(function(k){ try{ localStorage.removeItem(k); tozalandi++; }catch(e){} });
+      /* o'chirish ro'yxati ham tozalanadi — aks holda qayta yuborilgan
+         yozuvlar server tomonda yana o'chirilgan deb belgilanadi */
+      try{ localStorage.removeItem('i_ochirilgan'); }catch(e){}
+    }catch(e){ console.error('sinxronTiklash', e); }
+    showNotif('\uD83D\uDD04 Yuborilmoqda...', tozalandi+' ta belgi tozalandi');
+    var ish = null;
+    try{ if(window.intizomYozuv && window.intizomYozuv.yubor) ish = window.intizomYozuv.yubor(); }catch(e){}
+    Promise.resolve(ish).then(function(){
+      setTimeout(function(){
+        var n = '?';
+        try{ if(window.intizomYozuv && window.intizomYozuv.hisob) return window.intizomYozuv.hisob().then(function(h){
+          dlg.xabar('Tayyor', 'Serverdagi yozuvlar qayta hisoblandi.\n\n' + (typeof h==='object' ? JSON.stringify(h) : String(h)), {emoji:'\u2705'});
+        }); }catch(e){}
+        dlg.xabar('Yuborildi', 'Yozuvlar serverga jo\u2019natildi. Versiya qatoridan tekshirib ko\u2019ring.', {emoji:'\u2705'});
+      }, 2500);
+    }).catch(function(){
+      dlg.xabar('Xato', 'Yuborilmadi \u2014 internetni tekshirib qayta urinib ko\u2019ring.', {emoji:'\u26A0\uFE0F'});
+    });
+  });
+}
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
