@@ -998,6 +998,12 @@
 
 <!-- CSS styles.css fayliga ko'chirildi -->
 
+<!-- 17.09.2026: Sozlamadan 6 ta ortiqcha qator olib tashlandi:
+     O'z-o'zini tekshirish (dasturchi uchun; konsolda intizomTest()),
+     Odat va rejani yangilash + Qurilmalarni tenglashtirish (ikkalasi ham
+     ro'yxatni qayta quradi va ma'lumotni chalkashtiradi — sinxron endi
+     o'zi tuzaladi), Oylik/Haftalik hisobot va Uyqu kuzatuvi (Hisobot va
+     Uyqu sahifalarida allaqachon bor edi — takroriy kirish nuqtalari). -->
 <div id="page-sozlama" class="page">
   <div class="topbar"><div class="topbar-inner"><h2>⚙️ Sozlamalar</h2></div></div>
   <div class="u-p16">
@@ -1013,8 +1019,7 @@
       <div class="sitem" onclick="openM('profil-modal')"><div class="sicon" style="background:rgba(30,140,140,.12)">👤</div><div class="u-f1"><div class="sec-title" style="margin-bottom:0;font-size:15px">Profil</div><div class="u-t14">Ism, kasb, rasm</div></div><span class="u-t2">›</span></div>
       <div class="sitem" onclick="openHomeConfig()"><div class="sicon" style="background:rgba(139,92,246,.12)">🏠</div><div class="u-f1"><div class="u-b15">Asosiy oynani sozlash</div><div class="u-t14">Qaysi bo'limlar ko'rinsin — tanlang</div></div><span class="u-t2">›</span></div>
       <div class="sitem" onclick="qollanmaOch()"><div class="sicon" style="background:rgba(59,130,246,.12)">📘</div><div class="u-f1"><div class="u-b15">Qo'llanma</div><div class="u-t14">Har bo'lim nima uchun kerak</div></div><span class="u-t2">›</span></div>
-      <div class="sitem" onclick="testlarniKorsat()"><div class="sicon" style="background:rgba(30,140,140,.12)">&#129514;</div><div class="u-f1"><div class="u-b15">O'z-o'zini tekshirish</div><div class="u-t13" id="s-test">Hisob funksiyalarini sinaydi</div></div><span class="u-t2">&rsaquo;</span></div>
-      <div class="sitem" onclick="sinxronTiklash()"><div class="sicon" style="background:rgba(30,140,140,.12)">&#128260;</div><div class="u-f1"><div class="u-b15">Sinxronni tiklash</div><div class="u-t13">Telefondagi hamma yozuvni serverga qayta yuboradi</div></div><span class="u-t2">&rsaquo;</span></div>
+      
       <div class="sitem" onclick="versiyaKorsat()"><div class="sicon" style="background:rgba(148,163,184,.15)">ℹ️</div><div class="u-f1"><div class="u-b15">Versiya</div><div class="u-t13" id="s-versiya">Tekshirish uchun bosing</div></div><span class="u-t2">›</span></div>
       <div class="sitem" onclick="zaxiraOch()"><div class="sicon" style="background:rgba(30,140,140,.14)">🔄</div><div class="u-f1"><div class="u-b15">Ma'lumotni tiklash</div><div class="u-t13">Avvalgi holatga qaytarish</div></div><span class="u-t2">›</span></div>
       <div class="sitem" onclick="openM('maxfiy-modal')"><div class="sicon" style="background:rgba(148,163,184,.15)">🔒</div><div class="u-f1"><div class="u-b15">Maxfiylik siyosati</div><div class="u-t14">Ma'lumotingiz qanday saqlanadi</div></div><span class="u-t2">›</span></div>
@@ -1043,21 +1048,9 @@
       </div>
       <div class="sitem" onclick="toggleDark()"><div class="sicon" style="background:rgba(59,130,246,.12)">🌙</div><div class="u-f1"><div class="u-b15">Tungi rejim</div><div class="u-t14" id="dark-desc">Hozir: Kunduzgi</div></div><span class="u-t2">›</span></div>
       <div class="sitem" onclick="openM('tsett-modal')"><div class="sicon" style="background:rgba(249,115,22,.12)">⏱️</div><div class="u-f1"><div class="u-b15">Taymer</div><div class="u-t14">Pomodoro vaqti</div></div><span class="u-t2">›</span></div>
-      <div class="sitem" onclick="openOylikModal()">
-        <div class="sicon" style="background:rgba(99,102,241,.12)">📊</div>
-        <div class="u-f1"><div class="u-b15">Oylik hisobot</div><div class="u-t14">Grafik va trend tahlili</div></div>
-        <span class="u-t2">›</span>
-      </div>
-      <div class="sitem" onclick="gotoPage('hisobot',document.getElementById('nav-sozlama'))">
-        <div class="sicon" style="background:rgba(59,130,246,.12)">&#128202;</div>
-        <div class="u-f1"><div class="u-b15">Haftalik hisobot</div><div class="u-t14">Avtomatik xulosa</div></div>
-        <span class="u-t2">&#8250;</span>
-      </div>
-      <div class="sitem" onclick="gotoPage('uyqu',document.getElementById('nav-sozlama'))">
-        <div class="sicon" style="background:rgba(99,102,241,.12)">&#128564;</div>
-        <div class="u-f1"><div class="u-b15">Uyqu kuzatuvi</div><div class="u-t14">Yotish va turish vaqtlari</div></div>
-        <span class="u-t2">&#8250;</span>
-      </div>
+      
+      
+      
       <div class="sitem" onclick="toggleNamozEsl()">
         <div class="sicon" style="background:rgba(245,158,11,.12)">&#128276;</div>
         <div class="u-f1"><div class="u-b15">Namoz eslatmasi</div><div class="u-t14" id="namoz-esl-desc">5 daqiqa oldin signal</div></div>
@@ -1083,16 +1076,8 @@
         <div class="u-f1"><div class="u-b15">Telegram eslatmalari</div><div class="u-t14" id="tgesl-desc">Ilova yopiq bo&#39;lganda ham xabar keladi</div></div>
         <span class="u-t2">&#8250;</span>
       </div>
-      <div class="sitem" onclick="namunaniQayta()">
-        <div class="sicon" style="background:rgba(30,140,140,.14)">&#128260;</div>
-        <div class="u-f1"><div class="u-b15">Odat va rejani yangilash</div><div class="u-t14">Namunaviy 5 ta odat va kun taqsimotini qo&#39;yish</div></div>
-        <span class="u-t2">&#8250;</span>
-      </div>
-      <div class="sitem" onclick="qurilmaTenglash()">
-        <div class="sicon" style="background:rgba(30,140,140,.12)">&#128260;</div>
-        <div class="u-f1"><div class="u-b15">Qurilmalarni tenglashtirish</div><div class="u-t14">Yozuvlarni faqat qo&#39;shadi &mdash; hech narsa o&#39;chmaydi</div></div>
-        <span class="u-t2">&#8250;</span>
-      </div>
+      
+      
       <div class="sitem" onclick="openJurQulf()">
         <div class="sicon" style="background:rgba(139,103,219,.12)">&#128211;</div>
         <div class="u-f1"><div class="u-b15">Kundalik qulfi</div><div class="u-t14" id="jurqulf-desc">O&#39;rnatilmagan &mdash; matn ochiq saqlanadi</div></div>
@@ -14168,47 +14153,60 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
 var ILOVA_VERSIYA = '103';
 
 /* ==================================================================
-   SINXRONNI TIKLASH                                   17.09.2026
-   Muammo: telefon "bu yozuv allaqachon yuborilgan" degan belgini
-   (i_yozuv_holat_*) saqlaydi. Agar serverdagi yozuv boshqa yo'l
-   bilan o'chsa yoki belgilar haqiqatdan chetga chiqsa, telefon
-   o'zgarishni qayta yubormay qo'yadi — belgilash serverga bormaydi.
-   Bu tugma o'sha belgilarni tozalaydi va hamma narsani noldan
-   jo'natadi. Ma'lumot o'chmaydi: faqat "yuborilgan" belgisi o'chadi.
+   SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
+   Muammo: telefon "bu yozuv yuborilgan" degan belgini saqlaydi
+   (i_yozuv_holat_*). Agar serverdagi yozuv boshqa yo'l bilan
+   o'chsa yoki belgilar haqiqatdan chetga chiqsa, telefon yangi
+   o'zgarishni qayta yubormay qo'yadi — belgilash serverga bormaydi
+   va buni hech kim sezmaydi.
+   Endi ilova kuniga bir marta, ochilgandan 8 soniya keyin, jimgina
+   solishtiradi: serverdagi yozuv soni telefondagidan kam bo'lsa,
+   "yuborilgan" belgilarini tozalab hammasini qayta jo'natadi.
+   Foydalanuvchi hech narsa bosmaydi va hech narsa ko'rmaydi.
    ================================================================== */
-function sinxronTiklash(){
-  dlg.tasdiq('Sinxronni tiklash',
-    'Telefondagi hamma odat, reja va belgilar serverga qayta yuboriladi.\n\nMa\u2019lumot o\u2019chmaydi \u2014 faqat "yuborilgan" belgisi tozalanadi. Bir necha soniya ketadi.',
-    {ha:'Ha, qayta yubor', emoji:'\uD83D\uDD04'}).then(function(ok){
-    if(!ok) return;
-    var tozalandi = 0;
+function _sinxronTuzat(){
+  try{
+    if(!window.intizomYozuv || !window.intizomYozuv.hisob || !window.intizomYozuv.yubor) return;
+    var bugun = bugunKun();
+    if(S.g('i_sinx_tekshir') === bugun) return;
+    S.s('i_sinx_tekshir', bugun);
+
+    var mahalliy = 0;
     try{
-      var ochirish = [];
-      for(var i=0;i<localStorage.length;i++){
-        var k = localStorage.key(i);
-        if(k && k.indexOf('i_yozuv_holat_')===0) ochirish.push(k);
-      }
-      ochirish.forEach(function(k){ try{ localStorage.removeItem(k); tozalandi++; }catch(e){} });
-      /* o'chirish ro'yxati ham tozalanadi — aks holda qayta yuborilgan
-         yozuvlar server tomonda yana o'chirilgan deb belgilanadi */
-      try{ localStorage.removeItem('i_ochirilgan'); }catch(e){}
-    }catch(e){ console.error('sinxronTiklash', e); }
-    showNotif('\uD83D\uDD04 Yuborilmoqda...', tozalandi+' ta belgi tozalandi');
-    var ish = null;
-    try{ if(window.intizomYozuv && window.intizomYozuv.yubor) ish = window.intizomYozuv.yubor(); }catch(e){}
-    Promise.resolve(ish).then(function(){
-      setTimeout(function(){
-        var n = '?';
-        try{ if(window.intizomYozuv && window.intizomYozuv.hisob) return window.intizomYozuv.hisob().then(function(h){
-          dlg.xabar('Tayyor', 'Serverdagi yozuvlar qayta hisoblandi.\n\n' + (typeof h==='object' ? JSON.stringify(h) : String(h)), {emoji:'\u2705'});
-        }); }catch(e){}
-        dlg.xabar('Yuborildi', 'Yozuvlar serverga jo\u2019natildi. Versiya qatoridan tekshirib ko\u2019ring.', {emoji:'\u2705'});
-      }, 2500);
-    }).catch(function(){
-      dlg.xabar('Xato', 'Yuborilmadi \u2014 internetni tekshirib qayta urinib ko\u2019ring.', {emoji:'\u26A0\uFE0F'});
-    });
-  });
+      mahalliy = (S.g('i_odatlar')||[]).length;
+      var r = S.g('i_reja')||{};
+      Object.keys(r.bugun||{}).forEach(function(k){ mahalliy += (r.bugun[k]||[]).length; });
+    }catch(e){}
+    if(!mahalliy) return;
+
+    Promise.resolve(window.intizomYozuv.hisob()).then(function(h){
+      var server = 0;
+      try{
+        if(typeof h === 'number') server = h;
+        else if(h && typeof h === 'object'){
+          if(Array.isArray(h)) h.forEach(function(x){ server += (x && (x.soni||x.count)) || 0; });
+          else Object.keys(h).forEach(function(k){ var v=h[k]; if(typeof v==='number') server += v; });
+        }
+      }catch(e){}
+      if(!server) return;                         /* o'lchab bo'lmadi — tegmaymiz */
+      if(server >= Math.round(mahalliy*0.9)) return;   /* farq kichik — normal */
+
+      console.log('Sinxron nomuvofiq: server '+server+', telefon '+mahalliy+' — qayta yuborilmoqda');
+      try{
+        var ochirish = [];
+        for(var i=0;i<localStorage.length;i++){
+          var k = localStorage.key(i);
+          if(k && k.indexOf('i_yozuv_holat_')===0) ochirish.push(k);
+        }
+        ochirish.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+        localStorage.removeItem('i_ochirilgan');
+      }catch(e){}
+      try{ window.intizomYozuv.yubor(); }catch(e){}
+      try{ hodisaYubor('sinxron_tuzatildi'); }catch(e){}
+    }).catch(function(){});
+  }catch(e){ console.warn('_sinxronTuzat', e); }
 }
+setTimeout(function(){ try{ _sinxronTuzat(); }catch(e){} }, 8000);
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
