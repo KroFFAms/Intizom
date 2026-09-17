@@ -2120,6 +2120,57 @@ const S={
   }
 };
 /* ============================================================
+   17.09.2026 — O'ZGARISHNI DARHOL BULUTGA JO'NATISH
+   Muammo: to'liq qayta yuborish ishlardi, lekin bitta odatni
+   belgilash yoki rejani o'zgartirish serverga bormasdi — ilova
+   bulutga "o'zgardi" deb xabar bermasdi. Natijada telefondagi
+   belgilash faqat keyingi to'liq tenglashtirishda ko'chardi.
+   Yechim: yozuv turlaridan biri saqlanganda 2.5 soniyadan keyin
+   jo'natish chaqiriladi (ketma-ket saqlashlar bitta jo'natishga
+   yig'iladi, eng kami 8 soniyada bir marta). Ilova fonga o'tganda
+   ham darhol jo'natiladi — telefon ilovani to'xtatib qo'yishidan
+   oldin ulgurish uchun.
+   bulut.js ga tegilmagan.
+   ============================================================ */
+(function(){
+  var TURLAR = { i_odatlar:1, i_reja:1, i_hifz:1, i_trans:1,
+                 i_xarid:1, i_jurnal:1, i_maqsad:1, i_profil:1 };
+  var timer = null, oxirgi = 0;
+  function jonat(){
+    try{
+      if(!window.intizomYozuv || !window.intizomYozuv.yubor) return;
+      oxirgi = Date.now();
+      window.intizomYozuv.yubor();
+    }catch(e){}
+  }
+  function rejalash(){
+    if(timer) clearTimeout(timer);
+    timer = setTimeout(function(){
+      timer = null;
+      if(Date.now() - oxirgi < 8000){ rejalash(); return; }
+      jonat();
+    }, 2500);
+  }
+  try{
+    var proto = Object.getPrototypeOf(localStorage);
+    var asl = proto.setItem;
+    if(asl && !asl.__oralgan){
+      var yangi = function(k, v){
+        asl.call(this, k, v);
+        try{ if(TURLAR[k]) rejalash(); }catch(e){}
+      };
+      yangi.__oralgan = 1;
+      proto.setItem = yangi;
+    }
+  }catch(e){ console.warn('bulutga jo\'natish o\'ramasi:', e); }
+  try{
+    document.addEventListener('visibilitychange', function(){
+      if(document.hidden){ if(timer){ clearTimeout(timer); timer = null; } jonat(); }
+    });
+  }catch(e){}
+})();
+
+/* ============================================================
    esc() — HTML ekranlash. Foydalanuvchi yozgan matn innerHTML
    ichiga qo'yilganda shu funksiyadan o'tkaziladi. Oilaviy bo'limda
    matn BOSHQA odamdan keladi, shuning uchun bu majburiy.
