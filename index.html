@@ -14164,9 +14164,77 @@ var ILOVA_VERSIYA = '103';
    "yuborilgan" belgilarini tozalab hammasini qayta jo'natadi.
    Foydalanuvchi hech narsa bosmaydi va hech narsa ko'rmaydi.
    ================================================================== */
+/* ==================================================================
+   17.09.2026 — RASM HAVOLASI KESHI
+   Bulutdagi surat o'chirilgan bo'lsa ham, ilova uni har chizilganda
+   qayta so'rardi: serverga soatiga 100+ marta 400 xatosi ketardi.
+   Endi: muvaffaqiyatli havola 45 daqiqa keshlanadi, xato bergani esa
+   "yo'q" deb belgilanadi va shu sessiyada boshqa so'ralmaydi.
+   bulut.js index.html dan keyin yuklanadi — shuning uchun o'rash
+   funksiyasi paydo bo'lishini kutib turadi.
+   ================================================================== */
+(function(){
+  var _rmKesh = {}, _rmYomon = {};
+  function orna(){
+    if(!window.rasmManzil || window.rasmManzil.__oralgan) return !!window.rasmManzil;
+    var asl = window.rasmManzil;
+    var yangi = function(yol){
+      try{
+        if(!yol) return Promise.resolve('');
+        if(_rmYomon[yol]) return Promise.resolve('');
+        var k = _rmKesh[yol];
+        if(k && k.vaqt > Date.now()) return Promise.resolve(k.url);
+        return Promise.resolve(asl(yol)).then(function(u){
+          if(u){ _rmKesh[yol] = { url: u, vaqt: Date.now() + 45*60*1000 }; return u; }
+          _rmYomon[yol] = 1; return '';
+        }).catch(function(){ _rmYomon[yol] = 1; return ''; });
+      }catch(e){ return Promise.resolve(''); }
+    };
+    yangi.__oralgan = 1;
+    window.rasmManzil = yangi;
+    return true;
+  }
+  if(!orna()){
+    var n = 0;
+    var t = setInterval(function(){ if(orna() || ++n > 40) clearInterval(t); }, 500);
+  }
+})();
+
+function _sinxronHolatTozala(){
+  /* "yuborilgan" belgilarini o'chiradi — xotiradagi nusxasi bilan birga.
+     O'chirish ro'yxatiga (i_ochirilgan) TEGILMAYDI: aks holda telefonda
+     o'chirilgan yozuvlar serverdan qaytib keladi. */
+  try{
+    var ochirish = [];
+    for(var i=0;i<localStorage.length;i++){
+      var k = localStorage.key(i);
+      if(k && k.indexOf('i_yozuv_holat_')===0) ochirish.push(k);
+    }
+    ochirish.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+    try{ if(window._serverHolat) window._serverHolat = {}; }catch(e){}
+    return ochirish.length;
+  }catch(e){ return 0; }
+}
+
 function _sinxronTuzat(){
   try{
-    if(!window.intizomYozuv || !window.intizomYozuv.hisob || !window.intizomYozuv.yubor) return;
+    if(!window.intizomYozuv || !window.intizomYozuv.yubor) return;
+
+    /* 1) Bir martalik to'liq qayta yuborish.
+       Eski qurilmalarda "yuborilgan" belgilari serverdagi haqiqatdan
+       ajralib qolgan — shuning uchun hech narsa jo'natilmay qolgan.
+       Bu blok har qurilmada umri davomida bir marta ishlaydi. */
+    if(!S.g('i_sinx_tiklash_v1')){
+      S.s('i_sinx_tiklash_v1', 1);
+      _sinxronHolatTozala();
+      try{ window.intizomYozuv.yubor(); }catch(e){}
+      try{ hodisaYubor('sinxron_tiklandi'); }catch(e){}
+      return;
+    }
+
+    /* 2) Kundalik jim tekshiruv: serverda telefondagidan sezilarli kam
+       yozuv bo'lsa, belgilarni tozalab qayta jo'natamiz. */
+    if(!window.intizomYozuv.hisob) return;
     var bugun = bugunKun();
     if(S.g('i_sinx_tekshir') === bugun) return;
     S.s('i_sinx_tekshir', bugun);
@@ -14188,25 +14256,16 @@ function _sinxronTuzat(){
           else Object.keys(h).forEach(function(k){ var v=h[k]; if(typeof v==='number') server += v; });
         }
       }catch(e){}
-      if(!server) return;                         /* o'lchab bo'lmadi — tegmaymiz */
-      if(server >= Math.round(mahalliy*0.9)) return;   /* farq kichik — normal */
-
+      if(!server) return;                              /* o'lchab bo'lmadi */
+      if(server >= Math.round(mahalliy*0.9)) return;    /* farq kichik — normal */
       console.log('Sinxron nomuvofiq: server '+server+', telefon '+mahalliy+' — qayta yuborilmoqda');
-      try{
-        var ochirish = [];
-        for(var i=0;i<localStorage.length;i++){
-          var k = localStorage.key(i);
-          if(k && k.indexOf('i_yozuv_holat_')===0) ochirish.push(k);
-        }
-        ochirish.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
-        localStorage.removeItem('i_ochirilgan');
-      }catch(e){}
+      _sinxronHolatTozala();
       try{ window.intizomYozuv.yubor(); }catch(e){}
       try{ hodisaYubor('sinxron_tuzatildi'); }catch(e){}
     }).catch(function(){});
   }catch(e){ console.warn('_sinxronTuzat', e); }
 }
-setTimeout(function(){ try{ _sinxronTuzat(); }catch(e){} }, 8000);
+setTimeout(function(){ try{ _sinxronTuzat(); }catch(e){} }, 6000);
 
 function versiyaKorsat(){
   var b = String(window.BULUT_VERSIYA || '?');
