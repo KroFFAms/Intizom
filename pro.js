@@ -891,6 +891,7 @@ function closeKaloriyaScaner(){
 
 function resetKalScaner(){
   _kalImgB64 = null;
+  window._kalOxirgi = null;
   document.getElementById('kal-preview-wrap').style.display='none';
   document.getElementById('kal-upload-zone').style.display='block';
   document.getElementById('kal-result').style.display='none';
@@ -1149,6 +1150,7 @@ function calcOfflineKal(text){
 }
 
 function showKalResult(r){
+  window._kalOxirgi = r || null;                      /* 19.09.2026: saqlash uchun */
   document.getElementById('kal-result').style.display='block';
   document.getElementById('kal-total-kcal').textContent = r.total_kcal||0;
   document.getElementById('kal-protein').textContent   = (r.total_oqsil||0)+'g';
@@ -1164,7 +1166,7 @@ function showKalResult(r){
   document.getElementById('kal-result-main').innerHTML =
     offBadge+
     '<div style="font-size:15px;color:rgba(255,255,255,.7);margin-bottom:4px">Umumiy kaloriya</div>'+
-    '<div style="font-size:48px;font-weight:900;color:#fff;line-height:1">'+(r.total_kcal||0)+'</div>'+
+    '<div id="kal-total-kcal" style="font-size:48px;font-weight:900;color:#fff;line-height:1">'+(r.total_kcal||0)+'</div>'+
     '<div style="font-size:15px;color:rgba(255,255,255,.7)">kcal</div>';
   var items = r.items||[];
   document.getElementById('kal-items-list').innerHTML =
@@ -1184,19 +1186,36 @@ function showKalResult(r){
   document.getElementById('kal-result').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
+/* 19.09.2026: natija kartasi qayta chizilganda element yo'qolib ketardi —
+   endi oxirgi tahlil natijasi (_kalOxirgi) zaxira bo'lib turadi. */
+function _kalSon(id, zax){
+  var el = document.getElementById(id);
+  var v  = el ? parseInt(el.textContent,10) : NaN;
+  if(isNaN(v)) v = parseInt(zax,10);
+  return isNaN(v) ? 0 : v;
+}
+function _kalNom(r){
+  var el = document.getElementById('kal-text-inp');
+  var t  = el && el.value ? el.value.trim() : '';
+  if(!t && r && r.items && r.items.length){
+    t = r.items.map(function(x){ return x && x.nom ? x.nom : ''; }).filter(Boolean).slice(0,3).join(', ');
+  }
+  return t || 'Ovqat';
+}
 function saveKalToHistory(){
-  var kcal = parseInt(document.getElementById('kal-total-kcal').textContent)||0;
-  var text = document.getElementById('kal-text-inp').value||'Ovqat';
+  var r    = window._kalOxirgi || null;
+  var kcal = _kalSon('kal-total-kcal', r && r.total_kcal);
+  var text = _kalNom(r);
   if(!kcal){ showNotif('⚠️','Avval tahlil qiling'); return; }
   var today = bugunKun();
   var hist  = S.g('i_kal_hist')||{};
   if(!hist[today]) hist[today]=[];
   hist[today].push({
-    nom: text||'Ovqat',
+    nom: text,
     kcal: kcal,
-    protein: parseInt(document.getElementById('kal-protein').textContent)||0,
-    carb:    parseInt(document.getElementById('kal-carb').textContent)||0,
-    fat:     parseInt(document.getElementById('kal-fat').textContent)||0,
+    protein: _kalSon('kal-protein', r && r.total_oqsil),
+    carb:    _kalSon('kal-carb',    r && r.total_uglevod),
+    fat:     _kalSon('kal-fat',     r && r.total_yog),
     time:    new Date().toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'})
   });
   S.s('i_kal_hist', hist);
