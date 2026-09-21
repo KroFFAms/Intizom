@@ -13568,13 +13568,36 @@ function paynetChiz(){
 
 /* "To'ladim" — hodisa yoziladi va bot ochiladi, shunda kim to'laganini
    Paynet Business dagi tushum bilan solishtirib PRO ni ochasiz */
+/* 21.09.2026: mijoz uchun bitta harakat.
+   Ilgari bu yerda bot ochilardi va odam yana "Start" bosishi kerak
+   edi — beshta qadam. Endi bildirishnoma to'g'ridan-to'g'ri serverdan
+   adminga ketadi, odam ilovadan chiqmaydi.
+   Agar server chaqiruvi bajarilmasa (sessiya yo'q, internet yo'q),
+   eski bot yo'li zaxira sifatida ochiladi. */
 function paynetToladim(){
   try{ hodisaYubor('paynet_toladim'); }catch(e){}
   var kod = _tolovKod();
-  var u = 'https://t.me/IIntizom_bot?start=paynet_' + kod;
-  try{ window.open(u,'_blank'); }catch(e){ location.href = u; }
+
+  function zaxiraBot(){
+    var u = 'https://t.me/IIntizom_bot?start=paynet_' + kod;
+    try{ window.open(u,'_blank'); }catch(e){ location.href = u; }
+  }
+
+  var yuborildi = false;
+  try{
+    if(window.BULUT && window.BULUT.rpc){
+      yuborildi = true;
+      window.BULUT.rpc('tolov_bildir', { p_kod: kod }).then(function(r){
+        var xato = r && r.error;
+        var javob = r && r.data;
+        if(xato || javob === 'kirilmagan') zaxiraBot();
+      }).catch(function(){ zaxiraBot(); });
+    }
+  }catch(e){ yuborildi = false; }
+  if(!yuborildi) zaxiraBot();
+
   closeM('pro-modal');
-  showNotif('✅ Rahmat!', 'To‘lov kodi: ' + kod + '. Botda "Start" bosing — to‘lov tasdiqlangach PRO bir yilga ochiladi.');
+  showNotif('✅ Rahmat!', 'To\u2018lov kodi: ' + kod + '. Tekshiramiz \u2014 tasdiqlangach PRO ochiladi va Telegram orqali xabar beramiz.');
 }
 /* Bitta joyda tekshirish: PRO bo'lmasa paywall ochiladi va false qaytadi */
 function proKerak(nomi){
@@ -14337,7 +14360,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
-var NASHR = '50';   /* qaysi fayl ishlayotganini bilish uchun */
+var NASHR = '51';   /* qaysi fayl ishlayotganini bilish uchun */
 
 /* ==================================================================
    SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
