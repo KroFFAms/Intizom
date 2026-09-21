@@ -1772,7 +1772,10 @@
 <div class="moverlay" id="odat-modal">
   <div class="modal">
     <div class="mhandle"></div><div class="mtitle">Yangi odat</div>
-    <div class="igroup"><label class="ilabel">Nomi</label><input class="inp" id="od-name" placeholder="Masalan: Suv ichish"></div>
+    <div class="igroup"><label class="ilabel">Nomi</label><input class="inp" id="od-name" placeholder="Masalan: Suv ichish">
+      <div id="od-taklif" class="taklif-row"></div>
+      <div class="taklif-izoh">Ro&#39;yxatdan tanlang yoki yuqoriga o&#39;zingiz yozing</div>
+    </div>
     <div class="igroup"><label class="ilabel">Emoji</label><input class="inp" id="od-icon" placeholder="💧" maxlength="2"></div>
     <div class="igroup"><label class="ilabel">Vaqt</label><input class="inp" type="time" id="od-time"></div>
     <div class="igroup"><label class="ilabel">Nima uchun? (ixtiyoriy)</label>
@@ -1841,6 +1844,17 @@
 .hk-item .hk-chk{width:22px;height:22px;border-radius:7px;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;font-size:13px;color:#fff}
 .hk-item .hk-chk.done{background:var(--g);border-color:var(--g)}
 .hk-item .hk-btn{width:26px;height:26px;border-radius:8px;border:none;background:var(--bg);color:var(--t2);cursor:pointer;font-size:13px;flex-shrink:0}
+
+/* 21.09.2026: reja va odat qo'shishda tayyor variantlar */
+.taklif-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.taklif-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:14px;
+  border:1.5px solid var(--bd);background:var(--bg);color:var(--text);
+  font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;line-height:1.2;
+  transition:border-color .15s ease, background .15s ease, transform .12s ease}
+.taklif-chip:active{transform:scale(.96)}
+.taklif-chip.oz{border-color:var(--g);color:var(--g)}
+.taklif-chip .tc-em{font-size:15px}
+.taklif-izoh{font-size:12.5px;color:var(--t2);margin-top:7px}
 </style>
 <div class="moverlay" id="reja-modal">
   <div class="modal">
@@ -1850,6 +1864,8 @@
         <input class="inp u-f1" id="rj-name" placeholder="Masalan: Ertalabki mashq">
         <button onclick="startVoiceReja()" id="mic-btn" style="width:46px;height:46px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bd);font-size:20px;cursor:pointer;flex-shrink:0">🎤</button>
       </div>
+      <div id="rj-taklif" class="taklif-row"></div>
+      <div class="taklif-izoh">Ro&#39;yxatdan tanlang yoki yuqoriga o&#39;zingiz yozing</div>
       <div id="voice-status" style="display:none;font-size:13.5px;color:var(--g);margin-top:4px;text-align:center">🔴 Tinglayapman...</div>
     </div>
     <div class="u-g2">
@@ -6350,6 +6366,162 @@ function renderHafta(){
     }).join('') : '<div class="u-t14" style="padding:6px 0 0">—</div>';
     return '<div class="'+cls+'">'+sar+tana+'</div>';
   }).join('');
+}
+
+/* ==================================================================
+   TAYYOR VARIANTLAR — reja va odat qo'shishda          21.09.2026
+
+   Muammo: har safar nomni qo'lda yozish kerak edi. Ko'p odam shu
+   yerda to'xtaydi — yozishga erinadi va rejasiz qoladi.
+
+   Endi nom maydoni ostida bosiladigan variantlar turadi. Tartib
+   tasodifiy emas: avval SIZ ilgari yozgan ishlar (qancha ko'p
+   yozilgan bo'lsa, shuncha oldinda), keyin umumiy ro'yxat.
+   Ro'yxatda yo'q narsani yuqoridagi maydonga o'zingiz yozasiz.
+   Tanlangandan keyin soat maydoni o'sha yerda ochiladi.
+   ================================================================== */
+var TAKLIF_REJA = [
+  {nom:'Ishga borish',        icon:'💼', color:'#4F86E2', start:'09:00', davom:480},
+  {nom:'Yig\'ilish',           icon:'🗣️', color:'#875DE5', start:'10:00', davom:60},
+  {nom:'Sport / mashq',       icon:'🏃', color:'#1E8C8C', start:'07:00', davom:60},
+  {nom:'Kitob o\'qish',        icon:'📚', color:'#875DE5', start:'21:00', davom:30},
+  {nom:'Dars / o\'qish',       icon:'📝', color:'#4F86E2', start:'19:00', davom:60},
+  {nom:'Bozor-o\'char',        icon:'🛒', color:'#DB9725', start:'17:00', davom:60},
+  {nom:'Uy ishlari',          icon:'🧹', color:'#DB9725', start:'18:00', davom:60},
+  {nom:'Ovqat tayyorlash',    icon:'🍳', color:'#DB9725', start:'12:00', davom:60},
+  {nom:'Bolalar bilan vaqt',  icon:'👨‍👩‍👧', color:'#E35199', start:'20:00', davom:60},
+  {nom:'Qo\'ng\'iroq qilish',   icon:'📞', color:'#4F86E2', start:'11:00', davom:15},
+  {nom:'Hujjat / hisobot',    icon:'📋', color:'#64748B', start:'14:00', davom:60},
+  {nom:'Dam olish',           icon:'☕', color:'#1E8C8C', start:'16:00', davom:30}
+];
+
+var TAKLIF_ODAT = [
+  {nom:'Namoz o\'qish',          icon:'🕌', color:'linear-gradient(135deg,#DBBE24,#DB9725)', time:''},
+  {nom:'2 litr suv ichish',     icon:'💧', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:''},
+  {nom:'20 bet kitob o\'qish',   icon:'📚', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'21:00'},
+  {nom:'30 daqiqa yurish',      icon:'🚶', color:'linear-gradient(135deg,#1E8C8C,#166B6B)', time:'07:00'},
+  {nom:'Erta turish',           icon:'🌅', color:'linear-gradient(135deg,#DB9725,#C9702A)', time:'05:30'},
+  {nom:'Telefonni kam ishlatish',icon:'📵', color:'linear-gradient(135deg,#64748B,#475569)', time:''},
+  {nom:'Ertalabki mashq',       icon:'🏋️', color:'linear-gradient(135deg,#1E8C8C,#166B6B)', time:'06:30'},
+  {nom:'Kundalik yozish',       icon:'📔', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'22:00'},
+  {nom:'Ertaga reja tuzish',    icon:'🗓️', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:'22:00'},
+  {nom:'Tilga 15 daqiqa',       icon:'🗣️', color:'linear-gradient(135deg,#E35199,#DC2677)', time:'20:00'},
+  {nom:'Shirinlikdan tiyilish', icon:'🍬', color:'linear-gradient(135deg,#E35050,#DC2626)', time:''},
+  {nom:'Erta yotish',           icon:'🌙', color:'linear-gradient(135deg,#64748B,#475569)', time:'23:00'}
+];
+
+function _nomTeng(a,b){
+  return String(a||'').trim().toLowerCase() === String(b||'').trim().toLowerCase();
+}
+function _daqQosh(vaqt, daq){
+  try{
+    var p = String(vaqt||'09:00').split(':');
+    var m = (parseInt(p[0],10)||0)*60 + (parseInt(p[1],10)||0) + (daq||60);
+    m = Math.min(23*60+59, m);
+    return String((m/60)|0).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
+  }catch(e){ return '10:00'; }
+}
+
+/* Foydalanuvchining o'z tarixidan eng ko'p takrorlangan reja nomlari */
+function _rejaTarixTaklif(){
+  var son = {}, namuna = {};
+  try{
+    var b = (rejaObyekt().bugun) || {};
+    Object.keys(b).forEach(function(k){
+      (b[k]||[]).forEach(function(r){
+        if(!r || !r.name) return;
+        var kalit = String(r.name).trim().toLowerCase();
+        son[kalit] = (son[kalit]||0) + 1;
+        if(!namuna[kalit]) namuna[kalit] = r;
+      });
+    });
+  }catch(e){}
+  return Object.keys(son)
+    .sort(function(a,b){ return son[b]-son[a]; })
+    .slice(0, 8)
+    .map(function(k){
+      var r = namuna[k];
+      return { nom:r.name, icon:r.icon||'📌', color:r.color||'#1E8C8C',
+               start:r.start||'09:00', end:r.end||'', oz:true };
+    });
+}
+
+function _taklifRoyxat(tur){
+  var chiq = [], bor = {};
+  function qosh(x){
+    var k = String(x.nom).trim().toLowerCase();
+    if(bor[k]) return;
+    bor[k] = 1; chiq.push(x);
+  }
+  if(tur === 'reja'){
+    var bugunKunlik = [];
+    try{
+      var kun = (typeof _rejaFaolKun!=='undefined' && _rejaFaolKun) ? _rejaFaolKun : bugunKun();
+      if(kun === 'ertaga') kun = ertagaKun();
+      bugunKunlik = (rejaObyekt().bugun[kun]) || [];
+    }catch(e){}
+    _rejaTarixTaklif().forEach(function(x){
+      var allaqachon = bugunKunlik.some(function(r){ return _nomTeng(r.name, x.nom); });
+      if(!allaqachon) qosh(x);
+    });
+    TAKLIF_REJA.forEach(function(x){
+      var allaqachon = bugunKunlik.some(function(r){ return _nomTeng(r.name, x.nom); });
+      if(!allaqachon) qosh(x);
+    });
+    return chiq.slice(0, 12);
+  }
+  var od = [];
+  try{ od = S.g('i_odatlar') || state.odatlar || []; }catch(e){}
+  TAKLIF_ODAT.forEach(function(x){
+    var allaqachon = od.some(function(o){ return _nomTeng(o.name, x.nom); });
+    if(!allaqachon) qosh(x);
+  });
+  return chiq.slice(0, 12);
+}
+
+function _taklifChiz(modal){
+  try{
+    var tur = (modal === 'reja-modal') ? 'reja' : 'odat';
+    var el = document.getElementById(tur === 'reja' ? 'rj-taklif' : 'od-taklif');
+    if(!el) return;
+    var royxat = _taklifRoyxat(tur);
+    if(!royxat.length){ el.innerHTML = ''; return; }
+    el.innerHTML = royxat.map(function(x,i){
+      return '<button type="button" class="taklif-chip'+(x.oz?' oz':'')+'" data-i="'+i+'">'+
+             '<span class="tc-em">'+x.icon+'</span>'+esc(x.nom)+'</button>';
+    }).join('');
+    el.querySelectorAll('.taklif-chip').forEach(function(b){
+      b.onclick = function(){ _taklifTanla(tur, royxat[+b.getAttribute('data-i')]); };
+    });
+  }catch(e){ console.warn('_taklifChiz', e); }
+}
+
+function _taklifTanla(tur, x){
+  if(!x) return;
+  try{
+    if(tur === 'reja'){
+      var n = document.getElementById('rj-name'); if(n) n.value = x.nom;
+      var ic = document.getElementById('rj-icon'); if(ic) ic.value = x.icon || '📌';
+      if(x.color){ try{ setRC(x.color); }catch(e){} }
+      var st = document.getElementById('rj-start');
+      if(st){
+        st.value = x.start || '09:00';
+        var en = document.getElementById('rj-end');
+        if(en) en.value = x.end || _daqQosh(st.value, x.davom || 60);
+        /* soatni o'sha yerda tanlasin */
+        setTimeout(function(){ try{ st.focus(); }catch(e){} }, 60);
+      }
+    } else {
+      var nn = document.getElementById('od-name'); if(nn) nn.value = x.nom;
+      var ii = document.getElementById('od-icon'); if(ii) ii.value = x.icon || '';
+      var cc = document.getElementById('od-color'); if(cc && x.color) cc.value = x.color;
+      var tt = document.getElementById('od-time');
+      if(tt){
+        if(x.time) tt.value = x.time;
+        setTimeout(function(){ try{ tt.focus(); }catch(e){} }, 60);
+      }
+    }
+  }catch(e){ console.warn('_taklifTanla', e); }
 }
 
 function openRejaModal(){
@@ -13616,6 +13788,8 @@ function proKerak(nomi){
     var _openM=window.openM;
     window.openM=function(id){
       if(PRO_MODAL[id] && !proKerak(PRO_MODAL[id])) return;
+      /* 21.09.2026: tayyor variantlar ro'yxati har ochilganda yangilanadi */
+      try{ if(id==='odat-modal' || id==='reja-modal') _taklifChiz(id); }catch(e){}
       return _openM.apply(this,arguments);
     };
     proModulOralar();
@@ -14360,7 +14534,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
-var NASHR = '51';   /* qaysi fayl ishlayotganini bilish uchun */
+var NASHR = '52';   /* qaysi fayl ishlayotganini bilish uchun */
 
 /* ==================================================================
    SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
