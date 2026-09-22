@@ -8824,6 +8824,34 @@ window.intizomTest = function(){
   var R1=_rejaKunYangi(RB,RS,'2026-09-14');
   t('reja kechagi ko\'chdi', R1.map(function(r){return r.name;}), ['Bank','Sport','Namoz']);
   t('reja hammasi bajarilmagan', R1.every(function(r){return r.done===false;}), true);
+  /* 22.09.2026: AI reja -> reja */
+  (function(){
+    var eskiReja = S.g('i_reja'), eskiKun = bugunKun();
+    S.s('i_reja', {shablon:[], bugun:{}});
+    try{ state.reja = rejaObyekt(); }catch(e){}
+    var q1 = _aiRejagaQosh('07:30', '\uD83C\uDFC3', 'Yugurish', false);
+    var q2 = _aiRejagaQosh('07:30', '\uD83C\uDFC3', 'Yugurish', false);   /* takror */
+    var ro = (rejaObyekt().bugun[eskiKun]) || [];
+    t('AI reja: qo\'shildi', q1, true);
+    t('AI reja: takror qo\'shilmadi', q2, false);
+    t('AI reja: bitta yozuv', ro.length, 1);
+    t('AI reja: rangi bor', ro[0] && ro[0].color, '#1E8C8C');
+    t('AI reja: tugash vaqti', ro[0] && ro[0].end, '08:30');
+    if(eskiReja) S.s('i_reja', eskiReja);
+    try{ state.reja = rejaObyekt(); }catch(e){}
+  })();
+
+  /* 22.09.2026: eski reja arxivi */
+  var AB = {'2026-01-05':[{id:1,done:true},{id:2,done:false},{id:3,done:true}],
+            '2026-09-20':[{id:4,done:true}]};
+  var AR = _rejaArxivYadro(AB, {}, '2026-06-01');
+  t('arxiv: eski kun qisqardi', Object.keys(AR.bugun).length, 1);
+  t('arxiv: yangi kun qoldi', !!AR.bugun['2026-09-20'], true);
+  t('arxiv: jami to\'g\'ri', AR.arxiv['2026-01-05'].j, 3);
+  t('arxiv: bajarilgan to\'g\'ri', AR.arxiv['2026-01-05'].b, 2);
+  t('arxiv: tozalangan soni', AR.tozalandi, 3);
+  t('arxiv: chegaradagi kun tegilmaydi', !!_rejaArxivYadro({'2026-06-01':[{id:1}]}, {}, '2026-06-01').bugun['2026-06-01'], true);
+
   t('reja shablon takrorlanmadi', R1.filter(function(r){return r.name==='Sport';}).length, 1);
   t('reja yangi id', R1[0].id!==1, true);
   t('reja ertaga tuzilgan tegilmaydi', _rejaKunYangi({'2026-09-13':RB['2026-09-13'],'2026-09-14':[{id:5,name:'X',start:'10:00'}]},RS,'2026-09-14'), null);
@@ -13681,6 +13709,129 @@ try{
 var PRO_MODUL_FAYL = 'pro.js';
 var _proModulHolat = 0;      /* 0 yo'q, 1 yuklanmoqda, 2 tayyor */
 var _proModulVada = null;
+/* ==================================================================
+   RATSION TEZLIGI                                      22.09.2026
+
+   Muammo: Ratsion juda sekin ochilardi. Sabab pro.js dagi
+   getFoodPhoto() — u har taom uchun LoremFlickr degan tashqi
+   xizmatdan surat so'raydi. 30 kunlik ratsionda bu yuzdan ortiq
+   tarmoq so'rovi, har biri bir necha soniya.
+
+   Faylning o'zida offline belgilar allaqachon bor (FOOD_SVG_B64,
+   getFoodImgUrl) va ular bir zumda chiqadi. Shuning uchun
+   getFoodPhoto shularni qaytaradigan qilib o'raladi.
+
+   pro.js ga TEGILMAYDI — o'rash shu yerda, modul yuklangandan
+   keyin bajariladi. */
+/* ------------------------------------------------------------------
+   AI REJA -> REJA                                      22.09.2026
+
+   pro.js dagi addAiTask rejaga ish qo'shganda rang, tugash vaqti
+   va signalni bermasdi — qo'shilgan ish ro'yxatda chala ko'rinardi.
+   Bundan tashqari butun jadvalni birdan o'tkazish yo'li yo'q edi:
+   har bir ishni alohida bosish kerak bo'lardi.
+
+   Quyidagi ikkala kamchilik ham to'g'rilanadi, pro.js ga tegmasdan.
+   ------------------------------------------------------------------ */
+function _aiFaolKun(){
+  try{
+    if(typeof _rejaFaolKun !== 'undefined' && _rejaFaolKun){
+      if(_rejaFaolKun === 'ertaga') return ertagaKun();
+      if(/^\d{4}-\d{2}-\d{2}$/.test(_rejaFaolKun)) return _rejaFaolKun;
+    }
+  }catch(e){}
+  return bugunKun();
+}
+
+function _aiRejagaQosh(soat, emoji, vazifa, xabar){
+  try{
+    var nom = String(emoji || '').trim();
+    nom = (nom ? nom + ' ' : '') + String(vazifa || '').trim();
+    if(!nom) return false;
+    var kun = _aiFaolKun();
+    var boshi = /^\d{1,2}:\d{2}$/.test(String(soat||'')) ? soat : '09:00';
+
+    var o = rejaObyekt();
+    var borlar = (o.bugun && o.bugun[kun]) || [];
+    var bor = borlar.some(function(r){ return r && _nomTeng(r.name, nom); });
+    if(bor){ if(xabar) showNotif('ℹ️ Allaqachon bor', nom); return false; }
+
+    rejaQosh({
+      id: Date.now() + Math.random(),
+      name: nom, text: nom,
+      done: false,
+      start: boshi,
+      end: _daqQosh(boshi, 60),
+      time: boshi,
+      date: kun,
+      icon: emoji || '🤖',
+      color: '#1E8C8C',
+      signal: -1
+    });
+    if(xabar) showNotif('✅ Rejaga qo‘shildi', nom);
+    return true;
+  }catch(e){ console.warn('_aiRejagaQosh', e); return false; }
+}
+
+function _aiRejaHammasiTugma(res){
+  try{
+    var el = document.getElementById('ai-reja-result');
+    if(!el || !res || !res.jadval || !res.jadval.length) return;
+    var b = document.createElement('button');
+    b.id = 'ai-reja-hammasi';
+    b.className = 'btn btn-g btn-block';
+    b.style.marginTop = '14px';
+    b.textContent = '📋 Hammasini rejaga o‘tkazish (' + res.jadval.length + ')';
+    b.onclick = function(){
+      var n = 0;
+      res.jadval.forEach(function(v){
+        if(_aiRejagaQosh(v.soat, v.emoji, v.vazifa, false)) n++;
+      });
+      var qolgan = res.jadval.length - n;
+      showNotif('✅ O‘tkazildi',
+        n + ' ta ish rejaga qo‘shildi' + (qolgan ? ' · ' + qolgan + ' tasi allaqachon bor edi' : ''));
+      try{ closeM('ai-reja-modal'); }catch(e){}
+      try{ gotoPage('reja', null); }catch(e){}
+    };
+    el.appendChild(b);
+  }catch(e){ console.warn('_aiRejaHammasiTugma', e); }
+}
+
+function _proModulTuzat(){
+  try{
+    /* AI Reja: har ish uchun to'liq yozuv + hammasini o'tkazish tugmasi */
+    if(typeof window.addAiTask === 'function' && !window.addAiTask.__oralgan){
+      var yangiAdd = function(soat, emoji, vazifa){ return _aiRejagaQosh(soat, emoji, vazifa, true); };
+      yangiAdd.__oralgan = 1;
+      window.addAiTask = yangiAdd;
+    }
+    if(typeof window.showAiReja === 'function' && !window.showAiReja.__oralgan){
+      var aslShow = window.showAiReja;
+      var yangiShow = function(res){
+        var natija = aslShow.apply(this, arguments);
+        try{ _aiRejaHammasiTugma(res); }catch(e){}
+        return natija;
+      };
+      yangiShow.__oralgan = 1;
+      window.showAiReja = yangiShow;
+    }
+
+    if(typeof window.getFoodPhoto === 'function' && !window.getFoodPhoto.__tez){
+      var yangi = function(text){
+        try{
+          if(typeof window.getFoodImgUrl === 'function'){
+            return window.getFoodImgUrl(String(text || ''));
+          }
+        }catch(e){}
+        return '';
+      };
+      yangi.__tez = 1;
+      window.getFoodPhoto = yangi;
+      console.log('Ratsion: taom suratlari offline belgilarga almashtirildi');
+    }
+  }catch(e){ console.warn('_proModulTuzat', e); }
+}
+
 function proModulYukla(){
   if(_proModulHolat===2) return Promise.resolve();
   if(_proModulVada) return _proModulVada;
@@ -13689,7 +13840,7 @@ function proModulYukla(){
     var sc = document.createElement('script');
     var v = ''; try{ v = '?v=' + ILOVA_VERSIYA; }catch(e){}
     sc.src = PRO_MODUL_FAYL + v;
-    sc.onload = function(){ _proModulHolat = 2; res(); };
+    sc.onload = function(){ _proModulHolat = 2; try{ _proModulTuzat(); }catch(e){} res(); };
     sc.onerror = function(){
       _proModulHolat = 0; _proModulVada = null;
       try{ showNotif('\u26A0\uFE0F PRO moduli yuklanmadi', 'Internetni tekshirib qayta urinib ko\u2018ring'); }catch(e){}
@@ -14234,6 +14385,77 @@ function xatoYubor(xabar, joy){
 }
 
 /* Hodisa: ochildi, ornatildi, pro_korildi, tolov_bosildi ... */
+/* ==================================================================
+   ESKI REJALARNI ARXIVLASH                             22.09.2026
+
+   Muammo: reja yozuvlari hech qachon tozalanmaydi. Bir qurilmada
+   allaqachon 160 ta bor; bir yildan keyin bu bir necha mingga
+   chiqadi. Har ochilishda hammasi o'qiladi, sinxronda hammasi
+   solishtiriladi, xotirada hammasi yotadi.
+
+   Yechim: 120 kundan eski kunlarning rejalari qisqartiriladi —
+   har kun uchun faqat ikkita raqam saqlanadi (nechta reja bor edi,
+   nechtasi bajarildi). Hisobotdagi uzoq muddatli grafik shu
+   raqamlardan chizilaveradi, lekin har bir reja nomi va vaqti
+   saqlanmaydi.
+
+   Serverdan O'CHIRILMAYDI: bu faqat telefon xotirasini
+   yengillashtiradi, bulutdagi to'liq tarix joyida qoladi.
+   ================================================================== */
+var REJA_SAQLASH_KUN = 120;     /* shuncha kunlik to'liq reja qoladi */
+var ARXIV_SAQLASH_KUN = 730;    /* qisqa yig'indi ikki yil turadi */
+
+/* Toza yadro — test qilinadi.
+   b = {sana:[reja,...]}, arxiv = {sana:{j,b}}, chegara = 'YYYY-MM-DD'
+   Qaytaradi: {bugun, arxiv, tozalandi} */
+function _rejaArxivYadro(b, arxiv, chegara){
+  b = b || {}; arxiv = arxiv || {};
+  var yangiB = {}, yangiA = {}, soni = 0;
+  Object.keys(arxiv).forEach(function(k){ yangiA[k] = arxiv[k]; });
+  Object.keys(b).forEach(function(kun){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(kun) || kun >= chegara){ yangiB[kun] = b[kun]; return; }
+    var ro = b[kun] || [];
+    if(!ro.length) { soni++; return; }
+    var bajarildi = 0;
+    ro.forEach(function(r){ if(r && r.done) bajarildi++; });
+    yangiA[kun] = { j: ro.length, b: bajarildi };
+    soni += ro.length;
+  });
+  return { bugun: yangiB, arxiv: yangiA, tozalandi: soni };
+}
+
+function _arxivChegara(kun){
+  var d = new Date();
+  d.setDate(d.getDate() - kun);
+  return d.toISOString().slice(0,10);
+}
+
+function rejaArxivla(){
+  try{
+    var bugun = bugunKun();
+    if(S.g('i_reja_arxiv_kun') === bugun) return 0;   /* kuniga bir marta */
+    S.s('i_reja_arxiv_kun', bugun);
+
+    var o = (typeof rejaObyekt === 'function') ? rejaObyekt() : (S.g('i_reja') || {});
+    if(!o || !o.bugun) return 0;
+
+    var natija = _rejaArxivYadro(o.bugun, S.g('i_reja_arxiv') || {}, _arxivChegara(REJA_SAQLASH_KUN));
+    if(!natija.tozalandi) return 0;
+
+    /* Juda eski yig'indilarni ham tashlaymiz */
+    var eskiChegara = _arxivChegara(ARXIV_SAQLASH_KUN);
+    Object.keys(natija.arxiv).forEach(function(k){ if(k < eskiChegara) delete natija.arxiv[k]; });
+
+    o.bugun = natija.bugun;
+    S.s('i_reja', o);
+    S.s('i_reja_arxiv', natija.arxiv);
+    try{ state.reja = o; }catch(e){}
+    console.log('Eski reja arxivlandi: ' + natija.tozalandi + ' ta yozuv qisqartirildi');
+    return natija.tozalandi;
+  }catch(e){ console.warn('rejaArxivla', e); return 0; }
+}
+setTimeout(function(){ try{ rejaArxivla(); }catch(e){} }, 5000);
+
 /* ==================================================================
    SHRIFT O'LCHAMI                                      22.09.2026
 
@@ -14801,7 +15023,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
-var NASHR = '59';   /* qaysi fayl ishlayotganini bilish uchun */
+var NASHR = '62';   /* qaysi fayl ishlayotganini bilish uchun */
 
 /* ==================================================================
    SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
