@@ -1970,15 +1970,22 @@
 .hk-item .hk-btn{width:26px;height:26px;border-radius:8px;border:none;background:var(--bg);color:var(--t2);cursor:pointer;font-size:13px;flex-shrink:0}
 
 /* 21.09.2026: reja va odat qo'shishda tayyor variantlar */
-.taklif-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
-.taklif-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:14px;
+/* 22.09.2026: chiplar turli kenglikda bo'lgani uchun tartibsiz
+   ko'rinardi. Endi teng ikki ustun — ro'yxat tekis va o'qish oson. */
+.taklif-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.taklif-chip{display:flex;align-items:center;gap:8px;padding:11px 12px;border-radius:14px;
   border:1.5px solid var(--bd);background:var(--bg);color:var(--text);
-  font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;line-height:1.2;
+  font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;line-height:1.25;
+  text-align:left;min-width:0;
   transition:border-color .15s ease, background .15s ease, transform .12s ease}
-.taklif-chip:active{transform:scale(.96)}
-.taklif-chip.oz{border-color:var(--g);color:var(--g)}
-.taklif-chip .tc-em{font-size:15px}
-.taklif-izoh{font-size:12.5px;color:var(--t2);margin-top:7px}
+.taklif-chip:active{transform:scale(.97)}
+.taklif-chip.oz{border-color:var(--g)}
+.taklif-chip.oz .tc-nom{color:var(--g)}
+.taklif-chip .tc-em{font-size:17px;flex-shrink:0;line-height:1}
+.taklif-chip .tc-nom{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.taklif-chip.yana{grid-column:1 / -1;justify-content:center;color:var(--t2);
+  border-style:dashed;font-weight:700}
+.taklif-izoh{font-size:12.5px;color:var(--t2);margin-top:9px}
 </style>
 <div class="moverlay" id="reja-modal">
   <div class="modal">
@@ -6525,33 +6532,74 @@ function renderHafta(){
    Tanlangandan keyin soat maydoni o'sha yerda ochiladi.
    ================================================================== */
 var TAKLIF_REJA = [
-  {nom:'Ishga borish',        icon:'💼', color:'#4F86E2', start:'09:00', davom:480},
-  {nom:'Yig\'ilish',           icon:'🗣️', color:'#875DE5', start:'10:00', davom:60},
-  {nom:'Sport / mashq',       icon:'🏃', color:'#1E8C8C', start:'07:00', davom:60},
-  {nom:'Kitob o\'qish',        icon:'📚', color:'#875DE5', start:'21:00', davom:30},
-  {nom:'Dars / o\'qish',       icon:'📝', color:'#4F86E2', start:'19:00', davom:60},
-  {nom:'Bozor-o\'char',        icon:'🛒', color:'#DB9725', start:'17:00', davom:60},
-  {nom:'Uy ishlari',          icon:'🧹', color:'#DB9725', start:'18:00', davom:60},
-  {nom:'Ovqat tayyorlash',    icon:'🍳', color:'#DB9725', start:'12:00', davom:60},
-  {nom:'Bolalar bilan vaqt',  icon:'👨‍👩‍👧', color:'#E35199', start:'20:00', davom:60},
-  {nom:'Qo\'ng\'iroq qilish',   icon:'📞', color:'#4F86E2', start:'11:00', davom:15},
-  {nom:'Hujjat / hisobot',    icon:'📋', color:'#64748B', start:'14:00', davom:60},
-  {nom:'Dam olish',           icon:'☕', color:'#1E8C8C', start:'16:00', davom:30}
+  /* Ish */
+  {nom:'Ishga borish',          icon:'💼', color:'#4F86E2', start:'09:00', davom:480},
+  {nom:'Yig\'ilish',             icon:'🗣️', color:'#875DE5', start:'10:00', davom:60},
+  {nom:'Qo\'ng\'iroqlar',         icon:'📞', color:'#4F86E2', start:'11:00', davom:30},
+  {nom:'Hujjat / hisobot',      icon:'📋', color:'#64748B', start:'14:00', davom:60},
+  {nom:'Mijoz bilan uchrashuv', icon:'🤝', color:'#4F86E2', start:'15:00', davom:60},
+  {nom:'Pochta va xabarlar',    icon:'📧', color:'#64748B', start:'09:30', davom:30},
+  {nom:'Chuqur ish bloki',      icon:'🎯', color:'#1B3A6B', start:'10:00', davom:90},
+  /* Uy */
+  {nom:'Uy ishlari',            icon:'🧹', color:'#DB9725', start:'18:00', davom:60},
+  {nom:'Ovqat tayyorlash',      icon:'🍳', color:'#DB9725', start:'12:00', davom:60},
+  {nom:'Bozor-o\'char',          icon:'🛒', color:'#DB9725', start:'17:00', davom:60},
+  {nom:'Kir yuvish',            icon:'🧺', color:'#DB9725', start:'19:00', davom:45},
+  {nom:'Xona tartibi',          icon:'🛏️', color:'#DB9725', start:'08:00', davom:20},
+  /* Oila */
+  {nom:'Bolalar bilan vaqt',    icon:'🧸', color:'#E35199', start:'20:00', davom:60},
+  {nom:'Bolaning darsi',        icon:'✏️', color:'#E35199', start:'19:00', davom:45},
+  {nom:'Ota-onaga qo\'ng\'iroq',  icon:'☎️', color:'#E35199', start:'20:30', davom:15},
+  {nom:'Oilaviy kechki ovqat',  icon:'🍽️', color:'#E35199', start:'19:30', davom:60},
+  /* Salomatlik */
+  {nom:'Sport / mashq',         icon:'🏃', color:'#1E8C8C', start:'07:00', davom:60},
+  {nom:'Yurish',                icon:'🚶', color:'#1E8C8C', start:'18:00', davom:30},
+  {nom:'Dam olish',             icon:'☕', color:'#1E8C8C', start:'16:00', davom:30},
+  {nom:'Uyquga tayyorgarlik',   icon:'🌙', color:'#64748B', start:'22:30', davom:30},
+  /* Ta'lim */
+  {nom:'Kitob o\'qish',          icon:'📚', color:'#875DE5', start:'21:00', davom:30},
+  {nom:'Dars / kurs',           icon:'📝', color:'#4F86E2', start:'19:00', davom:60},
+  {nom:'Til o\'rganish',         icon:'🔤', color:'#875DE5', start:'20:00', davom:30},
+  /* Din */
+  {nom:'Qur\'on tilovati',       icon:'📖', color:'#DBBE24', start:'06:00', davom:20},
+  {nom:'Zikr',                  icon:'📿', color:'#DBBE24', start:'21:30', davom:15},
+  /* Moliya */
+  {nom:'Hisob-kitob',           icon:'🧮', color:'#166B6B', start:'21:00', davom:20},
+  {nom:'To\'lovlarni qilish',    icon:'💳', color:'#166B6B', start:'10:00', davom:20},
+  /* Dam */
+  {nom:'Do\'stlar bilan',        icon:'👥', color:'#875DE5', start:'18:00', davom:90},
+  {nom:'Sayr',                  icon:'🌳', color:'#1E8C8C', start:'17:00', davom:60}
 ];
 
 var TAKLIF_ODAT = [
-  {nom:'Namoz o\'qish',          icon:'🕌', color:'linear-gradient(135deg,#DBBE24,#DB9725)', time:''},
-  {nom:'2 litr suv ichish',     icon:'💧', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:''},
-  {nom:'20 bet kitob o\'qish',   icon:'📚', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'21:00'},
-  {nom:'30 daqiqa yurish',      icon:'🚶', color:'linear-gradient(135deg,#1E8C8C,#166B6B)', time:'07:00'},
-  {nom:'Erta turish',           icon:'🌅', color:'linear-gradient(135deg,#DB9725,#C9702A)', time:'05:30'},
+  {nom:'Namoz o\'qish',           icon:'🕌', color:'linear-gradient(135deg,#DBBE24,#DB9725)', time:''},
+  {nom:'2 litr suv ichish',      icon:'💧', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:''},
+  {nom:'Erta turish',            icon:'🌅', color:'linear-gradient(135deg,#DB9725,#C9702A)', time:'05:30'},
+  {nom:'Erta yotish',            icon:'🌙', color:'linear-gradient(135deg,#64748B,#475569)', time:'23:00'},
+  {nom:'20 bet kitob o\'qish',    icon:'📚', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'21:00'},
+  {nom:'Ertalabki mashq',        icon:'🏋️', color:'linear-gradient(135deg,#1E8C8C,#166B6B)', time:'06:30'},
+  {nom:'30 daqiqa yurish',       icon:'🚶', color:'linear-gradient(135deg,#1E8C8C,#166B6B)', time:'07:00'},
+  {nom:'Qur\'on o\'qish',          icon:'📖', color:'linear-gradient(135deg,#DBBE24,#DB9725)', time:'06:00'},
+  {nom:'Zikr aytish',            icon:'📿', color:'linear-gradient(135deg,#DBBE24,#DB9725)', time:'21:30'},
+  {nom:'Kundalik yozish',        icon:'📔', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'22:00'},
+  {nom:'Ertaga reja tuzish',     icon:'🗓️', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:'22:00'},
+  {nom:'Tilga 15 daqiqa',        icon:'🔤', color:'linear-gradient(135deg,#E35199,#DC2677)', time:'20:00'},
   {nom:'Telefonni kam ishlatish',icon:'📵', color:'linear-gradient(135deg,#64748B,#475569)', time:''},
-  {nom:'Ertalabki mashq',       icon:'🏋️', color:'linear-gradient(135deg,#1E8C8C,#166B6B)', time:'06:30'},
-  {nom:'Kundalik yozish',       icon:'📔', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'22:00'},
-  {nom:'Ertaga reja tuzish',    icon:'🗓️', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:'22:00'},
-  {nom:'Tilga 15 daqiqa',       icon:'🗣️', color:'linear-gradient(135deg,#E35199,#DC2677)', time:'20:00'},
-  {nom:'Shirinlikdan tiyilish', icon:'🍬', color:'linear-gradient(135deg,#E35050,#DC2626)', time:''},
-  {nom:'Erta yotish',           icon:'🌙', color:'linear-gradient(135deg,#64748B,#475569)', time:'23:00'}
+  {nom:'Shirinlikdan tiyilish',  icon:'🍬', color:'linear-gradient(135deg,#E35050,#DC2626)', time:''},
+  {nom:'Meva-sabzavot yeyish',   icon:'🥗', color:'linear-gradient(135deg,#1E8C8C,#166B6B)', time:''},
+  {nom:'Vaqtida ovqatlanish',    icon:'🍽️', color:'linear-gradient(135deg,#DB9725,#C9702A)', time:''},
+  {nom:'Ota-onaga qo\'ng\'iroq',   icon:'☎️', color:'linear-gradient(135deg,#E35199,#DC2677)', time:'20:30'},
+  {nom:'Ehson qilish',           icon:'🤲', color:'linear-gradient(135deg,#DBBE24,#DB9725)', time:''},
+  {nom:'Shukr yozish',           icon:'🙏', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'22:00'},
+  {nom:'Tabassum qilish',        icon:'😊', color:'linear-gradient(135deg,#E35199,#DC2677)', time:''},
+  {nom:'G\'iybat qilmaslik',      icon:'🤐', color:'linear-gradient(135deg,#64748B,#475569)', time:''},
+  {nom:'Cho\'zilish mashqlari',   icon:'🤸', color:'linear-gradient(135deg,#1E8C8C,#166B6B)', time:'07:30'},
+  {nom:'Nafas mashqi',           icon:'🌬️', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:''},
+  {nom:'Quyoshga chiqish',       icon:'☀️', color:'linear-gradient(135deg,#DB9725,#C9702A)', time:'08:00'},
+  {nom:'Xarajatni yozish',       icon:'🧾', color:'linear-gradient(135deg,#166B6B,#0F4D4D)', time:'21:00'},
+  {nom:'Xona tartibi',           icon:'🛏️', color:'linear-gradient(135deg,#DB9725,#C9702A)', time:'08:00'},
+  {nom:'Kechqurun ekransiz',     icon:'🌘', color:'linear-gradient(135deg,#64748B,#475569)', time:'22:00'},
+  {nom:'Kofeni kamaytirish',     icon:'☕', color:'linear-gradient(135deg,#8E3B2F,#6B2C23)', time:''}
 ];
 
 function _nomTeng(a,b){
@@ -6612,7 +6660,7 @@ function _taklifRoyxat(tur){
       var allaqachon = bugunKunlik.some(function(r){ return _nomTeng(r.name, x.nom); });
       if(!allaqachon) qosh(x);
     });
-    return chiq.slice(0, 12);
+    return chiq;
   }
   var od = [];
   try{ od = S.g('i_odatlar') || state.odatlar || []; }catch(e){}
@@ -6620,22 +6668,27 @@ function _taklifRoyxat(tur){
     var allaqachon = od.some(function(o){ return _nomTeng(o.name, x.nom); });
     if(!allaqachon) qosh(x);
   });
-  return chiq.slice(0, 12);
+  return chiq;
 }
 
-function _taklifChiz(modal){
+var TAKLIF_ILK = 8;   /* boshida nechtasi ko'rinadi */
+function _taklifChiz(modal, hammasi){
   try{
     var tur = (modal === 'reja-modal') ? 'reja' : 'odat';
     var el = document.getElementById(tur === 'reja' ? 'rj-taklif' : 'od-taklif');
     if(!el) return;
     var royxat = _taklifRoyxat(tur);
     if(!royxat.length){ el.innerHTML = ''; return; }
-    el.innerHTML = royxat.map(function(x,i){
+    var korinadi = hammasi ? royxat : royxat.slice(0, TAKLIF_ILK);
+    var qoldi = royxat.length - korinadi.length;
+    el.innerHTML = korinadi.map(function(x,i){
       return '<button type="button" class="taklif-chip'+(x.oz?' oz':'')+'" data-i="'+i+'">'+
-             '<span class="tc-em">'+x.icon+'</span>'+esc(x.nom)+'</button>';
-    }).join('');
+             '<span class="tc-em">'+x.icon+'</span><span class="tc-nom">'+esc(x.nom)+'</span></button>';
+    }).join('') +
+    (qoldi > 0 ? '<button type="button" class="taklif-chip yana" data-yana="1">+ yana '+qoldi+' ta</button>' : '');
     el.querySelectorAll('.taklif-chip').forEach(function(b){
-      b.onclick = function(){ _taklifTanla(tur, royxat[+b.getAttribute('data-i')]); };
+      if(b.getAttribute('data-yana')){ b.onclick = function(){ _taklifChiz(modal, true); }; return; }
+      b.onclick = function(){ _taklifTanla(tur, korinadi[+b.getAttribute('data-i')]); };
     });
   }catch(e){ console.warn('_taklifChiz', e); }
 }
@@ -14748,7 +14801,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
-var NASHR = '58';   /* qaysi fayl ishlayotganini bilish uchun */
+var NASHR = '59';   /* qaysi fayl ishlayotganini bilish uchun */
 
 /* ==================================================================
    SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
