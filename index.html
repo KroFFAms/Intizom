@@ -74,6 +74,83 @@
 
 /* 15.09.2026: tuzilma — bitta katta raqam, chapdan ikonka yorlig'i, soatlik ustunlar */
 .hero-katta{font-size:42px;font-weight:900;color:var(--g);line-height:1;letter-spacing:-1.5px;margin:4px 0 2px}
+/* 22.09.2026: kun o'lchovi sarlavhada */
+.kun-satr{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;
+  margin-top:9px;font-size:13.5px;color:var(--t2);cursor:pointer}
+.kun-satr .ks-katta{font-size:21px;font-weight:900;color:var(--g);letter-spacing:-.5px}
+.kun-satr .ks-katta span{font-size:14px;font-weight:700;color:var(--t2)}
+.kun-satr .hs{cursor:pointer}
+.kun-satr .hs span{color:var(--text);font-weight:800}
+.kun-satr .hs:active{opacity:.6}
+.kun-satr .ks-zanjir b{color:var(--brass);font-weight:800}
+
+.av-halqa{width:72px;height:72px;border-radius:22px;padding:8px;
+  background:conic-gradient(var(--g) calc(var(--kun,0)*360deg), var(--bd) 0);
+  display:flex;align-items:center;justify-content:center}
+.dark .av-halqa{background:conic-gradient(var(--g) calc(var(--kun,0)*360deg), var(--bd) 0)}
+
+.hero-faqat-keyingi{padding:0;border:none;background:transparent;margin-bottom:0}
+.hero-faqat-keyingi:has(#b-keyingi[style*="display:none"]){display:none}
+.hero-faqat-keyingi .hero-keyingi{margin-top:12px;flex:0 0 100%}
+
+/* ==================================================================
+   22.09.2026: KENG EKRAN — ILOVA TELEFON KENGLIGIDA QOLADI
+
+   Ilova telefon uchun chizilgan. Kompyuterda yoki planshetda
+   ochilganda kartalar butun ekranga cho'zilib, kataklar ulkan
+   bo'lib ketardi va hamma narsa palapartish ko'rinardi.
+   Endi ilova markazda, telefon kengligida turadi — kompyuterda
+   ham xuddi telefondagidek ko'rinadi.
+   ================================================================== */
+@media (min-width:600px){
+  body{background:var(--bd)}
+  .page{max-width:520px;margin:0 auto;background:var(--bg);min-height:100vh}
+  .bottom-nav{width:100%;max-width:520px;left:50%;right:auto;transform:translateX(-50%);
+    border-left:1px solid var(--bd);border-right:1px solid var(--bd)}
+  .fab{right:calc(50% - 260px + 18px)}
+  #global-mic-btn{left:calc(50% - 260px + 16px) !important}
+  .modal{max-width:520px;margin:0 auto;border-radius:var(--r-lg)}
+  .moverlay{align-items:center}
+  .notif{max-width:520px;left:50%;right:auto;transform:translateX(-50%) translateY(-100%)}
+  .notif.show{transform:translateX(-50%) translateY(0)}
+  /* Keng ekranda ham to'rt ustun — oltita qilinsa kataklar cho'ziladi */
+  .hgrid{grid-template-columns:repeat(4,1fr)}
+}
+
+/* ==================================================================
+   22.09.2026: BOSH EKRANNI YENGILLASHTIRISH
+
+   Shikoyat: Androidda "Bugun" kataklari butun ekranni egallaydi va
+   ilovaga kirgan odam murakkab deb o'ylaydi. Haq gap — kataklar
+   46 piksellik belgi va keng bo'shliq bilan chizilardi.
+
+   Ikki ish qilindi. Kataklar ixchamlashdi (belgi 38px, bo'shliq
+   kamaydi, telefonda bir qatorga to'rttasi emas, beshtasi sig'adi).
+   Va yuqoridagi reja/odat/namoz raqamlari bosiladigan bo'ldi —
+   pastdagi katakni izlash shart emas.
+   ================================================================== */
+.hero-izoh .hs{display:inline-block;padding:2px 0;margin-right:12px;cursor:pointer}
+.hero-izoh .hs:active{opacity:.6}
+.hero-izoh .hs span{color:var(--text);font-weight:800}
+
+.hgrid{gap:8px}
+.htile{padding:9px 4px 8px}
+.hticon{width:38px;height:38px;border-radius:12px}
+.hticon svg{width:20px;height:20px}
+.htile[style*="--p"] .hticon::before{inset:-3px;border-radius:15px}
+.htlbl{margin-top:6px;line-height:1.2}
+.htsub{margin-top:2px;min-height:0;font-size:10px;font-weight:600}
+.htile.bajarildi .hticon::after{width:15px;height:15px;font-size:10px}
+
+/* Telefonda to'rtta ustun — beshta qilinsa nom ikki qatorga
+   tushib, katak balandlashib ketadi. */
+@media (max-width:480px){
+  .htlbl{font-size:clamp(10px,3vw,12px)}
+}
+@media (max-width:340px){
+  .hgrid{grid-template-columns:repeat(3,1fr)}
+}
+
 /* 22.09.2026: shrift tanlov tugmalari */
 .shrift-tanlov{display:flex;align-items:center;gap:12px;width:100%;
   padding:14px 16px;margin-bottom:9px;border-radius:14px;
@@ -320,6 +397,18 @@
         <div id="b-salom" style="font-size:15px;color:var(--t2);margin-bottom:4px">Xayrli tong ☀️</div>
         <div id="b-ism" style="font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px">Foydalanuvchi</div>
         <div id="b-sana" style="font-size:14px;color:var(--t2);opacity:.8;margin-top:4px"></div>
+
+        <!-- 22.09.2026: "Bugun" kartasining ichi shu yerga bo'lib
+             tarqatildi. Ilgari u ismning ostida alohida to'rtburchak
+             bo'lib turardi va Androidda butun birinchi ekranni
+             egallardi. Endi kun o'lchovi sarlavhaning o'zida. -->
+        <div class="kun-satr" onclick="gotoPage('hisobot',null)" title="Bugun nima qildim">
+          <span class="ks-katta"><b id="b-katta">0</b><span id="b-jami">/0</span></span>
+          <span class="hs" onclick="event.stopPropagation();gotoPage('reja',null)"><span id="b-st1">0</span> reja</span>
+          <span class="hs" onclick="event.stopPropagation();gotoPage('odat',null)"><span id="b-st2">0</span> odat</span>
+          <span class="hs" onclick="event.stopPropagation();gotoPage('din',null)"><span id="b-st3">0</span> namoz</span>
+          <span class="ks-zanjir">&#128293; <b id="b-st4">0</b> kun</span>
+        </div>
       </div>
       <!-- 21.09.2026: Til va Chiqish Sozlamaga ko'chdi.
            Ular kuniga bir marta ham bosilmaydi, lekin ekranning
@@ -328,10 +417,14 @@
       <span id="til-bosh-bayroq" style="display:none">&#127482;&#127487;</span>
       <div style="display:flex;align-items:flex-start;gap:12px">
         <div onclick="openM('profil-modal')" style="cursor:pointer;text-align:center">
-          <div id="b-avatar" style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--g),var(--gd));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;box-shadow:0 6px 18px rgba(30,140,140,.28);overflow:hidden">
-            <span id="b-av-l">F</span><img id="b-av-i" style="display:none;width:100%;height:100%;object-fit:cover">
+          <!-- 22.09.2026: bugungi foiz avatar atrofidagi halqada.
+               Raqamni o'qimasdan ham kun qanday ketayotgani ko'rinadi. -->
+          <div class="av-halqa">
+            <div id="b-avatar" style="width:56px;height:56px;border-radius:17px;background:linear-gradient(135deg,var(--g),var(--gd));display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;overflow:hidden">
+              <span id="b-av-l">F</span><img id="b-av-i" style="display:none;width:100%;height:100%;object-fit:cover">
+            </div>
           </div>
-          <div class="u-t125m3">Profil</div>
+          <div class="u-t125m3"><span id="b-foiz">0%</span></div>
         </div>
       </div>
     </div>
@@ -344,14 +437,9 @@
          Ilgari bu katta to'rtburchak ekranning uchdan birini
          egallardi va ichida bitta raqam turardi. Endi u sarlavha
          ostidagi bir qator — pastdagi kataklar darrov ko'rinadi. -->
-    <div class="hero hero-ixcham" onclick="gotoPage('hisobot',null)" style="cursor:pointer" title="Bugun nima qildim">
-      <div class="hero-halqa"><span id="b-foiz">0%</span></div>
-      <div class="u-f1m">
-        <div class="hero-katta"><b id="b-katta">0</b><span id="b-jami">/0</span>
-          <span class="hero-bugun">bugun</span></div>
-        <div class="hero-izoh"><span id="b-st1">0</span> reja &middot; <span id="b-st2">0</span> odat &middot; <span id="b-st3">0</span> namoz</div>
-        <div class="hero-streak">&#128293; <b id="b-st4">0</b> kun &middot; <span style="opacity:.6;font-weight:400">batafsil &rsaquo;</span></div>
-      </div>
+    <!-- Kartaning o'zi qoldirildi, lekin ichida faqat "keyingi ish"
+         chizig'i bor. Keyingi ish bo'lmasa karta ham ko'rinmaydi. -->
+    <div class="hero hero-faqat-keyingi">
       <div class="hero-keyingi" id="b-keyingi" style="display:none"></div>
     </div>
   </div>
@@ -2402,7 +2490,7 @@ var HW_GURUH=[
   {n:'Mukofotlar',  k:['viktorina','mashq60','spin','avatar','kunsir']},
   {n:'PRO',         k:['kitoblar','aireja','missiya','reyting']}
 ];
-var MALUMOT_VERSIYA = 5;
+var MALUMOT_VERSIYA = 7;
 var MIGRATSIYALAR = [
   { v:1, nom:'reja: massiv \u2192 {shablon,bugun}', fn:function(){
       var d = S.g('i_reja');
@@ -2465,6 +2553,23 @@ var MIGRATSIYALAR = [
       HOME_WIDGETS.forEach(function(w){ cfg[w.k] = birinchi.indexOf(w.k)!==-1; });
       S.s('i_home_widgets', cfg);
       S.s('i_ochilish', {bosh: bugunKun(), ochilgan: birinchi.slice(), korsatilgan: 0});
+  }},
+  /* 22.09.2026: BEKOR QILINDI.
+     Bu migratsiya Odat, Reja va Namoz kataklarini bosh sahifadan
+     olib tashlagan edi — noto'g'ri qaror. O'sha kataklar bajarilgan
+     miqdorni va foizni ko'rsatadi, ya'ni yuqoridagi raqamdan boshqa
+     ish qiladi. Nomeri saqlanib qoldi (ba'zi qurilmalarda allaqachon
+     yozilgan), lekin ichi bo'shatildi. Tiklash quyida, v7 da. */
+  { v:6, nom:'bekor qilingan', fn:function(){ /* ataylab bo'sh */ } },
+
+  /* 22.09.2026: v6 olib tashlagan uchta katak qaytariladi. */
+  { v:7, nom:'odat, reja va namoz kataklari qaytarildi', fn:function(){
+      try{
+        var cfg = S.g('i_home_widgets');
+        if(!cfg) return;
+        ['odat','reja','namoz'].forEach(function(k){ if(k in cfg) cfg[k] = true; });
+        S.s('i_home_widgets', cfg);
+      }catch(e){}
   }}
 ];
 /* Progressiv ochilish bosqichlari: kun = ro'yxatdan o'tgandan keyingi kun */
@@ -5317,6 +5422,9 @@ function renderBosh(){
     try{ guvohDesc(); }catch(e){}
     var hero = document.querySelector('.hero');
     if(hero) hero.style.setProperty('--kun', ulush.toFixed(3));
+    /* 22.09.2026: foiz halqasi endi avatar atrofida */
+    var avh = document.querySelector('.av-halqa');
+    if(avh) avh.style.setProperty('--kun', ulush.toFixed(3));
   }catch(e){}
   showMotiv();
   const ob=S.g('i_ob');
@@ -14640,7 +14748,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
-var NASHR = '54';   /* qaysi fayl ishlayotganini bilish uchun */
+var NASHR = '58';   /* qaysi fayl ishlayotganini bilish uchun */
 
 /* ==================================================================
    SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
