@@ -74,6 +74,31 @@
 
 /* 15.09.2026: tuzilma — bitta katta raqam, chapdan ikonka yorlig'i, soatlik ustunlar */
 .hero-katta{font-size:42px;font-weight:900;color:var(--g);line-height:1;letter-spacing:-1.5px;margin:4px 0 2px}
+/* 22.09.2026: shrift tanlov tugmalari */
+.shrift-tanlov{display:flex;align-items:center;gap:12px;width:100%;
+  padding:14px 16px;margin-bottom:9px;border-radius:14px;
+  border:1.5px solid var(--bd);background:var(--bg);color:var(--text);
+  font-family:inherit;text-align:left;cursor:pointer}
+.shrift-tanlov.tanlandi{border-color:var(--g);background:rgba(30,140,140,.08)}
+.shrift-tanlov.tanlandi::after{content:"\2713";margin-left:auto;color:var(--g);font-weight:800;font-size:16px}
+
+/* 21.09.2026: bo'sh qatorlar joy egallamasin.
+   Bu to'rtta joy faqat kerak bo'lganda to'ladi — bo'sh turganda
+   ham marginlari bilan yuz piksel joy yeb turardi. */
+#ochilish-strip:empty, #hafta-yakun-strip:empty,
+#oila-taklif-strip:empty, #kun-gapi:empty, #b-niyat:empty{
+  display:none !important; margin:0 !important; padding:0 !important;
+}
+
+/* 21.09.2026: ixcham kun qatori */
+.hero-ixcham{padding:12px 14px;gap:13px;margin-bottom:10px}
+.hero-ixcham .hero-halqa{width:54px;height:54px;font-size:15px}
+.hero-ixcham .hero-halqa::before{inset:6px}
+.hero-ixcham .hero-katta{font-size:27px;margin:0 0 2px;display:flex;align-items:baseline;gap:6px}
+.hero-ixcham .hero-katta span{font-size:15px}
+.hero-ixcham .hero-bugun{font-size:13px;font-weight:700;color:var(--t2);letter-spacing:0;margin-left:2px}
+.hero-ixcham .hero-izoh{font-size:12.5px;margin-bottom:2px}
+.hero-ixcham .hero-streak{font-size:12.5px;margin-top:0}
 .hero-katta span{font-size:20px;font-weight:700;color:var(--t2);letter-spacing:0;margin-left:2px}
 .hero-izoh{font-size:13.5px;color:var(--t2);margin-bottom:4px}
 .card-ikon.card-ikon{position:relative;padding-left:64px}
@@ -296,15 +321,12 @@
         <div id="b-ism" style="font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px">Foydalanuvchi</div>
         <div id="b-sana" style="font-size:14px;color:var(--t2);opacity:.8;margin-top:4px"></div>
       </div>
+      <!-- 21.09.2026: Til va Chiqish Sozlamaga ko'chdi.
+           Ular kuniga bir marta ham bosilmaydi, lekin ekranning
+           eng qimmat joyini egallab turardi. Bayroq belgisi
+           yashirin holda qoldi — til almashtirilganda yangilanadi. -->
+      <span id="til-bosh-bayroq" style="display:none">&#127482;&#127487;</span>
       <div style="display:flex;align-items:flex-start;gap:12px">
-        <div onclick="tilOyna()" style="cursor:pointer;text-align:center" title="Til / Язык / Language" data-notr="1">
-          <div style="width:44px;height:44px;border-radius:16px;background:var(--card);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:22px"><span id="til-bosh-bayroq">&#127482;&#127487;</span></div>
-          <div class="u-t125m3">Til</div>
-        </div>
-        <div onclick="lockApp()" style="cursor:pointer;text-align:center" title="Ilovadan chiqish">
-          <div style="width:44px;height:44px;border-radius:16px;background:var(--card);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:20px">&#128274;</div>
-          <div class="u-t125m3">Chiqish</div>
-        </div>
         <div onclick="openM('profil-modal')" style="cursor:pointer;text-align:center">
           <div id="b-avatar" style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--g),var(--gd));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;box-shadow:0 6px 18px rgba(30,140,140,.28);overflow:hidden">
             <span id="b-av-l">F</span><img id="b-av-i" style="display:none;width:100%;height:100%;object-fit:cover">
@@ -318,14 +340,18 @@
     <div id="oila-taklif-strip"></div>
     <div id="kun-gapi"></div>
     <div id="b-niyat" class="niyat" style="display:none" onclick="niyatTahrir()"></div>
-    <div class="hero" onclick="gotoPage('hisobot',null)" style="cursor:pointer" title="Bugun nima qildim">
-      <div class="u-f1m">
-        <div class="hero-sarlavha">Bugun</div>
-        <div class="hero-katta"><b id="b-katta">0</b><span id="b-jami">/0</span></div>
-        <div class="hero-izoh"><span id="b-st1">0</span> reja &middot; <span id="b-st2">0</span> odat &middot; <span id="b-st3">0</span> namoz</div>
-        <div class="hero-streak">&#128293; <b id="b-st4">0</b> kunlik ketma-ketlik <span style="opacity:.6;font-weight:400">&middot; batafsil &rsaquo;</span></div>
-      </div>
+    <!-- 21.09.2026: kun o'lchovi ixcham qatorga aylandi.
+         Ilgari bu katta to'rtburchak ekranning uchdan birini
+         egallardi va ichida bitta raqam turardi. Endi u sarlavha
+         ostidagi bir qator — pastdagi kataklar darrov ko'rinadi. -->
+    <div class="hero hero-ixcham" onclick="gotoPage('hisobot',null)" style="cursor:pointer" title="Bugun nima qildim">
       <div class="hero-halqa"><span id="b-foiz">0%</span></div>
+      <div class="u-f1m">
+        <div class="hero-katta"><b id="b-katta">0</b><span id="b-jami">/0</span>
+          <span class="hero-bugun">bugun</span></div>
+        <div class="hero-izoh"><span id="b-st1">0</span> reja &middot; <span id="b-st2">0</span> odat &middot; <span id="b-st3">0</span> namoz</div>
+        <div class="hero-streak">&#128293; <b id="b-st4">0</b> kun &middot; <span style="opacity:.6;font-weight:400">batafsil &rsaquo;</span></div>
+      </div>
       <div class="hero-keyingi" id="b-keyingi" style="display:none"></div>
     </div>
   </div>
@@ -1083,6 +1109,16 @@
         <div class="u-f1"><div class="u-b15">Kundalik qulfi</div><div class="u-t14" id="jurqulf-desc">O&#39;rnatilmagan &mdash; matn ochiq saqlanadi</div></div>
         <span class="u-t2">&#8250;</span>
       </div>
+      <div class="sitem" onclick="shriftOyna()">
+        <div class="sicon" style="background:rgba(139,103,219,.12)">&#128196;</div>
+        <div class="u-f1"><div class="u-b15">Shrift o&#39;lchami</div><div class="u-t14" id="shrift-desc">O&#39;rtacha</div></div>
+        <span class="u-t2">&#8250;</span>
+      </div>
+      <div class="sitem" onclick="tilOyna()" data-notr="1">
+        <div class="sicon" style="background:rgba(30,140,140,.12)">&#127760;</div>
+        <div class="u-f1"><div class="u-b15">Til</div><div class="u-t14" id="til-soz-desc">O&#39;zbekcha</div></div>
+        <span class="u-t2">&#8250;</span>
+      </div>
       <div class="sitem" onclick="lockApp()">
         <div class="sicon" style="background:rgba(99,102,241,.12)">&#128682;</div>
         <div class="u-f1"><div class="u-b15">Chiqish (qulflash)</div><div class="u-t14">Ilovani qulflab chiqish — qayta kirishda PIN so&#39;raydi</div></div>
@@ -1772,7 +1808,10 @@
 <div class="moverlay" id="odat-modal">
   <div class="modal">
     <div class="mhandle"></div><div class="mtitle">Yangi odat</div>
-    <div class="igroup"><label class="ilabel">Nomi</label><input class="inp" id="od-name" placeholder="Masalan: Suv ichish"></div>
+    <div class="igroup"><label class="ilabel">Nomi</label><input class="inp" id="od-name" placeholder="Masalan: Suv ichish">
+      <div id="od-taklif" class="taklif-row"></div>
+      <div class="taklif-izoh">Ro&#39;yxatdan tanlang yoki yuqoriga o&#39;zingiz yozing</div>
+    </div>
     <div class="igroup"><label class="ilabel">Emoji</label><input class="inp" id="od-icon" placeholder="💧" maxlength="2"></div>
     <div class="igroup"><label class="ilabel">Vaqt</label><input class="inp" type="time" id="od-time"></div>
     <div class="igroup"><label class="ilabel">Nima uchun? (ixtiyoriy)</label>
@@ -1841,6 +1880,17 @@
 .hk-item .hk-chk{width:22px;height:22px;border-radius:7px;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;font-size:13px;color:#fff}
 .hk-item .hk-chk.done{background:var(--g);border-color:var(--g)}
 .hk-item .hk-btn{width:26px;height:26px;border-radius:8px;border:none;background:var(--bg);color:var(--t2);cursor:pointer;font-size:13px;flex-shrink:0}
+
+/* 21.09.2026: reja va odat qo'shishda tayyor variantlar */
+.taklif-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.taklif-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:14px;
+  border:1.5px solid var(--bd);background:var(--bg);color:var(--text);
+  font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;line-height:1.2;
+  transition:border-color .15s ease, background .15s ease, transform .12s ease}
+.taklif-chip:active{transform:scale(.96)}
+.taklif-chip.oz{border-color:var(--g);color:var(--g)}
+.taklif-chip .tc-em{font-size:15px}
+.taklif-izoh{font-size:12.5px;color:var(--t2);margin-top:7px}
 </style>
 <div class="moverlay" id="reja-modal">
   <div class="modal">
@@ -1850,6 +1900,8 @@
         <input class="inp u-f1" id="rj-name" placeholder="Masalan: Ertalabki mashq">
         <button onclick="startVoiceReja()" id="mic-btn" style="width:46px;height:46px;border-radius:12px;background:var(--bg);border:1.5px solid var(--bd);font-size:20px;cursor:pointer;flex-shrink:0">🎤</button>
       </div>
+      <div id="rj-taklif" class="taklif-row"></div>
+      <div class="taklif-izoh">Ro&#39;yxatdan tanlang yoki yuqoriga o&#39;zingiz yozing</div>
       <div id="voice-status" style="display:none;font-size:13.5px;color:var(--g);margin-top:4px;text-align:center">🔴 Tinglayapman...</div>
     </div>
     <div class="u-g2">
@@ -6350,6 +6402,162 @@ function renderHafta(){
     }).join('') : '<div class="u-t14" style="padding:6px 0 0">—</div>';
     return '<div class="'+cls+'">'+sar+tana+'</div>';
   }).join('');
+}
+
+/* ==================================================================
+   TAYYOR VARIANTLAR — reja va odat qo'shishda          21.09.2026
+
+   Muammo: har safar nomni qo'lda yozish kerak edi. Ko'p odam shu
+   yerda to'xtaydi — yozishga erinadi va rejasiz qoladi.
+
+   Endi nom maydoni ostida bosiladigan variantlar turadi. Tartib
+   tasodifiy emas: avval SIZ ilgari yozgan ishlar (qancha ko'p
+   yozilgan bo'lsa, shuncha oldinda), keyin umumiy ro'yxat.
+   Ro'yxatda yo'q narsani yuqoridagi maydonga o'zingiz yozasiz.
+   Tanlangandan keyin soat maydoni o'sha yerda ochiladi.
+   ================================================================== */
+var TAKLIF_REJA = [
+  {nom:'Ishga borish',        icon:'💼', color:'#4F86E2', start:'09:00', davom:480},
+  {nom:'Yig\'ilish',           icon:'🗣️', color:'#875DE5', start:'10:00', davom:60},
+  {nom:'Sport / mashq',       icon:'🏃', color:'#1E8C8C', start:'07:00', davom:60},
+  {nom:'Kitob o\'qish',        icon:'📚', color:'#875DE5', start:'21:00', davom:30},
+  {nom:'Dars / o\'qish',       icon:'📝', color:'#4F86E2', start:'19:00', davom:60},
+  {nom:'Bozor-o\'char',        icon:'🛒', color:'#DB9725', start:'17:00', davom:60},
+  {nom:'Uy ishlari',          icon:'🧹', color:'#DB9725', start:'18:00', davom:60},
+  {nom:'Ovqat tayyorlash',    icon:'🍳', color:'#DB9725', start:'12:00', davom:60},
+  {nom:'Bolalar bilan vaqt',  icon:'👨‍👩‍👧', color:'#E35199', start:'20:00', davom:60},
+  {nom:'Qo\'ng\'iroq qilish',   icon:'📞', color:'#4F86E2', start:'11:00', davom:15},
+  {nom:'Hujjat / hisobot',    icon:'📋', color:'#64748B', start:'14:00', davom:60},
+  {nom:'Dam olish',           icon:'☕', color:'#1E8C8C', start:'16:00', davom:30}
+];
+
+var TAKLIF_ODAT = [
+  {nom:'Namoz o\'qish',          icon:'🕌', color:'linear-gradient(135deg,#DBBE24,#DB9725)', time:''},
+  {nom:'2 litr suv ichish',     icon:'💧', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:''},
+  {nom:'20 bet kitob o\'qish',   icon:'📚', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'21:00'},
+  {nom:'30 daqiqa yurish',      icon:'🚶', color:'linear-gradient(135deg,#1E8C8C,#166B6B)', time:'07:00'},
+  {nom:'Erta turish',           icon:'🌅', color:'linear-gradient(135deg,#DB9725,#C9702A)', time:'05:30'},
+  {nom:'Telefonni kam ishlatish',icon:'📵', color:'linear-gradient(135deg,#64748B,#475569)', time:''},
+  {nom:'Ertalabki mashq',       icon:'🏋️', color:'linear-gradient(135deg,#1E8C8C,#166B6B)', time:'06:30'},
+  {nom:'Kundalik yozish',       icon:'📔', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'22:00'},
+  {nom:'Ertaga reja tuzish',    icon:'🗓️', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:'22:00'},
+  {nom:'Tilga 15 daqiqa',       icon:'🗣️', color:'linear-gradient(135deg,#E35199,#DC2677)', time:'20:00'},
+  {nom:'Shirinlikdan tiyilish', icon:'🍬', color:'linear-gradient(135deg,#E35050,#DC2626)', time:''},
+  {nom:'Erta yotish',           icon:'🌙', color:'linear-gradient(135deg,#64748B,#475569)', time:'23:00'}
+];
+
+function _nomTeng(a,b){
+  return String(a||'').trim().toLowerCase() === String(b||'').trim().toLowerCase();
+}
+function _daqQosh(vaqt, daq){
+  try{
+    var p = String(vaqt||'09:00').split(':');
+    var m = (parseInt(p[0],10)||0)*60 + (parseInt(p[1],10)||0) + (daq||60);
+    m = Math.min(23*60+59, m);
+    return String((m/60)|0).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
+  }catch(e){ return '10:00'; }
+}
+
+/* Foydalanuvchining o'z tarixidan eng ko'p takrorlangan reja nomlari */
+function _rejaTarixTaklif(){
+  var son = {}, namuna = {};
+  try{
+    var b = (rejaObyekt().bugun) || {};
+    Object.keys(b).forEach(function(k){
+      (b[k]||[]).forEach(function(r){
+        if(!r || !r.name) return;
+        var kalit = String(r.name).trim().toLowerCase();
+        son[kalit] = (son[kalit]||0) + 1;
+        if(!namuna[kalit]) namuna[kalit] = r;
+      });
+    });
+  }catch(e){}
+  return Object.keys(son)
+    .sort(function(a,b){ return son[b]-son[a]; })
+    .slice(0, 8)
+    .map(function(k){
+      var r = namuna[k];
+      return { nom:r.name, icon:r.icon||'📌', color:r.color||'#1E8C8C',
+               start:r.start||'09:00', end:r.end||'', oz:true };
+    });
+}
+
+function _taklifRoyxat(tur){
+  var chiq = [], bor = {};
+  function qosh(x){
+    var k = String(x.nom).trim().toLowerCase();
+    if(bor[k]) return;
+    bor[k] = 1; chiq.push(x);
+  }
+  if(tur === 'reja'){
+    var bugunKunlik = [];
+    try{
+      var kun = (typeof _rejaFaolKun!=='undefined' && _rejaFaolKun) ? _rejaFaolKun : bugunKun();
+      if(kun === 'ertaga') kun = ertagaKun();
+      bugunKunlik = (rejaObyekt().bugun[kun]) || [];
+    }catch(e){}
+    _rejaTarixTaklif().forEach(function(x){
+      var allaqachon = bugunKunlik.some(function(r){ return _nomTeng(r.name, x.nom); });
+      if(!allaqachon) qosh(x);
+    });
+    TAKLIF_REJA.forEach(function(x){
+      var allaqachon = bugunKunlik.some(function(r){ return _nomTeng(r.name, x.nom); });
+      if(!allaqachon) qosh(x);
+    });
+    return chiq.slice(0, 12);
+  }
+  var od = [];
+  try{ od = S.g('i_odatlar') || state.odatlar || []; }catch(e){}
+  TAKLIF_ODAT.forEach(function(x){
+    var allaqachon = od.some(function(o){ return _nomTeng(o.name, x.nom); });
+    if(!allaqachon) qosh(x);
+  });
+  return chiq.slice(0, 12);
+}
+
+function _taklifChiz(modal){
+  try{
+    var tur = (modal === 'reja-modal') ? 'reja' : 'odat';
+    var el = document.getElementById(tur === 'reja' ? 'rj-taklif' : 'od-taklif');
+    if(!el) return;
+    var royxat = _taklifRoyxat(tur);
+    if(!royxat.length){ el.innerHTML = ''; return; }
+    el.innerHTML = royxat.map(function(x,i){
+      return '<button type="button" class="taklif-chip'+(x.oz?' oz':'')+'" data-i="'+i+'">'+
+             '<span class="tc-em">'+x.icon+'</span>'+esc(x.nom)+'</button>';
+    }).join('');
+    el.querySelectorAll('.taklif-chip').forEach(function(b){
+      b.onclick = function(){ _taklifTanla(tur, royxat[+b.getAttribute('data-i')]); };
+    });
+  }catch(e){ console.warn('_taklifChiz', e); }
+}
+
+function _taklifTanla(tur, x){
+  if(!x) return;
+  try{
+    if(tur === 'reja'){
+      var n = document.getElementById('rj-name'); if(n) n.value = x.nom;
+      var ic = document.getElementById('rj-icon'); if(ic) ic.value = x.icon || '📌';
+      if(x.color){ try{ setRC(x.color); }catch(e){} }
+      var st = document.getElementById('rj-start');
+      if(st){
+        st.value = x.start || '09:00';
+        var en = document.getElementById('rj-end');
+        if(en) en.value = x.end || _daqQosh(st.value, x.davom || 60);
+        /* soatni o'sha yerda tanlasin */
+        setTimeout(function(){ try{ st.focus(); }catch(e){} }, 60);
+      }
+    } else {
+      var nn = document.getElementById('od-name'); if(nn) nn.value = x.nom;
+      var ii = document.getElementById('od-icon'); if(ii) ii.value = x.icon || '';
+      var cc = document.getElementById('od-color'); if(cc && x.color) cc.value = x.color;
+      var tt = document.getElementById('od-time');
+      if(tt){
+        if(x.time) tt.value = x.time;
+        setTimeout(function(){ try{ tt.focus(); }catch(e){} }, 60);
+      }
+    }
+  }catch(e){ console.warn('_taklifTanla', e); }
 }
 
 function openRejaModal(){
@@ -13568,13 +13776,36 @@ function paynetChiz(){
 
 /* "To'ladim" — hodisa yoziladi va bot ochiladi, shunda kim to'laganini
    Paynet Business dagi tushum bilan solishtirib PRO ni ochasiz */
+/* 21.09.2026: mijoz uchun bitta harakat.
+   Ilgari bu yerda bot ochilardi va odam yana "Start" bosishi kerak
+   edi — beshta qadam. Endi bildirishnoma to'g'ridan-to'g'ri serverdan
+   adminga ketadi, odam ilovadan chiqmaydi.
+   Agar server chaqiruvi bajarilmasa (sessiya yo'q, internet yo'q),
+   eski bot yo'li zaxira sifatida ochiladi. */
 function paynetToladim(){
   try{ hodisaYubor('paynet_toladim'); }catch(e){}
   var kod = _tolovKod();
-  var u = 'https://t.me/IIntizom_bot?start=paynet_' + kod;
-  try{ window.open(u,'_blank'); }catch(e){ location.href = u; }
+
+  function zaxiraBot(){
+    var u = 'https://t.me/IIntizom_bot?start=paynet_' + kod;
+    try{ window.open(u,'_blank'); }catch(e){ location.href = u; }
+  }
+
+  var yuborildi = false;
+  try{
+    if(window.BULUT && window.BULUT.rpc){
+      yuborildi = true;
+      window.BULUT.rpc('tolov_bildir', { p_kod: kod }).then(function(r){
+        var xato = r && r.error;
+        var javob = r && r.data;
+        if(xato || javob === 'kirilmagan') zaxiraBot();
+      }).catch(function(){ zaxiraBot(); });
+    }
+  }catch(e){ yuborildi = false; }
+  if(!yuborildi) zaxiraBot();
+
   closeM('pro-modal');
-  showNotif('✅ Rahmat!', 'To‘lov kodi: ' + kod + '. Botda "Start" bosing — to‘lov tasdiqlangach PRO bir yilga ochiladi.');
+  showNotif('✅ Rahmat!', 'To\u2018lov kodi: ' + kod + '. Tekshiramiz \u2014 tasdiqlangach PRO ochiladi va Telegram orqali xabar beramiz.');
 }
 /* Bitta joyda tekshirish: PRO bo'lmasa paywall ochiladi va false qaytadi */
 function proKerak(nomi){
@@ -13593,6 +13824,8 @@ function proKerak(nomi){
     var _openM=window.openM;
     window.openM=function(id){
       if(PRO_MODAL[id] && !proKerak(PRO_MODAL[id])) return;
+      /* 21.09.2026: tayyor variantlar ro'yxati har ochilganda yangilanadi */
+      try{ if(id==='odat-modal' || id==='reja-modal') _taklifChiz(id); }catch(e){}
       return _openM.apply(this,arguments);
     };
     proModulOralar();
@@ -13840,6 +14073,76 @@ function xatoYubor(xabar, joy){
 }
 
 /* Hodisa: ochildi, ornatildi, pro_korildi, tolov_bosildi ... */
+/* ==================================================================
+   SHRIFT O'LCHAMI                                      22.09.2026
+
+   Telefonning tizim shrifti ilovaning tartibini buzardi, shuning
+   uchun uni to'xtatdik (styles.css dagi text-size-adjust). Lekin
+   ko'zi xira odam matnni kattalashtira olishi kerak — endi buni
+   ilovaning o'zidan qiladi, tartib buzilmaydigan chegarada.
+   ================================================================== */
+var SHRIFT_DARAJA = [
+  { k:'kichik', nom:'Kichik',      foiz: 92 },
+  { k:'orta',   nom:"O'rtacha",    foiz:100 },
+  { k:'katta',  nom:'Katta',       foiz:112 },
+  { k:'juda',   nom:'Juda katta',  foiz:125 }
+];
+function _shriftHozir(){
+  var k = 'orta';
+  try{ k = S.g('i_shrift') || 'orta'; }catch(e){}
+  for(var i=0;i<SHRIFT_DARAJA.length;i++) if(SHRIFT_DARAJA[i].k===k) return SHRIFT_DARAJA[i];
+  return SHRIFT_DARAJA[1];
+}
+function shriftQolla(){
+  try{
+    var d = _shriftHozir();
+    var el = document.documentElement;
+    el.style.setProperty('-webkit-text-size-adjust', d.foiz + '%');
+    el.style.setProperty('text-size-adjust', d.foiz + '%');
+    document.body.style.fontSize = (15 * d.foiz / 100).toFixed(2) + 'px';
+    var t = document.getElementById('shrift-desc');
+    if(t) t.textContent = d.nom;
+  }catch(e){ console.warn('shriftQolla', e); }
+}
+function shriftOyna(){
+  try{
+    var hozir = _shriftHozir();
+    var eski = document.getElementById('shrift-ovl');
+    if(eski) eski.remove();
+    var d = document.createElement('div');
+    d.id = 'shrift-ovl';
+    d.className = 'moverlay open';
+    d.innerHTML =
+      '<div class="modal">' +
+        '<div class="mhandle"></div>' +
+        '<div class="mtitle">Shrift o‘lchami</div>' +
+        '<div style="font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:16px">' +
+          'Matn kattalashadi, ekran tartibi o‘zgarmaydi.' +
+        '</div>' +
+        SHRIFT_DARAJA.map(function(x){
+          var tan = (x.k === hozir.k);
+          return '<button type="button" class="shrift-tanlov'+(tan?' tanlandi':'')+'" data-k="'+x.k+'">' +
+                   '<span style="font-size:'+(15*x.foiz/100).toFixed(1)+'px;font-weight:700">'+x.nom+'</span>' +
+                   '<span style="font-size:13px;color:var(--t2)">Namuna</span>' +
+                 '</button>';
+        }).join('') +
+        '<div class="mactions"><button class="btn btn-g btn-block" id="shrift-yop">Tayyor</button></div>' +
+      '</div>';
+    document.body.appendChild(d);
+    d.querySelectorAll('.shrift-tanlov').forEach(function(b){
+      b.onclick = function(){
+        try{ S.s('i_shrift', b.getAttribute('data-k')); }catch(e){}
+        shriftQolla();
+        d.querySelectorAll('.shrift-tanlov').forEach(function(x){ x.classList.remove('tanlandi'); });
+        b.classList.add('tanlandi');
+      };
+    });
+    document.getElementById('shrift-yop').onclick = function(){ d.remove(); try{ renderSozlama(); }catch(e){} };
+    d.onclick = function(e){ if(e.target === d) d.remove(); };
+  }catch(e){ console.warn('shriftOyna', e); }
+}
+setTimeout(function(){ try{ shriftQolla(); }catch(e){} }, 300);
+
 /* 17.09.2026: hodisa yo'qolib ketardi.
    Ilgari BULUT tayyor bo'lmasa funksiya jimgina qaytardi — ochilish
    hodisasi 4 soniyada jo'natilardi, sessiya esa ko'pincha kechroq
@@ -14337,7 +14640,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
-var NASHR = '50';   /* qaysi fayl ishlayotganini bilish uchun */
+var NASHR = '54';   /* qaysi fayl ishlayotganini bilish uchun */
 
 /* ==================================================================
    SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
