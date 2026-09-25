@@ -1625,6 +1625,7 @@
     <div class="u-sheet-body">
       <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:none">
         <button onclick="showDuaKat('kundalik',this)" class="dua-kat active" style="padding:7px 16px;border-radius:20px;border:none;background:var(--g);color:#fff;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">Kundalik</button>
+        <button onclick="showDuaKat('qurondan',this)" class="dua-kat u-chip-nw">📖 Qur'ondan</button>
         <button onclick="showDuaKat('ibodatdan',this)" class="dua-kat u-chip-nw">Ibodatdan</button>
         <button onclick="showDuaKat('ozliq',this)" class="dua-kat u-chip-nw">O'zliq</button>
         <button onclick="showDuaKat('shifo',this)" class="dua-kat u-chip-nw">Shifo</button>
@@ -2631,21 +2632,114 @@ let state={
 };
 
 const MOTIVLAR=[
-  {t:"Har bir katta yutuq kichik qadamlardan boshlanadi.",a:"— Lao Tzu"},
-  {t:"Bugun qilgan ishingiz ertangi imkoniyatingizni belgilaydi.",a:"— Oprah Winfrey"},
-  {t:"Muvaffaqiyat — bu tasodif emas, bu qatiyat.",a:"— Seneka"},
-  {t:"Eng qiyin yo\'l eng qadrli yo\'l.",a:"— T. Roosevelt"},
-  {t:"O\'zingizga ishoning — bu muvaffaqiyatning yarmi.",a:"— D. Carnegie"},
-  {t:"Kechagi siz bilan bugungi siz orasida — intizom.",a:"— Jim Rohn"},
-  {t:"Har kuni bir oz yaxshilaning. Bu etarli.",a:"— James Clear"},
-  {t:"Sabr — barcha narsalarni enguvchi kuch.",a:"— Platon"},
-  {t:"Bilim kuch, lekin harakat — natija.",a:"— F. Bacon"},
-  {t:"Namoz — ruhning oziqlanishi.",a:"— Imam Shofii"},
-  {t:"Ishni boshlash — yarimini bajarish.",a:"— Horatsiy"},
-  {t:"Har tongingiz yangi imkoniyat.",a:"— Hikmat"},
-  {t:"O\'z hayotingizning qahramoni bo\'ling.",a:"— Henry James"},
-  {t:"Ilm olish — eng yaxshi investitsiya.",a:"— B. Franklin"},
-  {t:"Intizomli odam o\'z vaqtini boshqaradi.",a:"— Brian Tracy"},
+  {t:'Har bir katta yutuq kichik qadamlardan boshlanadi.',a:'— Lao Tzu'},
+  {t:'Ming chaqirimlik yo‘l bitta qadamdan boshlanadi.',a:'— Lao Tzu'},
+  {t:'Bugun qilgan ishingiz ertangi imkoniyatingizni belgilaydi.',a:'— Oprah Winfrey'},
+  {t:'Muvaffaqiyat — tasodif emas, qat’iyat.',a:'— Seneka'},
+  {t:'Eng qiyin yo‘l eng qadrli yo‘l.',a:'— T. Roosevelt'},
+  {t:'O‘zingizga ishoning — bu muvaffaqiyatning yarmi.',a:'— D. Carnegie'},
+  {t:'Kechagi siz bilan bugungi siz orasida — intizom.',a:'— Jim Rohn'},
+  {t:'Har kuni bir oz yaxshilaning. Shuning o‘zi yetarli.',a:'— James Clear'},
+  {t:'Sabr — barcha narsani yenguvchi kuch.',a:'— Platon'},
+  {t:'Bilim — kuch, lekin harakat — natija.',a:'— F. Bekon'},
+  {t:'Ishni boshlash — yarmini bajarish.',a:'— Horatsiy'},
+  {t:'Har tongingiz — yangi imkoniyat.',a:'— Hikmat'},
+  {t:'O‘z hayotingizning qahramoni bo‘ling.',a:'— Genri Jeyms'},
+  {t:'Ilm olish — eng yaxshi sarmoya.',a:'— B. Franklin'},
+  {t:'Intizomli odam o‘z vaqtini boshqaradi.',a:'— Brayan Treysi'},
+  {t:'Biz nimani takrorlasak — o‘shamiz. Demak, mukammallik — odat.',a:'— Aristotel'},
+  {t:'Avval odatni siz yaratasiz, keyin odat sizni.',a:'— Hikmat'},
+  {t:'Kichik ishni mensimagan katta ishni uddalay olmaydi.',a:'— Hikmat'},
+  {t:'Boshlaganni tugatish — boshlashdan qiyin.',a:'— Hikmat'},
+  {t:'Vaqt — eng adolatli boylik: hammaga kuniga 24 soat.',a:'— Hikmat'},
+  {t:'Ertaga qilaman degan ish — hech qachon qilinmagan ish.',a:'— Xalq maqoli'},
+  {t:'Mehnat — baxtning kaliti.',a:'— Xalq maqoli'},
+  {t:'Bir kunlik ish — bir umrlik natijaning bo‘lagi.',a:'— Hikmat'},
+  {t:'Yaxshi niyat — yarim davlat.',a:'— Xalq maqoli'},
+  {t:'Sabrning tagi — sariq oltin.',a:'— Xalq maqoli'},
+  {t:'Mehnat qilgan — murodga yetgan.',a:'— Xalq maqoli'},
+  {t:'Bilim — yoshlikda toj, qarilikda tayoq.',a:'— Xalq maqoli'},
+  {t:'Kichik qadam ham — qadam. Turgan joyda qolmang.',a:'— Hikmat'},
+  {t:'Alloh bir qavmni o‘zgartirmaydi, toki ular o‘zlarini o‘zgartirmasalar.',a:'— Qur’on, Ra’d surasi 11-oyat'},
+  {t:'Amallarning Allohga eng suyuklisi — oz bo‘lsa-da, davomiysi.',a:'— Hadis, Buxoriy'},
+  {t:'Ikki ne’mat borki, ko‘p odam undan g‘ofil: sog‘liq va bo‘sh vaqt.',a:'— Hadis, Buxoriy'},
+  {t:'Kuchli mo‘min zaif mo‘mindan yaxshiroq va suyukliroq.',a:'— Hadis, Muslim'},
+  {t:'Ilm talab qilish har bir musulmonga farzdir.',a:'— Hadis, Ibn Moja'},
+  {t:'Har bir ish niyatga bog‘liq.',a:'— Hadis, Buxoriy'},
+  {t:'Vaqt — qilich kabi: kesmasang, seni kesadi.',a:'— Imom Shofi’iy'},
+  {t:'Nafsingni haq bilan band qilmasang, u seni botil bilan band qiladi.',a:'— Imom Shofi’iy'},
+  {t:'Ilm — ovdir, yozuv — uning bog‘i.',a:'— Imom Shofi’iy'},
+  {t:'Kishining qadri — uning qiladigan ishiga qarab bilinadi.',a:'— Ali ibn Abu Tolib'},
+  {t:'Bugunning ishini ertaga qo‘yma.',a:'— Hikmat'},
+  {t:'Odam o‘zini yenggandagina haqiqiy g‘olib bo‘ladi.',a:'— Platon'},
+  {t:'Aql — bilimdan emas, uni qo‘llashdan bilinadi.',a:'— Hikmat'},
+  {t:'Ko‘p o‘qigan emas, o‘qiganini qilgan biladi.',a:'— Hikmat'},
+  {t:'Yo‘lni bilgan charchamaydi.',a:'— Xalq maqoli'},
+  {t:'Tomchi tomib, tosh teshar.',a:'— Xalq maqoli'},
+  {t:'Asta yurgan manzilga yetar.',a:'— Xalq maqoli'},
+  {t:'Bir kunda daraxt o‘smaydi — lekin har kuni o‘sadi.',a:'— Hikmat'},
+  {t:'Kuchingiz yetmasa ham, davom eting — kuch shundan tug‘iladi.',a:'— Hikmat'},
+  {t:'Qiyinchilik sizni sindirmaydi, shakllantiradi.',a:'— Hikmat'},
+  {t:'To‘xtash mag‘lubiyat emas; qaytmaslik mag‘lubiyat.',a:'— Hikmat'},
+  {t:'Bir marta yiqilgan — mag‘lub emas. Turmagan — mag‘lub.',a:'— Hikmat'},
+  {t:'Intizom — xohish tugagan joydan boshlanadi.',a:'— Hikmat'},
+  {t:'Motivatsiya boshlatadi, odat davom ettiradi.',a:'— Jim Ryun'},
+  {t:'Siz maqsadingiz darajasiga emas, tizimingiz darajasiga tushasiz.',a:'— James Clear'},
+  {t:'Har kuni 1% yaxshilansangiz, bir yilda 37 barobar o‘sasiz.',a:'— James Clear'},
+  {t:'Kichik odatlar — katta natijalarning murakkab foizi.',a:'— James Clear'},
+  {t:'O‘zgarishni xohlasangiz, avval muhitni o‘zgartiring.',a:'— Hikmat'},
+  {t:'Eng yaxshi payt — kecha edi. Ikkinchisi — hozir.',a:'— Xitoy maqoli'},
+  {t:'Oson hayotni so‘rama, qiyinini yengadigan kuch so‘ra.',a:'— Bryus Li'},
+  {t:'Men 10 000 zarbani bilgan odamdan emas, bitta zarbani 10 000 marta takrorlagandan qo‘rqaman.',a:'— Bryus Li'},
+  {t:'Reja — bu qog‘ozdagi niyat. Bajarilganda u hayotga aylanadi.',a:'— Hikmat'},
+  {t:'Ertalab yutgan odam kunni yutadi.',a:'— Hikmat'},
+  {t:'Erta turgan — yo‘lda bo‘ladi, kech turgan — yo‘lni qidiradi.',a:'— Hikmat'},
+  {t:'Tartib — erkinlikning boshqa nomi.',a:'— Hikmat'},
+  {t:'Tartibsiz kuch tarqalib ketadi, tartibli kuch yo‘l ochadi.',a:'— Hikmat'},
+  {t:'Vaqtni boshqarmagan odamni vaqt boshqaradi.',a:'— Hikmat'},
+  {t:'Bugun og‘riq — ertaga kuch.',a:'— Hikmat'},
+  {t:'O‘zingiz bilan tuzgan shartnomani buzmang.',a:'— Hikmat'},
+  {t:'O‘zingizga bergan va’da — eng muhim va’da.',a:'— Hikmat'},
+  {t:'Hech kim ko‘rmayotganda qilgan ishingiz — asl xarakteringiz.',a:'— Hikmat'},
+  {t:'Har kuni qilingan kichik ish, gohida qilingan katta ishdan kuchli.',a:'— Hikmat'},
+  {t:'Ko‘p narsani xohlagan hech narsani uddalamaydi.',a:'— Hikmat'},
+  {t:'Bitta maqsad — o‘nta orzudan kuchli.',a:'— Hikmat'},
+  {t:'Diqqat — zamonaviy odamning eng qimmat boyligi.',a:'— Hikmat'},
+  {t:'Telefon qo‘yilgan joyda hayot boshlanadi.',a:'— Hikmat'},
+  {t:'Bugun o‘zingizni yengsangiz, ertaga dunyo yengil ko‘rinadi.',a:'— Hikmat'},
+  {t:'Baxt — bajarilgan ishlarning ortidan keladi.',a:'— Hikmat'},
+  {t:'Charchoq mehnatdan emas, tartibsizlikdan keladi.',a:'— Hikmat'},
+  {t:'Uzoq yo‘lni o‘ylab qo‘rqma — bugungi qadamni o‘yla.',a:'— Hikmat'},
+  {t:'Kechagi natijaga suyanib yashab bo‘lmaydi.',a:'— Hikmat'},
+  {t:'Yaxshi odat — ko‘rinmas boylik.',a:'— Hikmat'},
+  {t:'Yomon odat — sezilmay to‘lanadigan qarz.',a:'— Hikmat'},
+  {t:'Kuchli bo‘lish — hech qachon yiqilmaslik emas, har safar turish.',a:'— Konfutsiy'},
+  {t:'Sekin yursang ham mayli, faqat to‘xtama.',a:'— Konfutsiy'},
+  {t:'Odam o‘z fikrlari mahsulidir.',a:'— Budda'},
+  {t:'Kelajak bugun nima qilayotganingizga bog‘liq.',a:'— Mahatma Gandi'},
+  {t:'Dunyoni o‘zgartirmoqchi bo‘lsangiz, o‘zingizdan boshlang.',a:'— Mahatma Gandi'},
+  {t:'Muvaffaqiyat — kichik harakatlarning har kuni takrorlanishi.',a:'— Robert Kollier'},
+  {t:'Imkoniyat mehnatga o‘xshab kiyingani uchun ko‘pchilik uni tanimaydi.',a:'— Tomas Edison'},
+  {t:'Men muvaffaqiyatsizlikka uchramadim — ishlamaydigan 10 000 usulni topdim.',a:'— Tomas Edison'},
+  {t:'Daho — 1% ilhom, 99% mehnat.',a:'— Tomas Edison'},
+  {t:'Qila olaman deb o‘ylasangiz ham, qila olmayman deb o‘ylasangiz ham — haqsiz.',a:'— Genri Ford'},
+  {t:'Birga boshlash — boshlanish, birga davom etish — taraqqiyot.',a:'— Genri Ford'},
+  {t:'Sifat — odat.',a:'— Aristotel'},
+  {t:'Bilimning boshi — hayrat, oxiri — amal.',a:'— Hikmat'},
+  {t:'Yo‘l yurgan oshar, yo‘l qidirgan qolar.',a:'— Xalq maqoli'},
+  {t:'Astalik bilan qilingan ish puxta bo‘ladi.',a:'— Xalq maqoli'},
+  {t:'Bir boshlagan ishingni oxiriga yetkaz.',a:'— Xalq maqoli'},
+  {t:'Ozdan — ko‘p, kichikdan — katta.',a:'— Xalq maqoli'},
+  {t:'Kuching yetganicha qil, lekin har kuni qil.',a:'— Hikmat'},
+  {t:'Bugun bitta — bir yilda uch yuz oltmish besh.',a:'— Hikmat'},
+  {t:'Zanjirning kuchi — uzilmaganida.',a:'— Hikmat'},
+  {t:'Har bir belgilangan kun — o‘zingizga bo‘lgan hurmat.',a:'— Hikmat'},
+  {t:'Hayot katta qarorlardan emas, takrorlangan kunlardan tuziladi.',a:'— Hikmat'},
+  {t:'Bir kunni yo‘qotsangiz, zanjirni emas — o‘zingizga ishonchni yo‘qotasiz.',a:'— Hikmat'},
+  {t:'Yaxshi ishni kechiktirgan uni yo‘qotadi.',a:'— Hikmat'},
+  {t:'Niyat — urug‘, odat — sug‘orish, natija — hosil.',a:'— Hikmat'},
+  {t:'Hech narsa qilmaslik ham tanlov — eng qimmatga tushadigani.',a:'— Hikmat'},
+  {t:'Kelajakdagi o‘zingiz bugun bosayotgan tugmangizga qarab turibdi.',a:'— Hikmat'},
 ];
 
 if(state.dark)document.body.classList.add('dark');
@@ -3357,23 +3451,70 @@ function kirishSuhbati(qayta){
     function fonRang(a,b){ nur.style.background='radial-gradient(circle at 50% 28%, '+a+', transparent 62%)'; d.style.background='linear-gradient(160deg,#0b1220,'+b+')'; }
     var BTN='width:100%;padding:16px;border:none;border-radius:16px;background:#1E8C8C;color:#fff;font-weight:800;font-size:17px;cursor:pointer;font-family:inherit';
     var GHOST='width:100%;padding:12px;border:none;border-radius:14px;background:transparent;color:rgba(255,255,255,.5);font-size:14.5px;cursor:pointer;font-family:inherit;margin-top:8px';
-    function nuqta(i){ return '<div style="display:flex;gap:6px;justify-content:center;margin-bottom:18px">'+[1,2,3,4,5].map(function(n){return '<span style="width:'+(n===i?'22px':'7px')+';height:7px;border-radius:4px;background:'+(n<=i?'#1E8C8C':'rgba(255,255,255,.18)')+';transition:width .25s"></span>';}).join('')+'</div>'; }
+    function nuqta(i){ return '<div style="display:flex;gap:6px;justify-content:center;margin-bottom:18px">'+[1,2,3,4,5,6,7,8].map(function(n){return '<span style="width:'+(n===i?'22px':'7px')+';height:7px;border-radius:4px;background:'+(n<=i?'#1E8C8C':'rgba(255,255,255,.18)')+';transition:width .25s"></span>';}).join('')+'</div>'; }
     function savol(t){ return '<div style="font-size:24px;font-weight:800;line-height:1.28;text-align:center;margin-bottom:8px;letter-spacing:-.2px">'+t+'</div>'; }
+    /* 23.09.2026: bitta bosishda javob beriladigan tugmalar ro'yxati */
+    function tanlov(id, royxat){
+      return '<div id="'+id+'" style="display:flex;flex-direction:column;gap:9px;margin-bottom:6px">'+
+        royxat.map(function(x){
+          return '<button class="k-tanlov" data-v="'+x[1]+'" style="width:100%;padding:16px 18px;border:1.5px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.06);color:#fff;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;text-align:left;line-height:1.3">'+x[0]+'</button>';
+        }).join('')+'</div>';
+    }
     function fakt(id,t){ return '<div id="'+id+'" style="font-size:15px;line-height:1.6;color:rgba(255,255,255,.72);text-align:center;min-height:48px;margin-bottom:18px">'+(t||'')+'</div>'; }
 
     d.insertAdjacentHTML('beforeend','<div style="width:100%;max-width:360px;position:relative">'+
-      /* ---- 1: soat ---- */
-      '<div id="k1">'+nuqta(1)+savol('Bugun kuningizdan nechta soat <span style="color:#22D3AD">o‘zingizga</span> ketdi?')+
-        '<div style="text-align:center;margin:18px 0 6px"><span id="k1-son" style="font-size:72px;font-weight:900;line-height:1;letter-spacing:-2px">2</span><span style="font-size:20px;color:rgba(255,255,255,.6);margin-left:6px">soat</span></div>'+
-        '<input id="k1-r" type="range" min="0" max="12" value="2" step="1" style="width:100%;accent-color:#1E8C8C;height:34px;margin:6px 0 10px">'+
-        '<div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.4);margin:-6px 0 10px"><span>0</span><span>6</span><span>12</span></div>'+
-        fakt('k1-f','')+
-        '<button id="k1-n" style="'+BTN+'">Davom</button>'+
+      /* ---- a: muammo — tartib ---- */
+      '<div id="ka">'+nuqta(1)+savol('Bugungi kuningiz <span style="color:#F5A623">5 yil</span> takrorlansa — qayerda bo‘lasiz?')+
+        fakt('ka-f','Bir soniya o‘ylang. Javob shu telefonda qoladi.')+
+        tanlov('ka-t', [
+          ['Shu yerda.', 'ha'],
+          ['Bilmayman.', 'bazan'],
+          ['Oldinda.', 'yoq']
+        ])+
         '<button id="k-skip" style="'+GHOST+'">O‘tkazib yuborish</button>'+
       '</div>'+
+      /* ---- b: va'da ---- */
+      '<div id="kb" style="display:none">'+nuqta(2)+savol('Bir yil oldin o‘zingizga bergan <span style="color:#22D3AD">va‘dangiz</span>?')+
+        fakt('kb-f','Eslashga urinib ko‘ring.')+
+        tanlov('kb-t', [
+          ['Esimda yo‘q.', '0'],
+          ['Bajarmadim.', '1'],
+          ['Bajardim.', '2']
+        ])+
+      '</div>'+
+      /* ---- d: boshlanmagan ish ---- */
+      '<div id="kd" style="display:none">'+nuqta(3)+savol('Boshlashni <span style="color:#F5A623">o‘ylab yurgan</span> ishingiz bormi?')+
+        fakt('kd-f','O‘zingizga aytgan, lekin hali qilmagan ish.')+
+        tanlov('kd-t', [
+          ['Yillardan beri.', 'uzoq'],
+          ['Yaqinda.', 'yaqin'],
+          ['Yo‘q.', 'yoq']
+        ])+
+      '</div>'+
+      /* ---- c: oyna ---- */
+      '<div id="kc" style="display:none">'+nuqta(4)+
+        '<div style="font-size:13px;font-weight:800;letter-spacing:.14em;color:rgba(255,255,255,.45);text-align:center;margin-bottom:12px">AGAR HAR KUNI QILSANGIZ</div>'+
+        '<div id="kc-hukm" style="font-size:22px;font-weight:800;line-height:1.32;text-align:center;margin-bottom:12px;letter-spacing:-.2px"></div>'+
+        '<div id="kc-fakt" style="font-size:15px;line-height:1.6;color:rgba(255,255,255,.66);text-align:center;margin-bottom:16px"></div>'+
+        '<div style="display:flex;flex-direction:column;gap:9px;margin-bottom:18px">'+
+          [['7 kun','Zanjir boshlanadi. Uzishga qo\u2018lingiz bormaydi.'],
+           ['30 kun','Ish o\u2018z vaqtini topadi. Eslatma kerak bo\u2018lmay qoladi.'],
+           ['1 yil','365 ta bajarilgan ish. Buni hech kim sizdan olmaydi.']].map(function(x){
+            return '<div style="display:flex;align-items:center;gap:12px;background:rgba(34,211,173,.08);border:1px solid rgba(34,211,173,.22);border-radius:14px;padding:12px 13px">'+
+              '<span style="min-width:62px;font-size:14px;font-weight:800;color:#22D3AD">'+x[0]+'</span>'+
+              '<span style="font-size:14.5px;line-height:1.45;color:rgba(255,255,255,.85)">'+x[1]+'</span></div>';
+          }).join('')+
+        '</div>'+
+        '<div style="background:rgba(245,166,35,.10);border:1px solid rgba(245,166,35,.28);border-radius:16px;padding:14px 15px;margin-bottom:18px">'+
+          '<div style="font-size:12.5px;font-weight:800;letter-spacing:.1em;color:#F5A623;margin-bottom:6px">ZANJIR QOIDASI</div>'+
+          '<div style="font-size:15.5px;line-height:1.6;color:rgba(255,255,255,.9);font-weight:700;margin-bottom:6px">Kuniga bitta ish — va bir daqiqa vaqt.</div>'+
+          '<div style="font-size:13.5px;line-height:1.55;color:rgba(255,255,255,.55)">Kuningizni Intizomga bermaysiz. Bajarganingizni belgilaysiz — bir bosish, bir daqiqa. Qolganini zanjir qiladi: odat o‘rtacha 66 kunda shakllanadi, shu 66 kunni Intizom sanab boradi.</div>'+
+        '</div>'+
+        '<button id="kc-n" style="'+BTN+'">Boshlaymiz</button>'+
+      '</div>'+
       /* ---- 2: odat ---- */
-      '<div id="k2" style="display:none">'+nuqta(2)+savol('Qaysi <span style="color:#22D3AD">bitta</span> odatni boshlaysiz?')+
-        fakt('k2-f','66 kun. Odat shuncha kunda tanaga o‘tirib qoladi. Biz sanab boramiz — siz faqat bajarasiz.')+
+      '<div id="k2" style="display:none">'+nuqta(5)+savol('Qaysi <span style="color:#22D3AD">bitta</span> odatni boshlaysiz?')+
+        fakt('k2-f','Bitta odat tanlang. Ko‘p tanlasangiz, hech biri qolmaydi.')+
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">'+ILK_ODATLAR.map(function(o,i){
           return '<button data-i="'+i+'" class="k2-k" style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 8px;border:1.5px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.05);color:#fff;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer;line-height:1.25;text-align:center">'+
             '<span style="width:54px;height:54px;border-radius:16px;background:'+o.color+';display:flex;align-items:center;justify-content:center;font-size:28px;line-height:1;box-shadow:0 8px 22px rgba(0,0,0,.35)">'+o.icon+'</span><span>'+esc(o.nom)+'</span></button>';
@@ -3384,8 +3525,8 @@ function kirishSuhbati(qayta){
         '</div>'+
       '</div>'+
       /* ---- 3: vaqt ---- */
-      '<div id="k3" style="display:none">'+nuqta(3)+savol('<span id="k3-nom"></span> — <span style="color:#22D3AD">qachon</span>?')+
-        fakt('k3-f','Vaqti belgilangan odat ikki-uch barobar ko‘proq bajariladi. Shu vaqtda eslatib turamiz.')+
+      '<div id="k3" style="display:none">'+nuqta(6)+savol('<span id="k3-nom"></span> — <span style="color:#22D3AD">qachon</span>?')+
+        fakt('k3-f','Vaqti belgilanmagan odat bajarilmaydi. Shu soatda eslatamiz.')+
         '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px">'+
           [['🌅','Ertalab','07:00','linear-gradient(160deg,#FDBA74,#F97316)'],['☀️','Kunduzi','13:00','linear-gradient(160deg,#7DD3FC,#2563EB)'],['🌙','Kechqurun','21:00','linear-gradient(160deg,#818CF8,#312E81)']].map(function(x){
             return '<button class="k3-v" data-v="'+x[2]+'" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px;border:1.5px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.05);color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer"><span style="width:50px;height:50px;border-radius:15px;background:'+x[3]+';display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1;box-shadow:0 8px 22px rgba(0,0,0,.35)">'+x[0]+'</span><span>'+x[1]+'</span><span style="font-size:12px;color:rgba(255,255,255,.55);font-weight:600">'+x[2]+'</span></button>';
@@ -3398,17 +3539,17 @@ function kirishSuhbati(qayta){
         '<button id="k3-yoq" style="'+GHOST+'">Vaqtsiz — kun davomida</button>'+
       '</div>'+
       /* ---- 4: bugun ---- */
-      '<div id="k4" style="display:none;text-align:center">'+nuqta(4)+
+      '<div id="k4" style="display:none;text-align:center">'+nuqta(7)+
         '<div id="k4-icon" style="font-size:70px;line-height:1;margin:6px 0 10px"></div>'+
         '<div id="k4-nom" style="font-size:22px;font-weight:800;margin-bottom:4px"></div>'+
         '<div id="k4-vaqt" style="font-size:14px;color:rgba(255,255,255,.55);margin-bottom:16px"></div>'+
         savol('Bugun bajardingizmi?')+
-        fakt('k4-f','Birinchi kun eng qiyini. Undan keyin faqat sanaymiz.')+
+        fakt('k4-f','Birinchi kun eng qiyin. Keyin osonlashadi.')+
         '<button id="k4-ha" style="'+BTN+'">✅ Ha, bajardim</button>'+
         '<button id="k4-yoq" style="'+GHOST+'">Hali yo‘q — keyin belgilayman</button>'+
       '</div>'+
       /* ---- 5: nima uchun (16.09.2026) ---- */
-      '<div id="k5" style="display:none">'+nuqta(5)+
+      '<div id="k5" style="display:none">'+nuqta(8)+
         savol('Bularning hammasi — <span style="color:#22D3AD">nima uchun</span>?')+
         fakt('k5-f','Sababi aniq odam uch barobar ko‘proq davom etadi. Bu jumla har kuni bosh ekranda ko‘z oldingizda turadi.')+
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">'+
@@ -3425,7 +3566,14 @@ function kirishSuhbati(qayta){
 
     var tanlangan=null, vaqt='';
     function q(sel){ return d.querySelector(sel); }
-    function korsat(n){ [1,2,3,4,5].forEach(function(i){ q('#k'+i).style.display = (i===n) ? 'block' : 'none'; }); try{ d.scrollTop=0; }catch(e){} }
+    /* 23.09.2026: ekranlar endi raqam emas, nom bilan.
+       ka — savol, kc — oyna (xulosa), k2..k5 — eskisi. */
+    var KIRISH_EKRAN = ['ka','kb','kd','kc','k2','k3','k4','k5'];
+    function korsat(n){
+      var id = (typeof n === 'number') ? ('k'+n) : n;
+      KIRISH_EKRAN.forEach(function(x){ var e=q('#'+x); if(e) e.style.display = (x===id) ? 'block' : 'none'; });
+      try{ d.scrollTop=0; }catch(e){}
+    }
     /* 18.09.2026: savollardan keyin ism bilan kutib olish.
        Ilgari oyna shunchaki yopilardi — odam "endi nima?" holatida
        qolardi. Bu ekran unga nima qilishini bitta jumlada aytadi. */
@@ -3477,16 +3625,75 @@ function kirishSuhbati(qayta){
     }
     /* 1 */
     var K1R=['#94A3B8','#7CB7B0','#5FC0B0','#22D3AD','#22D3AD','#4FD8A6','#7DDC9C','#A8DD8E','#CFDA7C','#E9CF66','#F2C14E','#F5B335','#F5A623'];
-    function k1(){
-      var v=+q('#k1-r').value; q('#k1-son').textContent=v; q('#k1-f').textContent=_soatFakt(v).matn;
-      var c=K1R[Math.max(0,Math.min(12,v))]; q('#k1-son').style.color=c; q('#k1-son').style.textShadow='0 0 40px '+c+'88';
-      q('#k1-r').style.accentColor=c;
-      var a = v===0 ? 'rgba(148,163,184,.18)' : (v<4 ? 'rgba(34,211,173,.30)' : (v<9 ? 'rgba(125,220,156,.30)' : 'rgba(245,166,35,.32)'));
-      fonRang(a, v>=9 ? '#1a1509' : '#111827');
-    }
-    q('#k1-r').addEventListener('input', k1); k1();
-    q('#k1-n').onclick=function(){ try{ hodisaYubor('kirish_1'); }catch(e){} try{ ozSoatYoz(+q('#k1-r').value); }catch(e){} fonRang('rgba(135,93,229,.30)','#171433'); korsat(2); };
+    /* Eski slayder ekrani olib tashlandi — o'rniga ka/kb/kc keldi.
+       _soatFakt() saqlanib qoldi: oyna ekrani undan foydalanadi. */
+    /* --- a: tartib --- */
+    var _javobTartib = '', _javobVada = '', _javobIsh = '';
+    q('#ka-t').querySelectorAll('.k-tanlov').forEach(function(b){
+      b.onclick = function(){
+        _javobTartib = b.getAttribute('data-v');
+        try{ hodisaYubor('kirish_1'); }catch(e){}
+        fonRang(_javobTartib==='ha' ? 'rgba(245,166,35,.30)' : 'rgba(34,211,173,.26)',
+                _javobTartib==='ha' ? '#2a1606' : '#0e2230');
+        korsat('kb');
+      };
+    });
     q('#k-skip').onclick=function(){ tugat(); try{ showNotif('👋 Xush kelibsiz','Odat bo‘limidan boshlang — bitta odat yetadi.'); }catch(e){} };
+
+    /* --- b: bir yil oldingi va'da --- */
+    q('#kb-t').querySelectorAll('.k-tanlov').forEach(function(b){
+      b.onclick = function(){
+        _javobVada = b.getAttribute('data-v');
+        try{ hodisaYubor('kirish_2'); }catch(e){}
+        fonRang('rgba(245,166,35,.26)','#241a06');
+        korsat('kd');
+      };
+    });
+
+    /* --- d: boshlanmagan ish --- */
+    q('#kd-t').querySelectorAll('.k-tanlov').forEach(function(b){
+      b.onclick = function(){
+        _javobIsh = b.getAttribute('data-v');
+        try{ hodisaYubor('kirish_3'); }catch(e){}
+        _oynaniChiz();
+        fonRang('rgba(135,93,229,.30)','#171433');
+        korsat('kc');
+      };
+    });
+
+    /* --- c: oyna — javoblardan xulosa --- */
+    function _oynaniChiz(){
+      var hukm, izoh = '';
+      if(_javobTartib === 'ha'){
+        hukm = 'Besh yildan keyin<br>boshqa joyda bo‘lasiz.';
+      } else if(_javobTartib === 'bazan'){
+        hukm = 'Ikkilanish tugaydi.<br>Yo‘l aniq bo‘ladi.';
+      } else {
+        hukm = 'Boryotgan yo‘lingiz<br>tezlashadi.';
+      }
+      if(_javobVada === '0'){
+        izoh = 'Odam unutgan va‘dasini emas, sanab borilgan va‘dasini bajaradi.';
+      } else if(_javobVada === '1'){
+        izoh = 'Va‘da kuch yetmagani uchun emas, takrorlanmagani uchun qoladi.';
+      } else {
+        izoh = 'Bir marta uddalagan odam mingtasini ham uddalaydi — sharti: to‘xtamaslik.';
+      }
+      if(_javobIsh === 'uzoq'){
+        izoh += ' Yillab kutilgan ish bitta kundan boshlanadi.';
+      } else if(_javobIsh === 'yaqin'){
+        izoh += ' Yangi o‘y uzoq yashamaydi — uni bugun ushlab qolish kerak.';
+      } else if(_javobIsh === 'yoq'){
+        izoh += ' Katta maqsad shart emas — kichik ish kunni ushlab turadi.';
+      }
+      var h = q('#kc-hukm'), z = q('#kc-fakt');
+      if(h) h.innerHTML = hukm;
+      if(z) z.textContent = izoh;
+    }
+    q('#kc-n').onclick = function(){
+      try{ hodisaYubor('kirish_oyna'); }catch(e){}
+      fonRang('rgba(30,140,140,.30)','#0e2230');
+      korsat(2);
+    };
     /* 2 */
     var K3FON={'07:00':['rgba(249,115,22,.34)','#2a1606'],'13:00':['rgba(37,99,235,.34)','#0b1f3f'],'21:00':['rgba(99,102,241,.36)','#14123a']};
     function odatTanla(o){
@@ -3556,7 +3763,7 @@ function kirishSuhbati(qayta){
     Array.prototype.forEach.call(d.querySelectorAll('.k5-v'), function(b){ b.onclick=function(){ k5saqla(b.getAttribute('data-v')); }; });
     q('#k5-t-b').onclick=function(){ var v=q('#k5-t').value; if(!v.trim()){ q('#k5-t').focus(); return; } k5saqla(v); };
     q('#k5-yoq').onclick=function(){ tugat(true); };
-    korsat(1);
+    korsat('ka');
   }catch(e){ console.error('kirishSuhbati', e); }
 }
 /* Eski nomlar — Sozlamadagi "Tanishtiruvni qayta ko'rish" va boshqa chaqiriqlar uchun */
@@ -4712,7 +4919,16 @@ function loadObhavoByIP(){
 }
 function showMotiv(){
   const today=bugunKun();
-  if(S.g('i_mday')!==today){state.motivIdx=Math.floor(Math.random()*MOTIVLAR.length);S.s('i_midx',state.motivIdx);S.s('i_mday',today);}
+  /* 25.09.2026: har kuni ALBATTA boshqa so'z chiqsin.
+     Ilgari tasodifiy tanlanardi — ketma-ket kunlarda bir xil so'z
+     takrorlanib qolardi. Endi ro'yxat sana bo'yicha aylanadi:
+     hamma so'z tugamaguncha hech biri qaytmaydi. */
+  if(S.g('i_mday')!==today){
+    var _kn = Math.floor(new Date(today+'T00:00:00').getTime()/86400000);
+    if(!isFinite(_kn)) _kn = 0;
+    state.motivIdx = ((_kn % MOTIVLAR.length) + MOTIVLAR.length) % MOTIVLAR.length;
+    S.s('i_midx',state.motivIdx); S.s('i_mday',today);
+  }
   const m=MOTIVLAR[state.motivIdx%MOTIVLAR.length];
   const el=document.getElementById('b-motiv'),el2=document.getElementById('b-motiv-a');
   if(el)el.innerHTML='&ldquo;'+m.t+'&rdquo;';
@@ -8824,6 +9040,17 @@ window.intizomTest = function(){
   var R1=_rejaKunYangi(RB,RS,'2026-09-14');
   t('reja kechagi ko\'chdi', R1.map(function(r){return r.name;}), ['Bank','Sport','Namoz']);
   t('reja hammasi bajarilmagan', R1.every(function(r){return r.done===false;}), true);
+  /* 22.09.2026: mashq videosi */
+  (function(){
+    var d=document.createElement('div'); d.id='sinov-video-joy'; document.body.appendChild(d);
+    playZumba('sinov-video-joy','dQw4w9WgXcQ');          /* ataylab teskari */
+    t('video: teskari argument ham ishlaydi', d.innerHTML.indexOf('dQw4w9WgXcQ')>0, true);
+    d.innerHTML='';
+    playZumba('dQw4w9WgXcQ','sinov-video-joy');          /* to'g'ri tartib */
+    t('video: to\'g\'ri argument ishlaydi', d.innerHTML.indexOf('dQw4w9WgXcQ')>0, true);
+    d.remove();
+  })();
+
   /* 22.09.2026: AI reja -> reja */
   (function(){
     var eskiReja = S.g('i_reja'), eskiKun = bugunKun();
@@ -10230,7 +10457,17 @@ var ZUMBA_VIDEOS = [
   {id:'ZNpCqF9XRqQ', nom:'Boshlovchilar uchun Zumba',   izoh:'Aerobik · qorin',             daq:'20 daq'},
   {id:'bm4WZyH5p2I', nom:'STRONG by Zumba',             izoh:'Kuch + kardio',               daq:'20 daq'},
 ];
+/* 22.09.2026: mashq videolari ochilmasdi — bu yerga argumentlar
+   almashib kelardi (joy nomi video o'rniga). Chaqiruv to'g'rilandi,
+   lekin funksiyaning o'zi ham endi ikkala tartibni tushunadi:
+   YouTube raqami 11 belgidan iborat, joy nomi esa 'med' bilan
+   boshlanadi — shunga qarab o'zi ajratadi. */
 function playZumba(id, cid){
+  try{
+    if(!document.getElementById(cid) && document.getElementById(id)){
+      var v = id; id = cid; cid = v;
+    }
+  }catch(e){}
   var c=document.getElementById(cid);
   if(!c) return;
   c.innerHTML='<iframe width="100%" height="200" src="https://www.youtube.com/embed/'+id+'?autoplay=1&playsinline=1&rel=0" frameborder="0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen style="border-radius:14px;display:block;border:none"></iframe>';
@@ -10818,7 +11055,7 @@ function renderKunMashq(){
     var medId = 'med'+uid;
     var poster = exImg ? ('<img src="'+exImg.i0+'" onerror="this.style.display=\'none\'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:14px">') : '';
     var mediaSection =
-      '<div id="'+medId+'"'+(ytId?' onclick="playZumba(\''+medId+'\',\''+ytId+'\')"':'')+' style="margin:10px 0 4px;border-radius:14px;overflow:hidden;position:relative;height:150px;'+(ytId?'cursor:pointer':'')+'">'+
+      '<div id="'+medId+'"'+(ytId?' onclick="playZumba(\''+ytId+'\',\''+medId+'\')"':'')+' style="margin:10px 0 4px;border-radius:14px;overflow:hidden;position:relative;height:150px;'+(ytId?'cursor:pointer':'')+'">'+
         svgBg+
         poster+
         '<div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.5));border-radius:14px"></div>'+
@@ -13102,6 +13339,30 @@ var DUOLAR = {
    "arab": "أَصْبَحْنَا وَأَصْبَحَ المُلْكُ لِلَّهِ وَالحَمْدُ لِلَّهِ",
    "translat": "Asbahna va asbahal mulku lillahi val hamdu lillah",
    "uz": "Tongga kirdik, mulk ham Allohnikidir, hamd Allohgadir"
+  },
+  {
+   "nom": "Ulovga minganda",
+   "arab": "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَٰذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ",
+   "translat": "Subhanallazi saxxoro lana haza va ma kunna lahu muqrinin va inna ila robbina lamunqolibun.",
+   "uz": "Buni bizga bo'ysundirgan Zot poksan — biz unga kuchimiz yetuvchi emas edik. Albatta biz Robbimizga qaytguvchimiz."
+  },
+  {
+   "nom": "Yomg'ir yog'ganda",
+   "arab": "اللَّهُمَّ صَيِّبًا نَافِعًا",
+   "translat": "Allohumma soyyiban nafi'a.",
+   "uz": "Ey Alloh, buni foydali yomg'ir qil."
+  },
+  {
+   "nom": "Momaqaldiroq eshitilganda",
+   "arab": "سُبْحَانَ الَّذِي يُسَبِّحُ الرَّعْدُ بِحَمْدِهِ وَالْمَلَائِكَةُ مِنْ خِيفَتِهِ",
+   "translat": "Subhanallazi yusabbihur ro'du bihamdihi val malaikatu min xifatih.",
+   "uz": "Momaqaldiroq Uni hamd bilan, farishtalar esa Undan qo'rqib ulug'laydigan Zot poksan."
+  },
+  {
+   "nom": "Qiyin ish oson bo'lishi uchun",
+   "arab": "اللَّهُمَّ لَا سَهْلَ إِلَّا مَا جَعَلْتَهُ سَهْلًا وَأَنْتَ تَجْعَلُ الْحَزْنَ إِذَا شِئْتَ سَهْلًا",
+   "translat": "Allohumma la sahla illa ma ja'altahu sahla, va anta taj'alul hazna iza shi'ta sahla.",
+   "uz": "Ey Alloh, Sen oson qilgan narsadan boshqa oson narsa yo'q. Xohlasang, qiyinni ham oson qilasan."
   }
  ],
  "ibodatdan": [
@@ -13176,6 +13437,54 @@ var DUOLAR = {
    "arab": "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ العَفْوَ فَاعْفُ عَنِّي",
    "translat": "Allahumma innaka afuvvun tuhibbul afva fa'fu anni",
    "uz": "Ey Alloh, Sen afv etuvchisan, afvni yaxshi ko'rasan, meni afv et"
+  },
+  {
+   "nom": "Sayyidul istig'for — istig'forlarning eng ulug'i",
+   "arab": "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
+   "translat": "Allohumma anta robbi la ilaha illa anta, xalaqtani va ana abduka, va ana ala ahdika va va'dika mastato'tu, a'uzu bika min sharri ma sona'tu, abu'u laka bi ni'matika alayya va abu'u bi zanbi fag'fir li fa innahu la yag'firuz zunuba illa anta.",
+   "uz": "Ey Alloh, Sen mening Robbimsan, Sendan o'zga iloh yo'q. Meni Sen yaratding, men Sening bandangman. Kuchim yetguncha ahding va va'dang ustida turaman. Qilgan ishlarim yomonligidan Senga panoh tortaman. Menga bergan ne'matingni tan olaman, gunohimni ham tan olaman — meni kechir, chunki gunohlarni Sendan o'zga hech kim kechirmaydi."
+  },
+  {
+   "nom": "Attahiyot — namozdagi tashahhud",
+   "arab": "التَّحِيَّاتُ لِلَّهِ وَالصَّلَوَاتُ وَالطَّيِّبَاتُ، السَّلَامُ عَلَيْكَ أَيُّهَا النَّبِيُّ وَرَحْمَةُ اللَّهِ وَبَرَكَاتُهُ، السَّلَامُ عَلَيْنَا وَعَلَى عِبَادِ اللَّهِ الصَّالِحِينَ، أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا اللَّهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ",
+   "translat": "Attahiyyatu lillahi vassolavatu vattoyyibat. Assalamu alayka ayyuhan nabiyyu va rohmatullohi va barakatuh. Assalamu alayna va ala ibadillahis solihin. Ash-hadu an la ilaha illalloh va ash-hadu anna Muhammadan abduhu va rosuluh.",
+   "uz": "Barcha ta'zim, namoz va pok so'zlar Allohgadir. Ey Nabiy, senga Allohning salomi, rahmati va barakoti bo'lsin. Bizga va Allohning solih bandalariga salom bo'lsin. Guvohlik beramanki, Allohdan o'zga iloh yo'q va Muhammad Uning bandasi va elchisidir."
+  },
+  {
+   "nom": "Ibrohim salavoti — tashahhuddan keyin",
+   "arab": "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ، اللَّهُمَّ بَارِكْ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ كَمَا بَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ",
+   "translat": "Allohumma solli ala Muhammadin va ala ali Muhammad, kama sollayta ala Ibrohima va ala ali Ibrohim, innaka Hamidun Majid. Allohumma barik ala Muhammadin va ala ali Muhammad, kama barakta ala Ibrohima va ala ali Ibrohim, innaka Hamidun Majid.",
+   "uz": "Ey Alloh, Ibrohimga va Ibrohim oilasiga rahmat yo'llaganingdek, Muhammadga va Muhammad oilasiga ham rahmat yo'lla. Albatta Sen maqtovga loyiq, ulug'sen. Ey Alloh, Ibrohimga va uning oilasiga baraka berganingdek, Muhammadga va uning oilasiga ham baraka ber."
+  },
+  {
+   "nom": "Qunut duosi — vitr namozida",
+   "arab": "اللَّهُمَّ إِنَّا نَسْتَعِينُكَ وَنَسْتَغْفِرُكَ وَنُؤْمِنُ بِكَ وَنَتَوَكَّلُ عَلَيْكَ وَنُثْنِي عَلَيْكَ الْخَيْرَ وَنَشْكُرُكَ وَلَا نَكْفُرُكَ",
+   "translat": "Allohumma inna nasta'inuka va nastag'firuka va nu'minu bika va natavakkalu alayka va nusni alaykal xoyro va nashkuruka va la nakfuruk.",
+   "uz": "Ey Alloh, Sendan yordam so'raymiz, Sendan kechirim so'raymiz, Senga iymon keltiramiz, Senga tavakkal qilamiz, Seni yaxshilik bilan maqtaymiz, Senga shukr qilamiz va Senga kufr keltirmaymiz."
+  },
+  {
+   "nom": "Istixora — qaror qabul qilishdan oldin",
+   "arab": "اللَّهُمَّ إِنِّي أَسْتَخِيرُكَ بِعِلْمِكَ وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ وَأَسْأَلُكَ مِنْ فَضْلِكَ الْعَظِيمِ، فَإِنَّكَ تَقْدِرُ وَلَا أَقْدِرُ وَتَعْلَمُ وَلَا أَعْلَمُ وَأَنْتَ عَلَّامُ الْغُيُوبِ",
+   "translat": "Allohumma inni astaxiruka bi ilmika va astaqdiruka bi qudrotika va as'aluka min fazlikal azim. Fa innaka taqdiru va la aqdiru va ta'lamu va la a'lamu va anta allamul g'uyub.",
+   "uz": "Ey Alloh, ilming bilan mendan yaxshisini tanlashingni so'rayman, qudrating bilan menga kuch berishingni so'rayman va ulug' fazlingdan so'rayman. Chunki Sen qodirsan, men esa ojizman; Sen bilasan, men bilmayman. Sen g'ayblarni to'la bilguvchisan."
+  },
+  {
+   "nom": "Masjidga kirishda",
+   "arab": "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ",
+   "translat": "Allohummaftah li abvaba rohmatik.",
+   "uz": "Ey Alloh, menga rahmating eshiklarini och."
+  },
+  {
+   "nom": "Masjiddan chiqishda",
+   "arab": "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ",
+   "translat": "Allohumma inni as'aluka min fazlik.",
+   "uz": "Ey Alloh, men Sendan fazlingni so'rayman."
+  },
+  {
+   "nom": "Majlis kafforati — suhbat oxirida",
+   "arab": "سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ، أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا أَنْتَ، أَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ",
+   "translat": "Subhanakallohumma va bihamdika, ash-hadu an la ilaha illa anta, astag'firuka va atubu ilayk.",
+   "uz": "Ey Alloh, Seni poklab maqtayman. Guvohlik beramanki, Sendan o'zga iloh yo'q. Sendan kechirim so'rayman va Senga tavba qilaman."
   }
  ],
  "ozliq": [
@@ -13256,6 +13565,18 @@ var DUOLAR = {
    "arab": "اللَّهُمَّ بَارِكْ لِي فِي وَقْتِي",
    "translat": "Allahumma barik li fi vaqti",
    "uz": "Ey Alloh, vaqtimga barakot ber"
+  },
+  {
+   "nom": "Zikr, shukr va chiroyli ibodat uchun",
+   "arab": "اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ",
+   "translat": "Allohumma a'inni ala zikrika va shukrika va husni ibadatik.",
+   "uz": "Ey Alloh, Seni zikr qilishga, Senga shukr qilishga va Senga chiroyli ibodat qilishga menga yordam ber."
+  },
+  {
+   "nom": "Qalbni dinda sobit tutish",
+   "arab": "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ",
+   "translat": "Yo Muqallibal qulub, sabbit qalbi ala dinik.",
+   "uz": "Ey qalblarni o'zgartiruvchi Zot, qalbimni dining ustida sobit qil."
   }
  ],
  "shifo": [
@@ -13370,6 +13691,18 @@ var DUOLAR = {
    "arab": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الكُفْرِ وَالفَقْرِ وَعَذَابِ القَبْرِ",
    "translat": "Allahumma inni a'udzu bika minal kufri val faqri va azabil qabr",
    "uz": "Ey Alloh, kufr, kambag'allik va qabr azobidan Senga panoh so'rayman"
+  },
+  {
+   "nom": "Kun boshida uch marta — har yomonlikdan",
+   "arab": "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
+   "translat": "Bismillahillazi la yazurru ma'asmihi shay'un fil arzi va la fis samai va huvas Sami'ul Alim.",
+   "uz": "Alloh nomi bilan — Uning nomi bilan yerda ham, osmonda ham hech narsa zarar bera olmaydi. U eshituvchi, bilguvchidir."
+  },
+  {
+   "nom": "Kuch va quvvat so'rab",
+   "arab": "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
+   "translat": "La havla va la quvvata illa billah.",
+   "uz": "Kuch va quvvat faqat Alloh bilandir."
   }
  ],
  "safar": [
@@ -13440,6 +13773,68 @@ var DUOLAR = {
    "arab": "اللَّهُمَّ اغْفِرْ لَهُ وَارْحَمْهُ وَعَافِهِ وَاعْفُ عَنْهُ",
    "translat": "Allahummag'fir lahu varhamhu va afihi va'fu anh",
    "uz": "Ey Alloh, uni kechir, unga rahm qil, ofiyat ber va avf et"
+  }
+ ],
+ "qurondan": [
+  {
+   "nom": "Ixlos surasi",
+   "arab": "قُلْ هُوَ اللَّهُ أَحَدٌ  اللَّهُ الصَّمَدُ  لَمْ يَلِدْ وَلَمْ يُولَدْ  وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
+   "translat": "Qul huvallohu ahad. Allohus somad. Lam yalid va lam yulad. Va lam yakun lahu kufuvan ahad.",
+   "uz": "Ayt: U — Alloh yagonadir. Alloh behojatdir. U tug'magan va tug'ilmagan. Unga hech kim teng emas."
+  },
+  {
+   "nom": "Falaq surasi",
+   "arab": "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ  مِنْ شَرِّ مَا خَلَقَ  وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ  وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ  وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+   "translat": "Qul a'uzu bi robbil falaq. Min sharri ma xalaq. Va min sharri g'osiqin iza vaqab. Va min sharrin naffasati fil uqad. Va min sharri hasidin iza hasad.",
+   "uz": "Ayt: Tong Robbidan panoh so'rayman — U yaratgan narsalar yomonligidan, qorong'ulik bosganda tun yomonligidan, tugunlarga puflovchilar yomonligidan va hasad qilganda hasadchi yomonligidan."
+  },
+  {
+   "nom": "Nos surasi",
+   "arab": "قُلْ أَعُوذُ بِرَبِّ النَّاسِ  مَلِكِ النَّاسِ  إِلَٰهِ النَّاسِ  مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ  الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ  مِنَ الْجِنَّةِ وَالنَّاسِ",
+   "translat": "Qul a'uzu bi robbin nas. Malikin nas. Ilahin nas. Min sharril vasvasil xannas. Allazi yuvasvisu fi sudurin nas. Minal jinnati van nas.",
+   "uz": "Ayt: Odamlar Robbidan, odamlar Podshohidan, odamlar Ilohidan panoh so'rayman — odamlar ko'ksiga vasvasa soluvchi, jin va insonlardan bo'lgan yashirin vasvasachi yomonligidan."
+  },
+  {
+   "nom": "Robbana atina — dunyo va oxirat yaxshiligi",
+   "arab": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+   "translat": "Robbana atina fid dunya hasanatan va fil oxiroti hasanatan va qina azaban nar.",
+   "uz": "Ey Robbimiz, bizga dunyoda ham yaxshilik, oxiratda ham yaxshilik ber va bizni do'zax azobidan saqla."
+  },
+  {
+   "nom": "Yunus duosi — qiyinchilikdan chiqish",
+   "arab": "لَا إِلَٰهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ",
+   "translat": "La ilaha illa anta subhanaka inni kuntu minaz zolimin.",
+   "uz": "Sendan o'zga iloh yo'q, Sen poksan. Albatta men o'ziga zulm qilganlardan bo'ldim."
+  },
+  {
+   "nom": "Hasbunalloh — tashvish va qo'rquvda",
+   "arab": "حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ",
+   "translat": "Hasbunallohu va ni'mal vakil.",
+   "uz": "Bizga Alloh yetarli, U naqadar yaxshi vakil."
+  },
+  {
+   "nom": "Qalb sobitligi uchun",
+   "arab": "رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِنْ لَدُنْكَ رَحْمَةً إِنَّكَ أَنْتَ الْوَهَّابُ",
+   "translat": "Robbana la tuzig' qulubana ba'da iz hadaytana va hab lana min ladunka rohmatan innaka antal vahhab.",
+   "uz": "Ey Robbimiz, bizni hidoyat qilganingdan keyin qalblarimizni og'dirma va bizga O'z huzuringdan rahmat ber. Albatta Sen ko'p ato etuvchisan."
+  },
+  {
+   "nom": "Ish boshlashda — ko'ngil kengligi",
+   "arab": "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي",
+   "translat": "Robbish roh li sodri va yassir li amri.",
+   "uz": "Ey Robbim, ko'ksimni keng qil va ishimni oson qil."
+  },
+  {
+   "nom": "Oila uchun — ko'z quvonchi",
+   "arab": "رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا",
+   "translat": "Robbana hablana min azvajina va zurriyyatina qurrota a'yunin vaj'alna lil muttaqina imama.",
+   "uz": "Ey Robbimiz, jufti halollarimiz va zurriyotimizdan bizga ko'z quvonchi ber va bizni taqvodorlarga peshvo qil."
+  },
+  {
+   "nom": "Gunohni tan olib tavba qilish",
+   "arab": "رَبَّنَا ظَلَمْنَا أَنْفُسَنَا وَإِنْ لَمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ الْخَاسِرِينَ",
+   "translat": "Robbana zolamna anfusana va il lam tag'fir lana va tarhamna lanakunanna minal xosirin.",
+   "uz": "Ey Robbimiz, biz o'zimizga zulm qildik. Agar Sen bizni kechirmasang va rahm qilmasang, albatta ziyon ko'ruvchilardan bo'lamiz."
   }
  ]
 };
@@ -15023,7 +15418,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
-var NASHR = '62';   /* qaysi fayl ishlayotganini bilish uchun */
+var NASHR = '65';   /* qaysi fayl ishlayotganini bilish uchun */
 
 /* ==================================================================
    SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
