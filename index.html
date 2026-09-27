@@ -1531,7 +1531,7 @@
     <div class="mhandle"></div>
     <div style="font-size:48px;margin:10px 0 4px">💧</div>
     <div class="mtitle">Suv Tracker</div>
-    <div style="font-size:15px;color:var(--t2);margin-bottom:20px">Kuniga 8 stakan (2 litr) tavsiya etiladi</div>
+    <div style="font-size:15px;color:var(--t2);margin-bottom:20px">Kuniga 12 stakan (3 litr) tavsiya etiladi</div>
     <div id="suv-cups" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:20px"></div>
     <div style="background:var(--bg);border-radius:14px;padding:14px;margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -1764,7 +1764,7 @@
         <button class="u-close-w" onclick="closeM('avatar-modal')">✕</button>
       </div>
     </div>
-    <div style="padding:20px">
+    <div style="padding:20px" id="av-body">
       <!-- Avatar ko'rsatish -->
       <div style="text-align:center;margin-bottom:20px">
         <div id="av-big" style="font-size:80px;margin-bottom:8px">🧑</div>
@@ -1912,7 +1912,7 @@
         <option value="">Yo&#39;q &mdash; qo&#39;lda belgilayman</option>
         <option value="namoz">Namoz &mdash; besh vaqt to&#39;liq bo&#39;lsa</option>
         <option value="sport">Sport &mdash; mashq yozilsa</option>
-        <option value="suv">Suv &mdash; 8 stakan to&#39;lsa</option>
+        <option value="suv">Suv &mdash; 12 stakan to&#39;lsa</option>
         <option value="kundalik">Kundalik &mdash; yozuv qo&#39;shilsa</option>
       </select>
       <div style="font-size:12.5px;color:var(--t2);line-height:1.5;margin-top:6px">Manba tanlansa, bu odat o&#39;sha bo&#39;limdan avtomatik belgilanadi &mdash; ikki marta belgilash shart emas.</div>
@@ -3333,7 +3333,7 @@ var QOL_KORILDI = 'qollanma_korildi';
 
 var ILK_ODATLAR=[
   {nom:'Namoz o\'qish',      icon:'🕌', color:'linear-gradient(135deg,#DBBE24,#DB9725)', time:''},
-  {nom:'2 litr suv ichish',  icon:'💧', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:''},
+  {nom:'3 litr suv ichish',  icon:'💧', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:''},
   {nom:'20 bet kitob o\'qish', icon:'📚', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'21:00'},
   {nom:'30 daqiqa yurish',   icon:'🚶', color:'linear-gradient(135deg,#1E8C8C,#166B6B)', time:'07:00'},
   {nom:'Erta turish',        icon:'🌅', color:'linear-gradient(135deg,#DB9725,#C9702A)', time:'05:30'},
@@ -5255,8 +5255,8 @@ function kataklarniYangila(){
   /* --- Suv --- */
   try{
     var sv = (S.g('i_suv')||{})[bugun]||0;
-    var st = Math.round(sv/250);
-    chiq.suv = [son(st,8), st>=8?'bajarildi':(st>0?'':'kutmoqda'), Math.min(1,st/8)];
+    var st = Math.round(sv/SUV_STAKAN);
+    chiq.suv = [son(st,SUV_SONI), st>=SUV_SONI?'bajarildi':(st>0?'':'kutmoqda'), Math.min(1,st/SUV_SONI)];
   }catch(e){}
 
   /* --- Kayfiyat --- */
@@ -5548,7 +5548,7 @@ function _kunFaktlar(k){
   f.push('Odatlar: '+bajO.length+'/'+od.length+(bajO.length?' (bajarildi: '+bajO.slice(0,5).join(', ')+')':'')+(qolO.length?'; qoldi: '+qolO.slice(0,5).join(', '):''));
   if(rj.length) f.push('Reja: '+bajR.length+'/'+rj.length+(qolR.length?'; bajarilmadi: '+qolR.slice(0,5).map(function(r){return r.name+' ('+(r.start||'')+')';}).join(', '):''));
   f.push('Namoz: '+nz+'/6');
-  try{ var sv=(S.g('i_suv')||{})[k]||0; if(sv) f.push('Suv: '+Math.round(sv/250)+'/8 stakan'); }catch(e){}
+  try{ var sv=(S.g('i_suv')||{})[k]||0; if(sv) f.push('Suv: '+Math.round(sv/SUV_STAKAN)+'/'+SUV_SONI+' stakan'); }catch(e){}
   try{ var md=(S.g('i_mood')||{})[k]; if(md) f.push('Kayfiyat: '+(md.label||'')+' ('+md.val+'/5)'+(md.note?' — izoh: '+String(md.note).slice(0,80):'')); }catch(e){}
   try{ var uy=getUyquData().filter(function(u){return u.sana===k;})[0]; if(uy) f.push('Uyqu: '+uy.soat+' soat'); }catch(e){}
   try{ var st=0; od.forEach(function(o){ if((o.streak||0)>st) st=o.streak||0; }); if(st) f.push('Eng uzun zanjir: '+st+' kun'); }catch(e){}
@@ -6011,6 +6011,23 @@ function _addOdatDavom(name){
    jami kun soni oshmaydi, faqat zanjir uzilmaydi.
    ================================================================== */
 var DAM_LIMIT = 2;          /* oyiga, har odatga */
+/* ==================================================================
+   HAFTADA BITTA DAM KUNI                            27.09.2026
+   Har odam charchaydi. Haftada bir kun — o'zi tanlagan kun —
+   odat so'ralmaydi va zanjir uzilmaydi. Oylik DAM_LIMIT sarflanmaydi.
+   Saqlash: i_dam_hafta = 0..6 (yakshanba=0) yoki -1 (yo'q).
+   ================================================================== */
+var DAM_HAFTA_NOM = ['Yakshanba','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'];
+function damHaftaOl(){ var v = S.g('i_dam_hafta'); v = (v===null||v===undefined) ? -1 : +v; return (v>=0 && v<=6) ? v : -1; }
+function damHaftaYoz(v){ S.s('i_dam_hafta', (v>=0 && v<=6) ? +v : -1); }
+/* Toza yadro (test qilinadi) */
+function _damKunmi(sana, kod){
+  if(kod===null || kod===undefined || kod<0) return false;
+  var d = new Date(String(sana)+'T12:00:00');
+  if(isNaN(d.getTime())) return false;
+  return d.getDay() === +kod;
+}
+function damBugunmi(){ return _damKunmi(bugunKun(), damHaftaOl()); }
 var BOSQICHLAR = [7, 30, 100, 365];
 
 function _kunOldin(kunStr, necha){
@@ -6043,6 +6060,9 @@ function streakHisobla(o){
 
     if (o.dam[k]) { i++; continue; }          /* allaqachon dam kuni (true — oylik limitdan, 'yengil' — yengil kundan) */
 
+    /* 27.09.2026: foydalanuvchi tanlagan haftalik dam kuni — zanjir uzilmaydi */
+    if (_damKunmi(k, damHaftaOl())) { i++; continue; }
+
     var oyK = k.slice(0,7);
     if (damIshlatilgan(oyK) < DAM_LIMIT && streak > 0) {
       o.dam[k] = true; ozgardi = true;        /* dam kunini sarflaymiz */
@@ -6063,6 +6083,7 @@ function streakHisobla(o){
 /* Hamma odatning ketma-ketligini yangilaydi va yangi
    bosqichga yetganini xabar qiladi. */
 function odatStreakYangila(xabarBer){
+  try{ setTimeout(zanjirDarajaTekshir, 600); }catch(e){}
   var od = state.odatlar || [], ozgardi = false, yangiBosqich = [];
   od.forEach(function(o){
     if (streakHisobla(o)) ozgardi = true;
@@ -6253,7 +6274,51 @@ function yengilStrip(){
     '<div class="u-t13">'+(b?'Faqat yadro odatlar. Qolganlari kechirildi.':'Faqat yadro odatlar so\u2018raladi, zanjir uzilmaydi \u00B7 oyda '+(YENGIL_LIMIT-yengilOyda())+' ta qoldi')+'</div></div>'+
     (b?'':'<button onclick="yengilKunOch()" class="btn btn-out" style="padding:6px 10px;font-size:12.5px">Yengil kun</button>')+
     '<button onclick="yadroTanla()" title="Yadro odatlar" style="width:28px;height:28px;border:none;border-radius:8px;background:var(--bg);color:var(--t2);cursor:pointer">\u2699\uFE0F</button>'+
+  '</div>'+ damStrip();
+}
+/* Haftalik dam kuni chizig'i */
+function damStrip(){
+  var kod = damHaftaOl(), bugun = damBugunmi();
+  return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:12px;border-radius:14px;background:'+(bugun?'rgba(219,151,37,.12)':'var(--card)')+';border:1px solid '+(bugun?'rgba(219,151,37,.34)':'var(--bd)')+'">'+
+    '<span style="font-size:20px">\uD83D\uDECC</span>'+
+    '<div class="u-f1"><div style="font-size:14px;font-weight:700">'+(bugun?'Bugun dam kuni':'Haftalik dam kuni')+'</div>'+
+    '<div class="u-t13">'+(kod<0
+        ? 'Haftada bir kun tanlang \u2014 o\u2018sha kuni odat so\u2018ralmaydi, zanjir uzilmaydi'
+        : DAM_HAFTA_NOM[kod]+(bugun?' \u2014 dam oling, zanjir uzilmaydi':' \u2014 har hafta shu kuni dam'))+'</div></div>'+
+    '<button onclick="damKunTanla()" class="btn btn-out" style="padding:6px 10px;font-size:12.5px">'+(kod<0?'Tanlash':'O\u2018zgartirish')+'</button>'+
   '</div>';
+}
+function damKunTanla(){
+  var joriy = damHaftaOl();
+  var d = document.createElement('div');
+  d.style.cssText = 'position:fixed;inset:0;z-index:99990;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
+  d.innerHTML = '<div style="width:100%;max-width:520px;background:var(--card);border-radius:22px 22px 0 0;padding:20px 18px 26px">'+
+    '<div style="font-size:18px;font-weight:800;margin-bottom:4px">\uD83D\uDECC Dam kuni</div>'+
+    '<div class="u-t13" style="margin-bottom:14px">Tanlagan kuningizda odat so\u2018ralmaydi va zanjir uzilmaydi. Xohlasangiz baribir belgilashingiz mumkin.</div>'+
+    '<div id="dam-royxat" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>'+
+    '<button id="dam-yopish" class="btn btn-out btn-block" style="margin-top:14px">Yopish</button>'+
+  '</div>';
+  document.body.appendChild(d);
+  var r = d.querySelector('#dam-royxat'), h = '';
+  for(var i=0;i<7;i++){
+    h += '<button data-k="'+i+'" class="dam-k" style="padding:13px 10px;border-radius:14px;border:1.5px solid '+(joriy===i?'var(--g)':'var(--bd)')+';background:'+(joriy===i?'rgba(30,140,140,.12)':'var(--bg)')+';color:var(--text);font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer">'+DAM_HAFTA_NOM[i]+'</button>';
+  }
+  h += '<button data-k="-1" class="dam-k" style="grid-column:1/-1;padding:12px 10px;border-radius:14px;border:1.5px solid '+(joriy<0?'var(--g)':'var(--bd)')+';background:var(--bg);color:var(--t2);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">Dam kuni kerak emas</button>';
+  r.innerHTML = h;
+  Array.prototype.forEach.call(d.querySelectorAll('.dam-k'), function(b){
+    b.onclick = function(){
+      var k = +b.getAttribute('data-k');
+      damHaftaYoz(k);
+      try{ odatStreakYangila(false); S.s('i_odatlar', state.odatlar); }catch(e){}
+      d.remove();
+      try{ renderOdat(); renderBosh(); }catch(e){}
+      try{ hodisaYubor('dam_kuni'); }catch(e){}
+      showNotif(k<0 ? '\uD83D\uDECC Dam kuni olib tashlandi' : '\uD83D\uDECC Dam kuni: '+DAM_HAFTA_NOM[k],
+                k<0 ? 'Endi har kuni odat so\u2018raladi.' : 'Har '+DAM_HAFTA_NOM[k]+' odat so\u2018ralmaydi, zanjir uzilmaydi.');
+    };
+  });
+  d.querySelector('#dam-yopish').onclick = function(){ d.remove(); };
+  d.onclick = function(e){ if(e.target===d) d.remove(); };
 }
 function toggleOdat(id){
   const today=bugunKun();
@@ -6393,7 +6458,10 @@ function _rejaKunYangi(b, shablon, kun){
   if(oldingi){
     var farq = Math.round((new Date(kun+'T12:00:00') - new Date(oldingi+'T12:00:00'))/86400000);
     /* 15.09.2026: haftalik maqsad yozuvlari (hm) ko'chmaydi — ular taqsimlashdan keladi */
-    if(farq <= 7) yangi = _rejaNusxa(b[oldingi].filter(function(r){ return !r.hm; }));
+    if(farq <= 7) yangi = _rejaNusxa(b[oldingi].filter(function(r){
+      /* hm — haftalik maqsad, bir — faqat o'sha kunga tegishli (AI reja, bir martalik ish) */
+      return !r.hm && !r.bir;
+    }));
   }
   shablon.forEach(function(sh){
     var bor = yangi.some(function(r){ return r.name===sh.name && r.start===sh.start; });
@@ -6789,7 +6857,7 @@ var TAKLIF_REJA = [
 
 var TAKLIF_ODAT = [
   {nom:'Namoz o\'qish',           icon:'🕌', color:'linear-gradient(135deg,#DBBE24,#DB9725)', time:''},
-  {nom:'2 litr suv ichish',      icon:'💧', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:''},
+  {nom:'3 litr suv ichish',      icon:'💧', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:''},
   {nom:'Erta turish',            icon:'🌅', color:'linear-gradient(135deg,#DB9725,#C9702A)', time:'05:30'},
   {nom:'Erta yotish',            icon:'🌙', color:'linear-gradient(135deg,#64748B,#475569)', time:'23:00'},
   {nom:'20 bet kitob o\'qish',    icon:'📚', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'21:00'},
@@ -8560,8 +8628,8 @@ function _kunHisobot(){
 
   /* --- Suv --- */
   try{
-    var sv = Math.round(((S.g('i_suv')||{})[bugun]||0)/250);
-    if(sv) qildim.push(['\uD83D\uDCA7', sv+' stakan suv'+(sv>=8?' \u2014 to\'liq':'')]);
+    var sv = Math.round(((S.g('i_suv')||{})[bugun]||0)/SUV_STAKAN);
+    if(sv) qildim.push(['\uD83D\uDCA7', sv+' stakan suv'+(sv>=SUV_SONI?' \u2014 to\'liq':'')]);
     else qoldi.push(['\uD83D\uDCA7','suv hisobga olinmadi']);
   }catch(e){}
 
@@ -8644,7 +8712,7 @@ function _kunOlchov(kun){
     o.odatJami = od.length;
     o.odat = od.filter(function(x){return x.hist&&x.hist[kun];}).length;
   }catch(e){}
-  try{ o.suv = Math.round(((S.g('i_suv')||{})[kun]||0)/250); }catch(e){}
+  try{ o.suv = Math.round(((S.g('i_suv')||{})[kun]||0)/SUV_STAKAN); }catch(e){}
   try{
     var sp = S.g('i_sport')||{};
     o.sport = !!(sp.bugun && sp.bugun[kun] && sp.bugun[kun].length);
@@ -8818,7 +8886,7 @@ function _haftaKesim(kunlar){
 
     try{ k.namoz += Object.keys((state.din&&state.din.namoz&&state.din.namoz[kun])||{}).length; }catch(e){}
     try{ var sp=S.g('i_sport')||{}; if(sp.bugun&&sp.bugun[kun]&&sp.bugun[kun].length) k.sport++; }catch(e){}
-    try{ if(Math.round(((S.g('i_suv')||{})[kun]||0)/250)>=8) k.suvKun++; }catch(e){}
+    try{ if(Math.round(((S.g('i_suv')||{})[kun]||0)/SUV_STAKAN)>=SUV_SONI) k.suvKun++; }catch(e){}
     try{ k.kundalik += getJurnalData().filter(function(j){return String(j.date||'').slice(0,10)===kun;}).length; }catch(e){}
 
     if(od.length && b > k.engB){ k.engB = b; k.eng = kun; }
@@ -9040,6 +9108,22 @@ window.intizomTest = function(){
   var R1=_rejaKunYangi(RB,RS,'2026-09-14');
   t('reja kechagi ko\'chdi', R1.map(function(r){return r.name;}), ['Bank','Sport','Namoz']);
   t('reja hammasi bajarilmagan', R1.every(function(r){return r.done===false;}), true);
+  /* 27.09.2026: bir kunlik (AI) reja ertaga ko'chmaydi */
+  var RB2={'2026-09-13':[{id:1,name:'Bank',start:'09:00'},{id:2,name:'AI ish',start:'10:00',bir:1}]};
+  t('bir kunlik reja ko\'chmaydi', _rejaKunYangi(RB2,[],'2026-09-14').map(function(r){return r.name;}), ['Bank']);
+  /* 27.09.2026: haftalik dam kuni */
+  t('dam kuni yakshanba', _damKunmi('2026-09-27', 0), true);       /* 27.09.2026 — yakshanba */
+  t('dam kuni mos emas', _damKunmi('2026-09-28', 0), false);
+  t('dam kuni o\'chirilgan', _damKunmi('2026-09-27', -1), false);
+  t('dam kuni xato sana', _damKunmi('xxx', 0), false);
+  /* 27.09.2026: zanjir darajalari */
+  t('daraja 0 kun', _zanjirDaraja(0).nom, 'Boshlovchi');
+  t('daraja 6 kun', _zanjirDaraja(6).nom, 'Qadam tashlagan');
+  t('daraja 7 kun', _zanjirDaraja(7).nom, 'So\u2018z bergan');
+  t('daraja 66 kun', _zanjirDaraja(66).nom, 'Odat egasi');
+  t('daraja 5000 kun', _zanjirDaraja(5000).nom, 'Ming kunlik');
+  t('keyingi daraja 7 dan', _zanjirKeyingi(7).kun, 21);
+  t('keyingi daraja yo\'q', _zanjirKeyingi(1000), null);
   /* 22.09.2026: mashq videosi */
   (function(){
     var d=document.createElement('div'); d.id='sinov-video-joy'; document.body.appendChild(d);
@@ -9437,9 +9521,9 @@ function renderHisobot(period){
 
     /* Suv */
     try{
-      var svB = Math.round(((S.g('i_suv')||{})[bugun]||0)/250);
+      var svB = Math.round(((S.g('i_suv')||{})[bugun]||0)/SUV_STAKAN);
       if(svB < 8){
-        yopish += '<div style="font-size:13px;color:var(--t2);margin:14px 0 8px;font-weight:700">Suv \u00b7 '+svB+'/8</div>' +
+        yopish += '<div style="font-size:13px;color:var(--t2);margin:14px 0 8px;font-weight:700">Suv \u00b7 '+svB+'/'+SUV_SONI+'</div>' +
           '<button onclick="_kunSuv()" style="width:100%;padding:12px;border:1px solid var(--bd);'+
           'border-radius:var(--r-sm);background:var(--bg);font-size:14.5px;font-weight:700;'+
           'font-family:inherit;color:var(--text);cursor:pointer">\uD83D\uDCA7 Bir stakan qo\'shish</button>';
@@ -9811,7 +9895,7 @@ function openTgEslatma(){
    Ishlatilgan ma'lumotni hech qachon o'z-o'zidan o'chirmaymiz.
    ================================================================== */
 var ESKI_SEED = [
-  'Ertalab yugurish - 30 min', 'Bomdodga turish', 'Suv ichish - 2 litr',
+  'Ertalab yugurish - 30 min', 'Bomdodga turish', 'Suv ichish - 3 litr',
   "Kitob o'qish", "IELTS bilan shug'ullanish", 'Arab tili', 'Zalga chiqish'
 ];
 
@@ -11490,9 +11574,8 @@ function addBall(amount, sabab){
   S.s('i_ball',newBall);
   var newDaraja=getDaraja(newBall);
   if(oldDaraja.nom!==newDaraja.nom){
-    setTimeout(function(){
-      showDarajaModal(newDaraja);
-    },500);
+    /* 27.09.2026: ball darajasi endi tabrik chiqarmaydi —
+       tabrik zanjir darajasiga o'tdi (zanjirDarajaTekshir). */
   }
   updateBallUI();
   return newBall;
@@ -11519,6 +11602,20 @@ function updateBallUI(){
   if(dc)dc.style.color=daraja.rang;
 }
 
+/* Zanjir darajasi oshganini kuzatadi va bir marta tabriklaydi */
+function zanjirDarajaTekshir(){
+  try{
+    var h = _zanjirHolat();
+    var d = _zanjirDaraja(h.joriy);
+    var oxirgi = S.g('i_zanjir_daraja');
+    if(oxirgi === d.nom) return;
+    S.s('i_zanjir_daraja', d.nom);
+    if(oxirgi === null || oxirgi === undefined) return;    /* birinchi marta — tabrik yo'q */
+    if(d.kun <= 0) return;                                  /* zanjir uzilgan — tabrik emas */
+    showDarajaModal(d);
+    try{ hodisaYubor('zanjir_daraja'); }catch(e){}
+  }catch(e){ console.warn('zanjirDarajaTekshir', e); }
+}
 function showDarajaModal(daraja){
   konfetti();
   var existing=document.getElementById('daraja-popup');
@@ -11529,7 +11626,8 @@ function showDarajaModal(daraja){
   el.innerHTML='<div style="background:var(--card);border-radius:24px;padding:32px 24px;text-align:center;max-width:280px;animation:popIn .4s ease">'+
     '<div style="font-size:60px;margin-bottom:12px">'+daraja.emoji+'</div>'+
     '<div style="font-size:15px;color:var(--t2);margin-bottom:4px">Yangi daraja!</div>'+
-    '<div style="font-size:22px;font-weight:800;color:'+daraja.rang+';margin-bottom:16px">'+daraja.nom+'</div>'+
+    '<div style="font-size:22px;font-weight:800;color:'+daraja.rang+';margin-bottom:8px">'+daraja.nom+'</div>'+
+    (daraja.izoh?'<div style="font-size:14.5px;line-height:1.55;color:var(--t2);margin-bottom:16px">'+daraja.izoh+'</div>':'<div style="height:8px"></div>')+
     '<button onclick="this.parentElement.parentElement.remove()" style="background:var(--g);color:#fff;border:none;border-radius:14px;padding:12px 32px;font-size:15px;font-weight:700;cursor:pointer">Zo\'r! 🎉</button>'+
   '</div>';
   document.body.appendChild(el);
@@ -11863,6 +11961,8 @@ function doneFromAlarm(itemId, popup){
 }
 function checkStreakSaveWarning(){
   var now = new Date();
+  /* 27.09.2026: dam kunida qistalmaydi — dam kuni dam kuni bo'lsin */
+  try{ if(damBugunmi()) return; }catch(e){}
   /* 21:00 dan 21:20 gacha \u2014 aniq daqiqa talab qilinsa, ilova
      o'sha daqiqada ochiq bo'lmasa ogohlantirish yo'qolardi. */
   if(now.getHours() !== 21 || now.getMinutes() > 20) return;
@@ -13143,6 +13243,10 @@ function renderZikrlar(){
 // ════════════════════════════════════════════
 // 💧 SUV TRACKER
 // ════════════════════════════════════════════
+/* 27.09.2026: kunlik suv me'yori 2 litrdan 3 litrga ko'tarildi.
+   Bir stakan 250 ml — demak 12 stakan. Raqamlar bir joyda turadi. */
+var SUV_MAQSAD = 3000, SUV_STAKAN = 250;
+var SUV_SONI = Math.round(SUV_MAQSAD / SUV_STAKAN);
 function openSuvModal(){
   renderSuvModal();
   openM('suv-modal');
@@ -13152,25 +13256,25 @@ function renderSuvModal(){
   var today=bugunKun();
   var suvData=S.g('i_suv')||{};
   var ml=suvData[today]||0;
-  var goal=2000;
+  var goal=SUV_MAQSAD;
   var cups=document.getElementById('suv-cups');
   var bar=document.getElementById('suv-bar');
   var mlEl=document.getElementById('suv-ml');
   var suvBoshLbl=null;
   if(cups){
-    var filled=Math.min(8,Math.round(ml/250));
+    var filled=Math.min(SUV_SONI,Math.round(ml/SUV_STAKAN));
     cups.innerHTML='';
-    for(var i=0;i<8;i++){
+    for(var i=0;i<SUV_SONI;i++){
       var div=document.createElement('div');
-      div.style.cssText='font-size:36px;cursor:pointer;transition:all .2s;opacity:'+(i<filled?'1':'.25');
+      div.style.cssText='font-size:32px;cursor:pointer;transition:all .2s;opacity:'+(i<filled?'1':'.25');
       div.textContent='💧';
-      div.onclick=(function(idx){return function(){addSuv(idx<filled?-250:250);};})(i);
+      div.onclick=(function(idx){return function(){addSuv(idx<filled?-SUV_STAKAN:SUV_STAKAN);};})(i);
       cups.appendChild(div);
     }
   }
   if(bar) bar.style.width=Math.min(100,ml/goal*100)+'%';
   if(mlEl) mlEl.textContent=ml+'ml / '+goal+'ml';
-  if(suvBoshLbl) suvBoshLbl.textContent=Math.round(ml/250)+'/8 💧';
+  if(suvBoshLbl) suvBoshLbl.textContent=Math.round(ml/SUV_STAKAN)+'/'+SUV_SONI+' 💧';
 }
 
 function addSuv(ml){
@@ -13179,8 +13283,8 @@ function addSuv(ml){
   suvData[today]=Math.max(0,(suvData[today]||0)+ml);
   S.s('i_suv',suvData);
   renderSuvModal();
-  if(ml>0&&suvData[today]>=2000&&suvData[today]-ml<2000){
-    showNotif('🎉 Barakalla!','2 litr suv ichdingiz!');
+  if(ml>0&&suvData[today]>=SUV_MAQSAD&&suvData[today]-ml<SUV_MAQSAD){
+    showNotif('🎉 Barakalla!','3 litr suv ichdingiz!');
     addBall(10,'Suv maqsadi');
   }
 }
@@ -14159,6 +14263,7 @@ function _aiRejagaQosh(soat, emoji, vazifa, xabar){
       end: _daqQosh(boshi, 60),
       time: boshi,
       date: kun,
+      bir: 1,                 /* 27.09.2026: AI tuzgan reja faqat shu kunga — ertaga ko'chmaydi */
       icon: emoji || '🤖',
       color: '#1E8C8C',
       signal: -1
@@ -14192,6 +14297,112 @@ function _aiRejaHammasiTugma(res){
   }catch(e){ console.warn('_aiRejaHammasiTugma', e); }
 }
 
+/* ==================================================================
+   DARAJA ENDI BALLGA EMAS, ZANJIRGA BOG'LIQ         27.09.2026
+   Ilgari daraja "ball" dan kelardi: 1517/2000 ball — odamga hech
+   narsa aytmaydigan raqam. Endi daraja — uzilmagan kunlar soni.
+   "30 kundan beri to'xtamadingiz" — buni odam his qiladi.
+   Ball yo'qolmadi: u pastda kichik qator bo'lib qoldi.
+   ================================================================== */
+var ZANJIR_DARAJA = [
+  {kun:0,    nom:'Boshlovchi',      emoji:'🌱', rang:'#94A3B8', izoh:'Birinchi kunni belgilang — zanjir shundan boshlanadi.'},
+  {kun:3,    nom:'Qadam tashlagan', emoji:'👣', rang:'#5B9BD5', izoh:'Uch kun. Ko‘p odam aynan shu yerda to‘xtaydi.'},
+  {kun:7,    nom:'So‘z bergan',     emoji:'🔷', rang:'#4F86E2', izoh:'Bir hafta. Endi bu tasodif emas.'},
+  {kun:21,   nom:'Sinovdan o‘tgan', emoji:'🔥', rang:'#DB9725', izoh:'Uch hafta. Tashlab yuborish endi og‘ir.'},
+  {kun:30,   nom:'So‘zida turgan',  emoji:'💪', rang:'#E07B39', izoh:'Bir oy. Buni ko‘pchilik uddalay olmaydi.'},
+  {kun:66,   nom:'Odat egasi',      emoji:'💎', rang:'#875DE5', izoh:'Ilm aytgan chegara. Endi buni siz emas — odatingiz bajaradi.'},
+  {kun:100,  nom:'Yuz kunlik',      emoji:'🏆', rang:'#E35199', izoh:'Yuz kun to‘xtamadingiz.'},
+  {kun:180,  nom:'Yarim yillik',    emoji:'🌟', rang:'#1E8C8C', izoh:'Olti oy. Bu endi xarakter.'},
+  {kun:365,  nom:'Bir yillik',      emoji:'👑', rang:'#DBBE24', izoh:'Bir yil. Kim bo‘lganingizni raqamning o‘zi aytib turibdi.'},
+  {kun:1000, nom:'Ming kunlik',     emoji:'⛰️', rang:'#0F766E', izoh:'Ming kun. Bunga yetganlar barmoq bilan sanarli.'}
+];
+/* Toza yadro (test qilinadi) */
+function _zanjirDaraja(kun){
+  kun = +kun || 0;
+  var d = ZANJIR_DARAJA[0];
+  for(var i=0;i<ZANJIR_DARAJA.length;i++){ if(kun >= ZANJIR_DARAJA[i].kun) d = ZANJIR_DARAJA[i]; }
+  return d;
+}
+function _zanjirKeyingi(kun){
+  kun = +kun || 0;
+  for(var i=0;i<ZANJIR_DARAJA.length;i++){ if(kun < ZANJIR_DARAJA[i].kun) return ZANJIR_DARAJA[i]; }
+  return null;
+}
+/* Eng uzun joriy zanjir va rekord */
+function _zanjirHolat(){
+  var od = [];
+  try{ od = state.odatlar || []; }catch(e){}
+  var joriy = 0, rekord = 0, nom = '';
+  od.forEach(function(o){
+    if((o.streak||0) > joriy){ joriy = o.streak||0; nom = o.name||''; }
+    if((o.rekord||0) > rekord) rekord = o.rekord||0;
+  });
+  if(rekord < joriy) rekord = joriy;
+  return {joriy:joriy, rekord:rekord, nom:nom};
+}
+/* Daraja qaysi kunda olingani (zanjir boshidan sanab) */
+function _darajaSana(joriy, darajaKun){
+  try{
+    if(!joriy || darajaKun <= 0) return '';
+    var orqaga = joriy - darajaKun;            /* necha kun oldin yetgan */
+    if(orqaga < 0) return '';
+    var d = new Date(bugunKun()+'T12:00:00');
+    d.setDate(d.getDate() - orqaga);
+    return sanaUz ? sanaUz(d) : kunKal(d);
+  }catch(e){ return ''; }
+}
+function _avatarChiz(){
+  var el = document.getElementById('av-body');
+  if(!el) return;
+  var h = _zanjirHolat();
+  var d = _zanjirDaraja(h.joriy), k = _zanjirKeyingi(h.joriy);
+  var pct = k ? Math.round((h.joriy - d.kun) / (k.kun - d.kun) * 100) : 100;
+  if(pct < 0) pct = 0; if(pct > 100) pct = 100;
+  var ball = 0; try{ ball = getBall(); }catch(e){}
+  var sana = _darajaSana(h.joriy, d.kun);
+
+  var html =
+    '<div style="text-align:center;margin-bottom:18px">'+
+      '<div style="font-size:74px;line-height:1;margin-bottom:6px">'+d.emoji+'</div>'+
+      '<div style="font-size:21px;font-weight:800;color:var(--text)">'+d.nom+'</div>'+
+      '<div style="font-size:14px;color:var(--t2);margin-top:4px">'+
+        (h.joriy ? '🔥 '+h.joriy+' kundan beri uzilmadi'+(h.nom?' — '+esc(h.nom):'') : 'Zanjir hali boshlanmagan')+
+      '</div>'+
+      (sana ? '<div style="font-size:13px;color:var(--t2);opacity:.75;margin-top:2px">Bu darajaga '+sana+' da yetdingiz</div>' : '')+
+      '<div style="font-size:14.5px;line-height:1.55;color:var(--t2);margin-top:10px;padding:0 6px">'+d.izoh+'</div>'+
+    '</div>'+
+    '<div style="background:var(--bg);border-radius:16px;padding:16px;margin-bottom:16px">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:8px">'+
+        '<span class="u-t15">'+(k ? 'Keyingi daraja: '+k.nom : 'Eng yuqori daraja')+'</span>'+
+        '<span style="font-size:15px;font-weight:700;color:var(--g)">'+(k ? h.joriy+' / '+k.kun+' kun' : h.joriy+' kun')+'</span>'+
+      '</div>'+
+      '<div style="background:var(--bd);border-radius:6px;height:10px">'+
+        '<div style="background:linear-gradient(90deg,'+d.rang+','+d.rang+'99);height:10px;border-radius:6px;width:'+pct+'%;transition:width .5s"></div>'+
+      '</div>'+
+      (k ? '<div style="font-size:13.5px;color:var(--t2);margin-top:8px">'+(k.kun-h.joriy)+' kun qoldi — kuniga bitta belgilash yetadi.</div>' : '')+
+    '</div>'+
+    '<div style="font-size:15px;font-weight:700;color:var(--t2);margin-bottom:10px">📈 ZANJIR YO‘LI</div>'+
+    '<div style="display:flex;flex-direction:column;gap:6px">'+
+      ZANJIR_DARAJA.map(function(l){
+        var olingan = h.joriy >= l.kun, hozir = (l.kun === d.kun);
+        var rekOlingan = !olingan && h.rekord >= l.kun;
+        return '<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:'+(hozir?l.rang+'18':'var(--bg)')+';border:1.5px solid '+(hozir?l.rang:'var(--bd)')+'">'+
+          '<div style="font-size:22px;opacity:'+(olingan?1:.35)+'">'+l.emoji+'</div>'+
+          '<div class="u-f1"><div style="font-size:15px;font-weight:700;color:'+(olingan?'var(--text)':'var(--t2)')+'">'+l.nom+'</div>'+
+          '<div class="u-t135">'+(l.kun===0?'boshlanish':l.kun+' kun uzluksiz')+(rekOlingan?' · ilgari yetgansiz':'')+'</div></div>'+
+          (hozir?'<div style="background:'+l.rang+';color:#fff;border-radius:8px;padding:2px 8px;font-size:12.5px;font-weight:700">HOZIR</div>'
+                : olingan?'<div style="color:var(--g);font-size:16px">✓</div>'
+                : '<div style="color:var(--bd);font-size:15px">🔒</div>')+
+        '</div>';
+      }).join('')+
+    '</div>'+
+    '<div style="margin-top:14px;padding:12px 14px;border-radius:14px;background:var(--bg);font-size:13.5px;line-height:1.6;color:var(--t2)">'+
+      'Zanjir — eng uzun uzilmagan odatingiz. Rekordingiz: <b>'+h.rekord+' kun</b>. Umumiy ball: <b>'+ball+'</b>.'+
+      (function(){ try{ return damBugunmi() ? '<br>🛌 Bugun dam kuni — belgilamasangiz ham zanjir uzilmaydi.' : ''; }catch(e){ return ''; } })()+
+    '</div>';
+  el.innerHTML = html;
+}
+
 function _proModulTuzat(){
   try{
     /* AI Reja: har ish uchun to'liq yozuv + hammasini o'tkazish tugmasi */
@@ -14223,6 +14434,12 @@ function _proModulTuzat(){
       yangi.__tez = 1;
       window.getFoodPhoto = yangi;
       console.log('Ratsion: taom suratlari offline belgilarga almashtirildi');
+    }
+    /* Avatar/daraja ekrani: ball o'rniga zanjir */
+    if(typeof window.renderAvatar === 'function' && !window.renderAvatar.__zanjir){
+      var yangiAv = function(){ try{ _avatarChiz(); }catch(e){ console.warn('_avatarChiz', e); } };
+      yangiAv.__zanjir = 1;
+      window.renderAvatar = yangiAv;
     }
   }catch(e){ console.warn('_proModulTuzat', e); }
 }
