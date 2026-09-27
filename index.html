@@ -9124,6 +9124,14 @@ window.intizomTest = function(){
   t('daraja 5000 kun', _zanjirDaraja(5000).nom, 'Ming kunlik');
   t('keyingi daraja 7 dan', _zanjirKeyingi(7).kun, 21);
   t('keyingi daraja yo\'q', _zanjirKeyingi(1000), null);
+  /* 27.09.2026: ortiqcha zaxira nusxalari */
+  t('zaxira bitta — tegilmaydi', _zaxiraOchiriladi([{k:'zaxira_oxirgi',ts:'2026-09-20'}]), []);
+  t('zaxira eskisi o\'chadi', _zaxiraOchiriladi([
+      {k:'zaxira_1', ts:'2026-09-10'},
+      {k:'zaxira_oxirgi', ts:'2026-09-25'},
+      {k:'zaxira_2', ts:'2026-09-01'}
+    ]), ['zaxira_1','zaxira_2']);
+  t('zaxira sanasi yo\'q', _zaxiraOchiriladi([{k:'zaxira_1',ts:''},{k:'zaxira_2',ts:''}]).length, 1);
   /* 22.09.2026: mashq videosi */
   (function(){
     var d=document.createElement('div'); d.id='sinov-video-joy'; document.body.appendChild(d);
@@ -15014,7 +15022,8 @@ function xatoYubor(xabar, joy){
    Serverdan O'CHIRILMAYDI: bu faqat telefon xotirasini
    yengillashtiradi, bulutdagi to'liq tarix joyida qoladi.
    ================================================================== */
-var REJA_SAQLASH_KUN = 120;     /* shuncha kunlik to'liq reja qoladi */
+var REJA_SAQLASH_KUN = 45;      /* 27.09.2026: 120 kun ko'p edi — har kuni nusxa ko'chgani uchun
+                                   yozuvlar yuzlab bo'lib ketardi. 45 kunlik to'liq tarix yetadi. */
 var ARXIV_SAQLASH_KUN = 730;    /* qisqa yig'indi ikki yil turadi */
 
 /* Toza yadro — test qilinadi.
@@ -15067,6 +15076,56 @@ function rejaArxivla(){
   }catch(e){ console.warn('rejaArxivla', e); return 0; }
 }
 setTimeout(function(){ try{ rejaArxivla(); }catch(e){} }, 5000);
+
+/* ==================================================================
+   ZAXIRA NUSXALARI: IKKITA EMAS, BITTA                27.09.2026
+   Telefonda "zaxira_oxirgi" va "zaxira_1" nomli ikkita to'liq nusxa
+   saqlanardi — har biri butun ma'lumot hajmicha. 572 KB xotiraning
+   392 KB'i shularga ketgan edi. Endi eng yangisi qoladi, qolgani
+   o'chiriladi (bulutdagi zaxira joyida turadi).
+   ================================================================== */
+function _zaxiraKalitlar(){
+  var r = [];
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k = localStorage.key(i);
+      if(k && k.indexOf('zaxira') === 0) r.push(k);
+    }
+  }catch(e){}
+  return r;
+}
+/* Toza yadro (test qilinadi): qaysilarini o'chirish kerak.
+   ro'yxat = [{k:kalit, ts:'ISO sana'}] */
+function _zaxiraOchiriladi(royxat){
+  royxat = (royxat||[]).slice();
+  if(royxat.length <= 1) return [];
+  royxat.sort(function(a,b){
+    var x = String(a.ts||''), y = String(b.ts||'');
+    if(x !== y) return y > x ? 1 : -1;        /* yangisi birinchi */
+    return String(a.k).localeCompare(String(b.k));
+  });
+  return royxat.slice(1).map(function(x){ return x.k; });
+}
+function zaxiraTozala(){
+  try{
+    var kal = _zaxiraKalitlar();
+    if(kal.length <= 1) return 0;
+    var royxat = kal.map(function(k){
+      var ts = '';
+      try{ var o = JSON.parse(localStorage.getItem(k)||'{}'); ts = o && o.ts ? o.ts : ''; }catch(e){}
+      return {k:k, ts:ts};
+    });
+    var ochir = _zaxiraOchiriladi(royxat);
+    var bayt = 0;
+    ochir.forEach(function(k){
+      try{ bayt += (localStorage.getItem(k)||'').length; localStorage.removeItem(k); }catch(e){}
+    });
+    if(ochir.length) console.log('Zaxira tozalandi: '+ochir.length+' ta ortiqcha nusxa, ~'+Math.round(bayt/1024)+' KB bo\'shadi');
+    return ochir.length;
+  }catch(e){ console.warn('zaxiraTozala', e); return 0; }
+}
+setTimeout(function(){ try{ zaxiraTozala(); }catch(e){} }, 7000);
+try{ document.addEventListener('visibilitychange', function(){ if(!document.hidden) setTimeout(zaxiraTozala, 1500); }); }catch(e){}
 
 /* ==================================================================
    SHRIFT O'LCHAMI                                      22.09.2026
