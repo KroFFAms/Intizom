@@ -6084,6 +6084,7 @@ function streakHisobla(o){
    bosqichga yetganini xabar qiladi. */
 function odatStreakYangila(xabarBer){
   try{ setTimeout(zanjirDarajaTekshir, 600); }catch(e){}
+  try{ if(typeof eslatmaSinx==='function') eslatmaSinx(false); }catch(e){}
   var od = state.odatlar || [], ozgardi = false, yangiBosqich = [];
   od.forEach(function(o){
     if (streakHisobla(o)) ozgardi = true;
@@ -6313,6 +6314,7 @@ function damKunTanla(){
       d.remove();
       try{ renderOdat(); renderBosh(); }catch(e){}
       try{ hodisaYubor('dam_kuni'); }catch(e){}
+      try{ if(typeof eslatmaSinx==='function') eslatmaSinx(true); }catch(e){}
       showNotif(k<0 ? '\uD83D\uDECC Dam kuni olib tashlandi' : '\uD83D\uDECC Dam kuni: '+DAM_HAFTA_NOM[k],
                 k<0 ? 'Endi har kuni odat so\u2018raladi.' : 'Har '+DAM_HAFTA_NOM[k]+' odat so\u2018ralmaydi, zanjir uzilmaydi.');
     };
@@ -7146,7 +7148,7 @@ function renderReja(){
     list.innerHTML=takrorBanner('reja')+'<div class="empty">📅<br><br>Bugun reja yo\'q<br>'+(state.reja.shablon.length?'<button onclick="applyToday()" class="btn btn-g" style="margin-top:12px">📋 Shablonni qo\'llash</button>':'<small>Bugun tugaydigan ishlarni yozing &mdash;<br>bankka borish, qo\'ng\'iroq, uchrashuv.<br>Yozganingiz ertaga ham o\'z-o\'zidan turadi.</small>')+'</div>';
     return;
   }
-  list.innerHTML=takrorBanner('reja')+items.map(r=>{
+  list.innerHTML=takrorBanner('reja')+rejaShablonStrip()+items.map(r=>{
     var rParts=r.start.split(':');var sh=Number(rParts[0]),sm=Number(rParts[1]),sM=sh*60+sm;
     var ep=(r.end||r.start).split(':');var eh=Number(ep[0]),em=Number(ep[1]),eM=eh*60+em;
     const isNow=!r.done&&nowM>=sM&&nowM<eM;
@@ -9132,6 +9134,27 @@ window.intizomTest = function(){
       {k:'zaxira_2', ts:'2026-09-01'}
     ]), ['zaxira_1','zaxira_2']);
   t('zaxira sanasi yo\'q', _zaxiraOchiriladi([{k:'zaxira_1',ts:''},{k:'zaxira_2',ts:''}]).length, 1);
+  /* 27.09.2026: kunlik jadval (shablon) */
+  var SH1=_shablonYadro([{name:'Bank',start:'09:00',end:'10:00',icon:'\uD83C\uDFE6'},
+                         {name:'Bank',start:'09:00'},
+                         {name:'Peshin',start:'13:00',namoz:1},
+                         {name:'Sport',time:'18:00'}]);
+  t('shablon takrorsiz', SH1.map(function(x){return x.name;}), ['Bank','Sport']);
+  t('shablon namozsiz', SH1.some(function(x){return x.name==='Peshin';}), false);
+  t('shablon vaqti time dan', SH1[1].start, '18:00');
+  t('shablon bajarilmagan', SH1.every(function(x){return x.done===false;}), true);
+  /* 30.09.2026: push eslatma ro'yxati */
+  var ER = _eslatmaRoyxat(
+    [{id:1,name:'Yugurish',icon:'\uD83C\uDFC3',time:'07:00'},
+     {id:2,name:'Vaqtsiz',icon:'\u2B50',time:''}],
+    [{id:9,name:'Bank',start:'09:00',icon:'\uD83C\uDFE6'},
+     {id:10,name:'Peshin',start:'13:00',namoz:1}],
+    0);
+  t('eslatma faqat vaqtlilar', ER.map(function(x){return x.nom;}), ['Yugurish','Bank']);
+  t('eslatma dam kunisiz', ER[0].kunlar, '123456');
+  t('eslatma turi', ER[1].tur, 'reja');
+  t('eslatma dam yo\'q', _eslatmaRoyxat([{id:1,name:'A',time:'06:00'}],[],-1)[0].kunlar, '0123456');
+  t('eslatma b64 bayt', _b64Bayt('AQID').length, 3);
   /* 22.09.2026: mashq videosi */
   (function(){
     var d=document.createElement('div'); d.id='sinov-video-joy'; document.body.appendChild(d);
@@ -14135,10 +14158,12 @@ function updateNotifDesc(){ var el=document.getElementById('notif-toggle'); if(e
 function requestNotif(){
   if(typeof Notification==='undefined'){ showNotif('\u26A0\uFE0F',"Qurilma bildirishnomani qo'llamaydi"); return; }
   if(S.g('i_notif_on')===true && Notification.permission==='granted'){
-    S.s('i_notif_on', false); updateNotifDesc(); showNotif('\uD83D\uDD15',"Bildirishnoma o'chirildi"); return;
+    S.s('i_notif_on', false); updateNotifDesc(); try{ pushObunaBekor(); }catch(e){} showNotif('\uD83D\uDD15',"Bildirishnoma o'chirildi"); return;
   }
   Notification.requestPermission().then(function(p){
-    if(p==='granted'){ S.s('i_notif_on',true); showNotif('\u2705','Bildirishnoma yoqildi'); try{ new Notification('Intizom',{body:'Bildirishnomalar yoqildi \u2705'}); }catch(e){} }
+    if(p==='granted'){ S.s('i_notif_on',true); showNotif('\u2705','Bildirishnoma yoqildi'); try{ new Notification('Intizom',{body:'Bildirishnomalar yoqildi \u2705'}); }catch(e){}
+      /* 30.09.2026: serverdan keladigan eslatma uchun obuna */
+      try{ pushObunaOl().then(function(ok){ if(ok) eslatmaSinx(true); }); }catch(e){} }
     else { S.s('i_notif_on',false); showNotif('\u26A0\uFE0F','Ruxsat berilmadi'); }
     updateNotifDesc();
   });
@@ -14281,27 +14306,81 @@ function _aiRejagaQosh(soat, emoji, vazifa, xabar){
   }catch(e){ console.warn('_aiRejagaQosh', e); return false; }
 }
 
+/* AI jadvalini kunlik shablonga aylantiradi — shunda har kuni
+   o'z-o'zidan qo'yiladi, AI dan qayta so'rash shart emas. */
+function _aiShablonYoz(jadval){
+  try{
+    var o = rejaObyekt();
+    var sh = [];
+    (jadval || []).forEach(function(v){
+      var nom = String(v.emoji||'').trim();
+      nom = (nom ? nom+' ' : '') + String(v.vazifa||'').trim();
+      if(!nom) return;
+      var boshi = /^\d{1,2}:\d{2}$/.test(String(v.soat||'')) ? v.soat : '09:00';
+      if(sh.some(function(x){ return _nomTeng(x.name, nom) && x.start === boshi; })) return;
+      sh.push({ id: Date.now()+Math.random(), name: nom, text: nom, done:false,
+                start: boshi, end: _daqQosh(boshi, 60), time: boshi,
+                icon: v.emoji || '\uD83E\uDD16', color: '#1E8C8C', signal: -1 });
+    });
+    if(!sh.length) return 0;
+    o.shablon = sh;
+    /* bugungi AI yozuvlari endi "bir kunlik" emas — ular ham takrorlanadi */
+    var bugun = bugunKun();
+    (o.bugun[bugun] || []).forEach(function(r){ if(r && r.bir) delete r.bir; });
+    S.s('i_reja', o);
+    try{ state.reja = o; }catch(e){}
+    return sh.length;
+  }catch(e){ console.warn('_aiShablonYoz', e); return 0; }
+}
+
 function _aiRejaHammasiTugma(res){
   try{
     var el = document.getElementById('ai-reja-result');
     if(!el || !res || !res.jadval || !res.jadval.length) return;
+    if(document.getElementById('ai-reja-hammasi')) return;
+    var n = res.jadval.length;
+
+    function otkaz(){
+      var q = 0;
+      res.jadval.forEach(function(v){ if(_aiRejagaQosh(v.soat, v.emoji, v.vazifa, false)) q++; });
+      return q;
+    }
+
     var b = document.createElement('button');
     b.id = 'ai-reja-hammasi';
     b.className = 'btn btn-g btn-block';
     b.style.marginTop = '14px';
-    b.textContent = '📋 Hammasini rejaga o‘tkazish (' + res.jadval.length + ')';
+    b.textContent = '\uD83D\uDCCB Faqat bugunga o\u2018tkazish (' + n + ')';
     b.onclick = function(){
-      var n = 0;
-      res.jadval.forEach(function(v){
-        if(_aiRejagaQosh(v.soat, v.emoji, v.vazifa, false)) n++;
-      });
-      var qolgan = res.jadval.length - n;
-      showNotif('✅ O‘tkazildi',
-        n + ' ta ish rejaga qo‘shildi' + (qolgan ? ' · ' + qolgan + ' tasi allaqachon bor edi' : ''));
+      var q = otkaz(), qolgan = n - q;
+      showNotif('\u2705 O\u2018tkazildi',
+        q + ' ta ish bugungi rejaga qo\u2018shildi' + (qolgan ? ' \u00B7 ' + qolgan + ' tasi allaqachon bor edi' : '') +
+        '. Ertaga bu ishlar o\u2018z-o\u2018zidan chiqmaydi.');
       try{ closeM('ai-reja-modal'); }catch(e){}
       try{ gotoPage('reja', null); }catch(e){}
     };
     el.appendChild(b);
+
+    var b2 = document.createElement('button');
+    b2.id = 'ai-reja-har-kuni';
+    b2.className = 'btn btn-out btn-block';
+    b2.style.marginTop = '8px';
+    b2.textContent = '\uD83D\uDD01 Har kuni takrorlansin (' + n + ')';
+    b2.onclick = function(){
+      otkaz();
+      var m = _aiShablonYoz(res.jadval);
+      try{ renderReja(); renderBosh(); }catch(e){}
+      showNotif('\uD83D\uDD01 Kunlik jadval saqlandi',
+        m + ' ta ish har kuni ertalab o\u2018z-o\u2018zidan qo\u2018yiladi. O\u2018zgartirmoqchi bo\u2018lsangiz \u2014 yangi AI reja oling.');
+      try{ closeM('ai-reja-modal'); }catch(e){}
+      try{ gotoPage('reja', null); }catch(e){}
+    };
+    el.appendChild(b2);
+
+    var izoh = document.createElement('div');
+    izoh.style.cssText = 'font-size:13px;line-height:1.55;color:var(--t2);margin-top:8px;text-align:center';
+    izoh.textContent = 'Bir martalik kun uchun — birinchisi. Shu jadval bilan yashamoqchi bo‘lsangiz — ikkinchisi.';
+    el.appendChild(izoh);
   }catch(e){ console.warn('_aiRejaHammasiTugma', e); }
 }
 
@@ -14937,6 +15016,130 @@ function yordamYubor(){
       .catch(function(e){ console.warn('sw:',e); });
   });
 })();
+
+/* ==================================================================
+   SERVERDAN KELADIGAN ESLATMA (WEB PUSH)            30.09.2026
+   Ilgari eslatma faqat ilova OCHIQ turganda ishlardi: sahifadagi
+   taymer har daqiqada tekshirib, new Notification() chiqarardi.
+   Ilova yopiq bo'lsa — hech narsa kelmasdi. Ya'ni "vaqti kelganda
+   eslatamiz" degan va'da bajarilmasdi.
+   Endi: telefon push xizmatiga obuna bo'ladi, obuna serverga
+   yoziladi, odat/reja vaqtlari ham serverga boradi. Supabase'dagi
+   cron har 5 daqiqada tekshirib, vaqti kelganini push qilib
+   yuboradi — ilova yopiq bo'lsa ham keladi.
+   ================================================================== */
+var VAPID_OCHIQ = 'BBsunCulPLSKNtyEhpE4kaG3VFf1aqpy9s8L1OziPL8uF8rSAy7tB7rFtVyp1PnSUNvXR62fDWoRakhfGcUOPQk';
+
+/* base64url → bayt massivi (subscribe shuni talab qiladi) */
+function _b64Bayt(s){
+  s = String(s||'').replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length % 4) s += '=';
+  var bin = atob(s), a = new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) a[i] = bin.charCodeAt(i);
+  return a;
+}
+
+/* Telefonni push xizmatiga obuna qiladi va serverga yozadi */
+function pushObunaOl(){
+  try{
+    if(!('serviceWorker' in navigator) || !('PushManager' in window)){
+      console.log('push: qurilma qo\'llamaydi'); return Promise.resolve(false);
+    }
+    if(typeof Notification==='undefined' || Notification.permission!=='granted'){
+      return Promise.resolve(false);
+    }
+    return navigator.serviceWorker.ready.then(function(reg){
+      return reg.pushManager.getSubscription().then(function(bor){
+        if(bor) return bor;
+        return reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: _b64Bayt(VAPID_OCHIQ)
+        });
+      });
+    }).then(function(sub){
+      if(!sub) return false;
+      var j = sub.toJSON();
+      if(!j || !j.keys) return false;
+      if(!window.BULUT || !window.BULUT.rpc){ return false; }
+      var tz = -(new Date().getTimezoneOffset());       /* daqiqada, UTC+5 → 300 */
+      var qur = '';
+      try{ qur = String(S.g('i_qurilma') || localStorage.getItem('i_qurilma') || ''); }catch(e){}
+      return window.BULUT.rpc('push_obuna_yoz', {
+        p_endpoint: j.endpoint,
+        p_p256dh: j.keys.p256dh,
+        p_auth: j.keys.auth,
+        p_qurilma: qur,
+        p_tz: tz
+      }).then(function(){
+        try{ S.s('i_push_obuna', 1); }catch(e){}
+        console.log('push: obuna saqlandi');
+        return true;
+      });
+    }).catch(function(e){ console.warn('pushObunaOl', e); return false; });
+  }catch(e){ console.warn('pushObunaOl', e); return Promise.resolve(false); }
+}
+
+function pushObunaBekor(){
+  try{
+    if(window.BULUT && window.BULUT.rpc) window.BULUT.rpc('push_ochir', {}).catch(function(){});
+    try{ S.s('i_push_obuna', 0); }catch(e){}
+    if(!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.ready.then(function(reg){
+      return reg.pushManager.getSubscription();
+    }).then(function(sub){ if(sub) sub.unsubscribe(); }).catch(function(){});
+  }catch(e){}
+}
+
+/* Toza yadro (test qilinadi): odat va rejadan eslatma ro'yxatini yasaydi.
+   dam — haftalik dam kuni kodi (0..6) yoki -1 */
+function _eslatmaRoyxat(odatlar, shablon, dam){
+  var r = [], kunlar = '';
+  for(var i=0;i<7;i++){ if(i !== dam) kunlar += String(i); }
+  (odatlar||[]).forEach(function(o){
+    if(!o || !o.time || !/^([01]\d|2[0-3]):[0-5]\d$/.test(o.time)) return;
+    r.push({ tur:'odat', kalit:String(o.id), nom:String(o.name||'Odat').slice(0,80),
+             emoji:String(o.icon||'\uD83D\uDD25'), soat:o.time, kunlar:kunlar });
+  });
+  (shablon||[]).forEach(function(x){
+    if(!x || !x.start || !/^([01]\d|2[0-3]):[0-5]\d$/.test(x.start)) return;
+    if(x.namoz) return;
+    r.push({ tur:'reja', kalit:String(x.id||x.name), nom:String(x.name||'Reja').slice(0,80),
+             emoji:String(x.icon||'\uD83D\uDCCB'), soat:x.start, kunlar:kunlar });
+  });
+  return r.slice(0, 60);
+}
+
+var _eslatmaSinxKutish = null;
+function eslatmaSinx(darhol){
+  try{
+    if(!window.BULUT || !window.BULUT.rpc) return;
+    if(typeof Notification==='undefined' || Notification.permission!=='granted') return;
+    if(_eslatmaSinxKutish) clearTimeout(_eslatmaSinxKutish);
+    _eslatmaSinxKutish = setTimeout(function(){
+      _eslatmaSinxKutish = null;
+      try{
+        var sh = [];
+        try{ sh = (rejaObyekt().shablon)||[]; }catch(e){}
+        var royxat = _eslatmaRoyxat(state.odatlar||[], sh, damHaftaOl());
+        var imzo = JSON.stringify(royxat);
+        if(!darhol && S.g('i_eslatma_imzo') === imzo) return;   /* o'zgarmagan */
+        window.BULUT.rpc('eslatma_yoz', { p_royxat: royxat }).then(function(){
+          try{ S.s('i_eslatma_imzo', imzo); }catch(e){}
+          console.log('eslatma: ' + royxat.length + ' ta vaqt serverga yozildi');
+        }).catch(function(e){ console.warn('eslatma_yoz', e); });
+      }catch(e){ console.warn('eslatmaSinx', e); }
+    }, darhol ? 200 : 2500);
+  }catch(e){}
+}
+
+/* Ilova ochilganda: obuna bor bo'lsa yangilab qo'yamiz */
+setTimeout(function(){
+  try{
+    if(typeof Notification!=='undefined' && Notification.permission==='granted'){
+      pushObunaOl().then(function(ok){ if(ok) eslatmaSinx(true); });
+    }
+  }catch(e){}
+}, 6000);
 
 /* ==================================================================
    XATO KUZATUVI VA O'LCHASH  —  05.09.2026
@@ -15694,7 +15897,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
-var NASHR = '65';   /* qaysi fayl ishlayotganini bilish uchun */
+var NASHR = '66';   /* qaysi fayl ishlayotganini bilish uchun */
 
 /* ==================================================================
    SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
@@ -15948,6 +16151,69 @@ function rejaRoyxat(){
     });
   });
   return r;
+}
+
+/* ==================================================================
+   KUNLIK JADVAL (SHABLON) — O'ZI TUZADI            27.09.2026
+   AI dan olish shart emas: odam bugungi rejasini o'zi yozadi va
+   "har kuni takrorlansin" deydi. O'sha ro'yxat shablonga yoziladi,
+   ertaga ertalab o'z-o'zidan qo'yiladi.
+   ================================================================== */
+function rejaShablonBormi(){
+  try{ var o = rejaObyekt(); return !!(o.shablon && o.shablon.length); }catch(e){ return false; }
+}
+/* Toza yadro (test qilinadi): kunlik ro'yxatdan shablon yasaydi */
+function _shablonYadro(royxat){
+  var sh = [];
+  (royxat || []).forEach(function(r){
+    if(!r || !r.name || r.namoz) return;              /* namoz vaqtlari o'zi qo'yiladi */
+    var boshi = r.start || r.time || '09:00';
+    if(sh.some(function(x){ return x.name === r.name && x.start === boshi; })) return;
+    sh.push({ name:r.name, text:r.name, done:false, start:boshi,
+              end: r.end || boshi, time: boshi,
+              icon: r.icon || '\u2B50', color: r.color || '#1E8C8C',
+              signal: (typeof r.signal === 'number') ? r.signal : -1 });
+  });
+  return sh;
+}
+function rejaShablonSaqla(){
+  try{
+    var o = rejaObyekt(), bugun = bugunKun();
+    var sh = _shablonYadro(o.bugun[bugun] || []);
+    if(!sh.length){ showNotif('\u26A0\uFE0F','Avval bugungi rejani tuzing'); return; }
+    sh.forEach(function(x){ x.id = Date.now()+Math.random(); });
+    o.shablon = sh;
+    (o.bugun[bugun] || []).forEach(function(r){ if(r && r.bir) delete r.bir; });
+    S.s('i_reja', o);
+    try{ state.reja = o; }catch(e){}
+    try{ renderReja(); renderBosh(); }catch(e){}
+    try{ hodisaYubor('reja_shablon'); }catch(e){}
+    try{ if(typeof eslatmaSinx==='function') eslatmaSinx(true); }catch(e){}
+    showNotif('\uD83D\uDD01 Kunlik jadval saqlandi', sh.length+' ta ish har kuni ertalab o\u2018z-o\u2018zidan qo\u2018yiladi.');
+  }catch(e){ console.warn('rejaShablonSaqla', e); }
+}
+function rejaShablonOchir(){
+  try{
+    var o = rejaObyekt();
+    o.shablon = [];
+    S.s('i_reja', o);
+    try{ state.reja = o; }catch(e){}
+    try{ renderReja(); }catch(e){}
+    showNotif('\uD83D\uDD01 Kunlik jadval o\u2018chirildi','Ertadan boshlab rejani o\u2018zingiz tuzasiz.');
+  }catch(e){ console.warn('rejaShablonOchir', e); }
+}
+function rejaShablonStrip(){
+  var bor = rejaShablonBormi();
+  var soni = 0;
+  try{ soni = (rejaObyekt().shablon||[]).length; }catch(e){}
+  return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:12px;border-radius:14px;background:'+(bor?'rgba(30,140,140,.10)':'var(--card)')+';border:1px solid '+(bor?'rgba(30,140,140,.3)':'var(--bd)')+'">'+
+    '<span style="font-size:19px">\uD83D\uDD01</span>'+
+    '<div class="u-f1"><div style="font-size:14px;font-weight:700">'+(bor?'Kunlik jadval yoqilgan':'Shu jadval har kuni takrorlansinmi?')+'</div>'+
+    '<div class="u-t13">'+(bor? soni+' ta ish har kuni ertalab o\u2018z-o\u2018zidan qo\u2018yiladi'
+                              : 'Bugungi rejangiz saqlanadi va ertaga o\u2018zi qo\u2018yiladi')+'</div></div>'+
+    (bor? '<button onclick="rejaShablonOchir()" class="btn btn-out" style="padding:6px 10px;font-size:12.5px">O\u2018chirish</button>'
+        : '<button onclick="rejaShablonSaqla()" class="btn btn-out" style="padding:6px 10px;font-size:12.5px">Saqlash</button>')+
+  '</div>';
 }
 
 function rejaQosh(item){
