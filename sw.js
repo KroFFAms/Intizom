@@ -1,15 +1,17 @@
 /* ==========================================================
    Intizom — Service Worker
-   Maqsad: internet uzilganda ham ilova ochilsin.
+   Maqsad: internet uzilganda ham ilova ochilsin + serverdan
+   kelgan eslatmalar ilova yopiq bo'lsa ham ko'rinsin.
    Strategiya:
      - HTML  -> avval tarmoq, LEKIN 3 soniya kutib, javob
                 kelmasa keshdagi nusxa beriladi (sekin mobil
                 internetda ilova oq ekranda osilib qolmasin)
      - qolgan fayllar -> avval kesh, fonda yangilanadi
      - Supabase/API so'rovlari -> keshlanmaydi
+     - push -> bildirishnoma ko'rsatiladi (30.09.2026)
    Yangi versiya chiqarganda KESH raqamini oshiring.
    ========================================================== */
-var KESH = 'intizom-v103';
+var KESH = 'intizom-v104';
 
 /* Tarmoqni qancha kutamiz. Bundan uzoq kutish foydasiz:
    keshda ishlaydigan nusxa turibdi. */
@@ -65,7 +67,7 @@ function htmlZaxira() {
         '<meta name="viewport" content="width=device-width,initial-scale=1">' +
         '<title>Intizom</title></head><body style="font-family:system-ui;background:#F1F6F3;' +
         'color:#12332B;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">' +
-        '<div style="text-align:center;padding:24px"><div style="font-size:44px">\uD83C\uDFAF</div>' +
+        '<div style="text-align:center;padding:24px"><div style="font-size:44px">🎯</div>' +
         '<h1 style="font-size:20px;margin:10px 0 6px">Internet yo\'q</h1>' +
         '<p style="color:#5C7A72;font-size:15px;margin:0 0 18px">Ulanish tiklanganda ilova o\'zi ochiladi.</p>' +
         '<button onclick="location.reload()" style="padding:12px 22px;border:none;border-radius:12px;' +
@@ -129,6 +131,78 @@ self.addEventListener('fetch', function (e) {
         return r;
       }).catch(function () { return keshda; });
       return keshda || tarmoq;
+    })
+  );
+});
+
+/* ==========================================================
+   SERVERDAN KELGAN ESLATMA                    30.09.2026
+   Ilgari eslatma faqat ilova OCHIQ turganda, sahifadagi
+   taymer orqali chiqardi — ilova yopiq bo'lsa hech narsa
+   kelmasdi. Endi Supabase'dagi cron push yuboradi, shu
+   yerda qabul qilinadi va bildirishnoma ko'rsatiladi.
+   ========================================================== */
+self.addEventListener('push', function (e) {
+  var m = { title: 'Intizom', body: 'Vaqti keldi', tag: 'intizom', url: './' };
+  try {
+    if (e.data) {
+      var j = e.data.json();
+      if (j && typeof j === 'object') {
+        if (j.title) m.title = String(j.title);
+        if (j.body)  m.body  = String(j.body);
+        if (j.tag)   m.tag   = String(j.tag);
+        if (j.url)   m.url   = String(j.url);
+      }
+    }
+  } catch (err) {
+    try { if (e.data) m.body = e.data.text(); } catch (e2) {}
+  }
+
+  e.waitUntil(
+    self.registration.showNotification(m.title, {
+      body: m.body,
+      tag: m.tag,
+      renotify: false,
+      icon: './icon-192.png',
+      badge: './favicon-32.png',
+      vibrate: [180, 90, 180],
+      requireInteraction: false,
+      data: { url: m.url }
+    })
+  );
+});
+
+/* Bildirishnoma bosilganda: ilova ochiq bo'lsa o'shani oldinga
+   chiqaramiz, yopiq bo'lsa ochamiz. Ikkita nusxa ochilib
+   ketmasin. */
+self.addEventListener('notificationclick', function (e) {
+  e.notification.close();
+  var manzil = (e.notification.data && e.notification.data.url) || './';
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (royxat) {
+      for (var i = 0; i < royxat.length; i++) {
+        var c = royxat[i];
+        if (c.url.indexOf(self.location.origin) === 0) {
+          if ('focus' in c) {
+            try { c.postMessage({ tur: 'eslatma', url: manzil }); } catch (err) {}
+            return c.focus();
+          }
+        }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(manzil);
+    })
+  );
+});
+
+/* Push obunasi eskirsa brauzer yangisini beradi — ilova keyingi
+   ochilishda uni serverga yozadi. Shu yerda faqat belgilab
+   qo'yamiz. */
+self.addEventListener('pushsubscriptionchange', function (e) {
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (royxat) {
+      royxat.forEach(function (c) {
+        try { c.postMessage({ tur: 'push_yangilansin' }); } catch (err) {}
+      });
     })
   );
 });
