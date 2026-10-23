@@ -559,7 +559,7 @@
 <!-- REJA -->
 <div id="page-reja" class="page">
   <div class="topbar">
-    <div class="topbar-inner"><h2>📋 Kunlik Reja</h2><span style="font-size:13px;opacity:.72">Kechagi reja bugunga o&#39;tadi</span><span id="reja-sana" style="font-size:13.5px;opacity:.7"></span></div>
+    <div class="topbar-inner"><h2>📋 Kunlik Reja</h2><span style="font-size:13px;opacity:.72">Har kun toza boshlanadi</span><span id="reja-sana" style="font-size:13.5px;opacity:.7"></span></div>
     <div class="topbar-tabs">
       <button class="topbar-tab active" onclick="showRejaTab('bugun',this)">Bugun</button>
       <button class="topbar-tab" onclick="showRejaTab('ertaga',this)">&#127769; Ertaga</button>
@@ -573,7 +573,7 @@
       <div style="background:linear-gradient(135deg,rgba(30,140,140,.22),rgba(30,140,140,.09));border:1px solid rgba(30,140,140,.22);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow-lg)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div><div class="u-t14">Bugungi reja</div>
-          <div id="reja-prog-t" style="font-size:22px;font-weight:800;color:var(--text)">0/0</div></div>
+          <div id="reja-prog-t" style="font-size:22px;font-weight:800;color:var(--text)">Hali boshlanmadi</div></div>
           <div id="reja-clock" style="font-size:26px;font-weight:800;color:var(--g)">00:00</div>
         </div>
         <div style="background:rgba(30,140,140,.14);border-radius:6px;height:6px">
@@ -727,6 +727,7 @@
           <div id="namoz-prog-b" style="background:linear-gradient(90deg,#DBBE24,#DB9725);height:6px;border-radius:6px;width:0%;transition:width .5s"></div>
         </div>
       </div>
+      <div id="namoz-uzr" class="faqat-ayol" style="display:none"></div>
       <div class="card"><div id="namoz-list"></div></div>
       <div id="namoz-qazo"></div>
       <div id="namoz-oylik"></div>
@@ -1853,6 +1854,13 @@
       <input type="file" id="av-inp" accept="image/*" style="display:none" onchange="loadAvatar(this)">
     </div>
     <div class="igroup"><label class="ilabel">Ism</label><input class="inp" id="p-name" placeholder="Ismingiz"></div>
+    <div class="igroup"><label class="ilabel">Jins</label>
+      <select class="sel" id="p-jins">
+        <option value="">Tanlanmagan</option>
+        <option value="ayol">&#128105; Ayol</option>
+        <option value="erkak">&#128104; Erkak</option>
+      </select>
+    </div>
     <div class="igroup"><label class="ilabel">Kasb</label>
       <select class="sel" id="p-kasb">
         <option value="">Kasb tanlang...</option>
@@ -3451,7 +3459,7 @@ function kirishSuhbati(qayta){
     function fonRang(a,b){ nur.style.background='radial-gradient(circle at 50% 28%, '+a+', transparent 62%)'; d.style.background='linear-gradient(160deg,#0b1220,'+b+')'; }
     var BTN='width:100%;padding:16px;border:none;border-radius:16px;background:#1E8C8C;color:#fff;font-weight:800;font-size:17px;cursor:pointer;font-family:inherit';
     var GHOST='width:100%;padding:12px;border:none;border-radius:14px;background:transparent;color:rgba(255,255,255,.5);font-size:14.5px;cursor:pointer;font-family:inherit;margin-top:8px';
-    function nuqta(i){ return '<div style="display:flex;gap:6px;justify-content:center;margin-bottom:18px">'+[1,2,3,4,5,6,7,8].map(function(n){return '<span style="width:'+(n===i?'22px':'7px')+';height:7px;border-radius:4px;background:'+(n<=i?'#1E8C8C':'rgba(255,255,255,.18)')+';transition:width .25s"></span>';}).join('')+'</div>'; }
+    function nuqta(i){ return '<div style="display:flex;gap:6px;justify-content:center;margin-bottom:18px">'+[1,2,3,4,5,6,7,8,9].map(function(n){return '<span style="width:'+(n===i?'22px':'7px')+';height:7px;border-radius:4px;background:'+(n<=i?'#1E8C8C':'rgba(255,255,255,.18)')+';transition:width .25s"></span>';}).join('')+'</div>'; }
     function savol(t){ return '<div style="font-size:24px;font-weight:800;line-height:1.28;text-align:center;margin-bottom:8px;letter-spacing:-.2px">'+t+'</div>'; }
     /* 23.09.2026: bitta bosishda javob beriladigan tugmalar ro'yxati */
     function tanlov(id, royxat){
@@ -3512,8 +3520,18 @@ function kirishSuhbati(qayta){
         '</div>'+
         '<button id="kc-n" style="'+BTN+'">Boshlaymiz</button>'+
       '</div>'+
+      /* ---- j: jins ---- */
+      '<div id="kj" style="display:none">'+nuqta(5)+savol('Siz\u2026')+
+        fakt('kj-f','Ba\u2018zi bo\u2018limlar shunga qarab ko\u2018rsatiladi. Keyin o\u2018zgartirsa bo\u2018ladi.')+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+          [['\uD83D\uDC69','Ayol','ayol'],['\uD83D\uDC68','Erkak','erkak']].map(function(x){
+            return '<button class="kj-t" data-v="'+x[2]+'" style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 10px;border:1.5px solid rgba(255,255,255,.14);border-radius:20px;background:rgba(255,255,255,.06);color:#fff;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer">'+
+              '<span style="font-size:44px;line-height:1">'+x[0]+'</span><span>'+x[1]+'</span></button>';
+          }).join('')+
+        '</div>'+
+      '</div>'+
       /* ---- 2: odat ---- */
-      '<div id="k2" style="display:none">'+nuqta(5)+savol('Qaysi <span style="color:#22D3AD">bitta</span> odatni boshlaysiz?')+
+      '<div id="k2" style="display:none">'+nuqta(6)+savol('Qaysi <span style="color:#22D3AD">bitta</span> odatni boshlaysiz?')+
         fakt('k2-f','Bitta odat tanlang. Ko‘p tanlasangiz, hech biri qolmaydi.')+
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">'+ILK_ODATLAR.map(function(o,i){
           return '<button data-i="'+i+'" class="k2-k" style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 8px;border:1.5px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.05);color:#fff;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer;line-height:1.25;text-align:center">'+
@@ -3525,7 +3543,7 @@ function kirishSuhbati(qayta){
         '</div>'+
       '</div>'+
       /* ---- 3: vaqt ---- */
-      '<div id="k3" style="display:none">'+nuqta(6)+savol('<span id="k3-nom"></span> — <span style="color:#22D3AD">qachon</span>?')+
+      '<div id="k3" style="display:none">'+nuqta(7)+savol('<span id="k3-nom"></span> — <span style="color:#22D3AD">qachon</span>?')+
         fakt('k3-f','Vaqti belgilanmagan odat bajarilmaydi. Shu soatda eslatamiz.')+
         '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px">'+
           [['🌅','Ertalab','07:00','linear-gradient(160deg,#FDBA74,#F97316)'],['☀️','Kunduzi','13:00','linear-gradient(160deg,#7DD3FC,#2563EB)'],['🌙','Kechqurun','21:00','linear-gradient(160deg,#818CF8,#312E81)']].map(function(x){
@@ -3539,7 +3557,7 @@ function kirishSuhbati(qayta){
         '<button id="k3-yoq" style="'+GHOST+'">Vaqtsiz — kun davomida</button>'+
       '</div>'+
       /* ---- 4: bugun ---- */
-      '<div id="k4" style="display:none;text-align:center">'+nuqta(7)+
+      '<div id="k4" style="display:none;text-align:center">'+nuqta(8)+
         '<div id="k4-icon" style="font-size:70px;line-height:1;margin:6px 0 10px"></div>'+
         '<div id="k4-nom" style="font-size:22px;font-weight:800;margin-bottom:4px"></div>'+
         '<div id="k4-vaqt" style="font-size:14px;color:rgba(255,255,255,.55);margin-bottom:16px"></div>'+
@@ -3549,7 +3567,7 @@ function kirishSuhbati(qayta){
         '<button id="k4-yoq" style="'+GHOST+'">Hali yo‘q — keyin belgilayman</button>'+
       '</div>'+
       /* ---- 5: nima uchun (16.09.2026) ---- */
-      '<div id="k5" style="display:none">'+nuqta(8)+
+      '<div id="k5" style="display:none">'+nuqta(9)+
         savol('Bularning hammasi — <span style="color:#22D3AD">nima uchun</span>?')+
         fakt('k5-f','Sababi aniq odam uch barobar ko‘proq davom etadi. Bu jumla har kuni bosh ekranda ko‘z oldingizda turadi.')+
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">'+
@@ -3568,7 +3586,7 @@ function kirishSuhbati(qayta){
     function q(sel){ return d.querySelector(sel); }
     /* 23.09.2026: ekranlar endi raqam emas, nom bilan.
        ka — savol, kc — oyna (xulosa), k2..k5 — eskisi. */
-    var KIRISH_EKRAN = ['ka','kb','kd','kc','k2','k3','k4','k5'];
+    var KIRISH_EKRAN = ['ka','kb','kd','kc','kj','k2','k3','k4','k5'];
     function korsat(n){
       var id = (typeof n === 'number') ? ('k'+n) : n;
       KIRISH_EKRAN.forEach(function(x){ var e=q('#'+x); if(e) e.style.display = (x===id) ? 'block' : 'none'; });
@@ -3620,6 +3638,7 @@ function kirishSuhbati(qayta){
     function tugat(toliq){
       try{ localStorage.setItem(QOL_KORILDI,'1'); localStorage.setItem('i_ilk_oqim','1'); }catch(e){}
       d.remove();
+      try{ jinsQollash(); }catch(e){ console.warn('tugat jins', e); }
       try{ renderOdat(); renderBosh(); }catch(e){}
       if(toliq) setTimeout(_xushKelibsiz, 220);
     }
@@ -3692,8 +3711,15 @@ function kirishSuhbati(qayta){
     q('#kc-n').onclick = function(){
       try{ hodisaYubor('kirish_oyna'); }catch(e){}
       fonRang('rgba(30,140,140,.30)','#0e2230');
-      korsat(2);
+      korsat('kj');
     };
+    /* --- j: jins --- */
+    Array.prototype.forEach.call(d.querySelectorAll('.kj-t'), function(b){
+      b.onclick = function(){
+        try{ jinsYoz(b.getAttribute('data-v')); }catch(e){ console.warn('kirish jins', e); }
+        korsat(2);
+      };
+    });
     /* 2 */
     var K3FON={'07:00':['rgba(249,115,22,.34)','#2a1606'],'13:00':['rgba(37,99,235,.34)','#0b1f3f'],'21:00':['rgba(99,102,241,.36)','#14123a']};
     function odatTanla(o){
@@ -4554,6 +4580,7 @@ function openM(id){
   if(id==='profil-modal'){
     const p=state.profil;
     document.getElementById('p-name').value=p.name||'';
+    try{ document.getElementById('p-jins').value = jinsOl(); }catch(e){ console.warn('p-jins', e); }
     document.getElementById('p-job').value=p.job||'';
     document.getElementById('p-motto').value=p.motto||'';
     updateAvatarUI(p);
@@ -4746,6 +4773,10 @@ function saveProfil(){
     job:document.getElementById('p-job').value.trim(),
     motto:document.getElementById('p-motto').value.trim()
   });
+  try{
+    var jv = document.getElementById('p-jins').value;
+    if(jv === 'ayol' || jv === 'erkak') jinsYoz(jv);
+  }catch(e){ console.warn('saveProfil jins', e); }
   closeM('profil-modal');renderBosh();renderSozlama();
 }
 const wIcons={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌦️',95:'⛈️'};
@@ -5247,9 +5278,13 @@ function kataklarniYangila(){
 
   /* --- Namoz --- */
   try{
-    var nz = (state.din&&state.din.namoz&&state.din.namoz[bugun])||{};
-    var nb = Object.keys(nz).length;
-    chiq.namoz = [son(nb,6), nb>=6?'bajarildi':(nb>0?'':'kutmoqda'), nb/6];
+    if(uzrKunmi(bugun)){
+      chiq.namoz = ['uzr', 'bajarildi', 1];
+    }else{
+      var nz = (state.din&&state.din.namoz&&state.din.namoz[bugun])||{};
+      var nb = Object.keys(nz).length;
+      chiq.namoz = [son(nb,6), nb>=6?'bajarildi':(nb>0?'':'kutmoqda'), nb/6];
+    }
   }catch(e){}
 
   /* --- Suv --- */
@@ -5547,7 +5582,7 @@ function _kunFaktlar(k){
   if(!jami && !nz) return null;
   f.push('Odatlar: '+bajO.length+'/'+od.length+(bajO.length?' (bajarildi: '+bajO.slice(0,5).join(', ')+')':'')+(qolO.length?'; qoldi: '+qolO.slice(0,5).join(', '):''));
   if(rj.length) f.push('Reja: '+bajR.length+'/'+rj.length+(qolR.length?'; bajarilmadi: '+qolR.slice(0,5).map(function(r){return r.name+' ('+(r.start||'')+')';}).join(', '):''));
-  f.push('Namoz: '+nz+'/6');
+  if(uzrKunmi(k)) f.push('Namoz: uzr kuni (talab qilinmaydi)'); else f.push('Namoz: '+nz+'/6');
   try{ var sv=(S.g('i_suv')||{})[k]||0; if(sv) f.push('Suv: '+Math.round(sv/SUV_STAKAN)+'/'+SUV_SONI+' stakan'); }catch(e){}
   try{ var md=(S.g('i_mood')||{})[k]; if(md) f.push('Kayfiyat: '+(md.label||'')+' ('+md.val+'/5)'+(md.note?' — izoh: '+String(md.note).slice(0,80):'')); }catch(e){}
   try{ var uy=getUyquData().filter(function(u){return u.sana===k;})[0]; if(uy) f.push('Uyqu: '+uy.soat+' soat'); }catch(e){}
@@ -5607,6 +5642,7 @@ function aiKunlikChiz(){
     .then(function(){ _aiKunlikJarayon=false; aiKunlikChiz(); });
 }
 function renderBosh(){
+  try{ jinsQollash(); }catch(e){ console.warn('renderBosh jins', e); }
   const p=state.profil,today=bugunKun();
   const h=new Date().getHours();
   const salom=h<5?'Xayrli kecha 🌙':h<12?'Xayrli tong ☀️':h<17?'Xayrli kun 🌤️':h<22?'Xayrli oqshom 🌆':'Xayrli kecha 🌙';
@@ -6135,6 +6171,44 @@ function dinOl(){
 }
 function dinSaqla(){ S.s('i_din', state.din); }
 
+/* ==================================================================
+   UZR KUNLARI (ayollar uchun)                       23.10.2026
+   Shariatda ayol uzr kunlarida namoz o'qimaydi va keyin qazo
+   qilmaydi. Ilova esa o'sha kunlarni "bajarilmagan" deb sanab,
+   foizni tushirib, qazo ro'yxatiga qo'shib yurardi — bu xato.
+   Endi kun "uzr" deb belgilanadi: namoz talab qilinmaydi, foizga
+   kirmaydi, qazoga tushmaydi, zanjir uzilmaydi, ball yechilmaydi.
+   Saqlanishi: state.din.uzr[sana] = true (i_din bilan birga
+   bulutga sinxron bo'ladi).
+   ================================================================== */
+function uzrOl(){
+  try{
+    dinOl();
+    if(!state.din.uzr || typeof state.din.uzr !== 'object') state.din.uzr = {};
+    return state.din.uzr;
+  }catch(e){ console.warn('uzrOl', e); return {}; }
+}
+function uzrKunmi(kun){
+  try{ return !!uzrOl()[kun || bugunKun()]; }
+  catch(e){ console.warn('uzrKunmi', e); return false; }
+}
+function uzrToggle(){
+  try{
+    var k = bugunKun(), u = uzrOl();
+    if(u[k]){
+      delete u[k];
+      dinSaqla();
+      showNotif('\u2705 Olib tashlandi', 'Bugun namoz hisobga olinadi.');
+    }else{
+      u[k] = true;
+      dinSaqla();
+      try{ hodisaYubor('uzr_kun'); }catch(e){ console.warn('uzr hodisa', e); }
+      showNotif('\uD83E\uDD0D Uzr kuni', 'Bugun namoz talab qilinmaydi. Zanjir uzilmaydi, qazo yozilmaydi.');
+    }
+    try{ renderNamoz(); renderBosh(); }catch(e){ console.warn('uzr render', e); }
+  }catch(e){ console.warn('uzrToggle', e); }
+}
+
 function sportOl(){
   var s = S.g('i_sport');
   if(s && typeof s === 'object') state.sport = s;
@@ -6509,27 +6583,88 @@ function _rejaNusxa(list){
   return (list||[]).map(function(r){ return Object.assign({}, r, {id: Date.now()+Math.random(), done:false}); });
 }
 /* Toza yadro (test qilinadi): kun uchun yangi ro'yxat yoki null.
-   b = {sana:[...]}, shablon = [...], kun = 'YYYY-MM-DD' */
+   b = {sana:[...]}, shablon = [...], kun = 'YYYY-MM-DD'
+
+   23.10.2026 — QOIDA O'ZGARDI.
+   Ilgari kechagi butun ro'yxat (bajarilgani ham) ertangi kunga
+   nusxalanardi. Natijada AI tuzgan 24 ta ish har kuni qaytib
+   kelaverdi, odam esa har ochganda "9/24" ni ko'rib charchadi.
+   Endi yangi kun TOZA boshlanadi: faqat foydalanuvchining o'zi
+   tanlagan kunlik jadval (shablon) qo'yiladi. Kecha bajarilmagan
+   ishlar yo'qolmaydi — ular Reja sahifasida so'rab olinadi
+   (_kechaQolgan / kechaRejaOl). */
 function _rejaKunYangi(b, shablon, kun){
   b = b || {}; shablon = shablon || [];
   if(b[kun] && b[kun].length) return null;        /* oldindan tuzilgan (Ertaga) yoki allaqachon bor */
-  var oldingi = Object.keys(b).filter(function(k){ return k<kun && b[k] && b[k].length; }).sort().pop();
   var yangi = [];
-  /* Faqat kechagi (yoki oxirgi) kunni ko'chiramiz — bir haftadan eski reja emas */
-  if(oldingi){
-    var farq = Math.round((new Date(kun+'T12:00:00') - new Date(oldingi+'T12:00:00'))/86400000);
-    /* 15.09.2026: haftalik maqsad yozuvlari (hm) ko'chmaydi — ular taqsimlashdan keladi */
-    if(farq <= 7) yangi = _rejaNusxa(b[oldingi].filter(function(r){
-      /* hm — haftalik maqsad, bir — faqat o'sha kunga tegishli (AI reja, bir martalik ish) */
-      return !r.hm && !r.bir;
-    }));
-  }
   shablon.forEach(function(sh){
     var bor = yangi.some(function(r){ return r.name===sh.name && r.start===sh.start; });
     if(!bor) yangi.push(Object.assign({}, sh, {id: Date.now()+Math.random(), done:false, avto:1}));
   });
   return yangi.length ? yangi : null;
 }
+
+/* Toza yadro (test qilinadi): kecha(roq)dan qolgan bajarilmagan ishlar.
+   Bir haftadan eski kun olinmaydi. Qaytaradi: {sana, royxat} yoki null */
+function _kechaQolgan(b, kun){
+  b = b || {};
+  var oldingi = Object.keys(b).filter(function(k){
+    return /^\d{4}-\d{2}-\d{2}$/.test(k) && k < kun && b[k] && b[k].length;
+  }).sort().pop();
+  if(!oldingi) return null;
+  var farq = Math.round((new Date(kun+'T12:00:00') - new Date(oldingi+'T12:00:00'))/86400000);
+  if(farq > 7) return null;
+  var royxat = (b[oldingi]||[]).filter(function(r){
+    return r && !r.done && !r.hm && !r.namoz;
+  });
+  return royxat.length ? {sana: oldingi, royxat: royxat} : null;
+}
+/* Reja sahifasidagi "kecha qolgan ishlar" chizig'i */
+function kechaRejaStrip(){
+  try{
+    var o = rejaObyekt();
+    var k = _kechaQolgan(o.bugun, bugunKun());
+    if(!k) return '';
+    if(S.g('i_kecha_reja_rad') === bugunKun()) return '';
+    var n = k.royxat.length;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;margin-bottom:12px;'+
+      'border-radius:14px;background:rgba(219,151,37,.10);border:1px solid rgba(219,151,37,.30)">'+
+      '<span style="font-size:19px">\u21A9\uFE0F</span>'+
+      '<div class="u-f1"><div style="font-size:14px;font-weight:700">Kecha '+n+' ta ish qoldi</div>'+
+      '<div class="u-t13">Bugunga olamizmi? Olmasangiz kun toza boshlanadi.</div></div>'+
+      '<button onclick="kechaRejaOl()" class="btn btn-out" style="padding:6px 10px;font-size:12.5px">Olish</button>'+
+      '<button onclick="kechaRejaRad()" title="Kerak emas" style="width:28px;height:28px;border:none;'+
+      'border-radius:8px;background:var(--bg);color:var(--t2);cursor:pointer">\u2715</button>'+
+    '</div>';
+  }catch(e){ console.warn('kechaRejaStrip', e); return ''; }
+}
+function kechaRejaOl(){
+  try{
+    var o = rejaObyekt(), bugun = bugunKun();
+    var k = _kechaQolgan(o.bugun, bugun);
+    if(!k){ showNotif('\u2139\uFE0F','Qoldiq yo\u2018q'); return; }
+    if(!o.bugun[bugun]) o.bugun[bugun] = [];
+    var qoshildi = 0;
+    k.royxat.forEach(function(r){
+      var bor = (o.bugun[bugun]||[]).some(function(x){ return _nomTeng(x.name, r.name) && x.start === r.start; });
+      if(bor) return;
+      o.bugun[bugun].push(Object.assign({}, r, {id: Date.now()+Math.random(), done:false}));
+      qoshildi++;
+    });
+    S.s('i_reja', o);
+    try{ state.reja = o; }catch(e){}
+    try{ renderReja(); renderBosh(); }catch(e){}
+    try{ hodisaYubor('kecha_reja'); }catch(e){}
+    showNotif('\u21A9\uFE0F Olindi', qoshildi + ' ta ish bugunga ko\u2018chdi.');
+  }catch(e){ console.warn('kechaRejaOl', e); }
+}
+function kechaRejaRad(){
+  try{
+    S.s('i_kecha_reja_rad', bugunKun());
+    try{ renderReja(); }catch(e){}
+  }catch(e){ console.warn('kechaRejaRad', e); }
+}
+
 /* Berilgan kun uchun ro'yxat bo'sh bo'lsa to'ldiradi. Qaytaradi: o'zgardimi */
 function rejaKunTayyorla(kun){
   try{
@@ -6917,8 +7052,6 @@ var TAKLIF_REJA = [
 ];
 
 var TAKLIF_ODAT = [
-  {nom:'Namoz o\'qish',           icon:'🕌', color:'linear-gradient(135deg,#DBBE24,#DB9725)', time:''},
-  {nom:'3 litr suv ichish',      icon:'💧', color:'linear-gradient(135deg,#4F86E2,#3268DE)', time:''},
   {nom:'Erta turish',            icon:'🌅', color:'linear-gradient(135deg,#DB9725,#C9702A)', time:'05:30'},
   {nom:'Erta yotish',            icon:'🌙', color:'linear-gradient(135deg,#64748B,#475569)', time:'23:00'},
   {nom:'20 bet kitob o\'qish',    icon:'📚', color:'linear-gradient(135deg,#875DE5,#7F46E1)', time:'21:00'},
@@ -7200,14 +7333,19 @@ function renderReja(){
   if(cl)cl.textContent=(now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
   const items=(state.reja.bugun[today]||[]).sort((a,b)=>a.start.localeCompare(b.start));
   const done=items.filter(r=>r.done).length;
-  document.getElementById('reja-prog-t').textContent=done+'/'+items.length;
+  /* 23.10.2026: bajarilmaganini sanab turish aybdor qiladi —
+     faqat bajarilgani ko'rsatiladi. */
+  document.getElementById('reja-prog-t').textContent = done ? (done+' ta bajarildi') : 'Hali boshlanmadi';
   document.getElementById('reja-prog-b').style.width=(items.length?done/items.length*100:0)+'%';
   const list=document.getElementById('reja-list');
   if(!items.length){
-    list.innerHTML=takrorBanner('reja')+'<div class="empty">📅<br><br>Bugun reja yo\'q<br>'+(state.reja.shablon.length?'<button onclick="applyToday()" class="btn btn-g" style="margin-top:12px">📋 Shablonni qo\'llash</button>':'<small>Bugun tugaydigan ishlarni yozing &mdash;<br>bankka borish, qo\'ng\'iroq, uchrashuv.<br>Yozganingiz ertaga ham o\'z-o\'zidan turadi.</small>')+'</div>';
+    list.innerHTML=takrorBanner('reja')+kechaRejaStrip()+'<div class="empty">📅<br><br>Bugun reja yo\'q<br>'+(state.reja.shablon.length?'<button onclick="applyToday()" class="btn btn-g" style="margin-top:12px">📋 Shablonni qo\'llash</button>':'<small>Bugun tugaydigan ishlarni yozing &mdash;<br>bankka borish, qo\'ng\'iroq, uchrashuv.<br>Har kuni takrorlanadigan ish Odatga tegishli.</small>')+'</div>';
     return;
   }
-  list.innerHTML=takrorBanner('reja')+rejaShablonStrip()+items.map(r=>{
+  /* Ikkita chiziq birdan chiqsa ekran og'irlashadi — kecha qolgani
+     bo'lsa, shablon taklifi keyingi kunga qoladi. */
+  var _kecha = kechaRejaStrip();
+  list.innerHTML=takrorBanner('reja')+_kecha+(_kecha?'':rejaShablonStrip())+items.map(r=>{
     var rParts=r.start.split(':');var sh=Number(rParts[0]),sm=Number(rParts[1]),sM=sh*60+sm;
     var ep=(r.end||r.start).split(':');var eh=Number(ep[0]),em=Number(ep[1]),eM=eh*60+em;
     const isNow=!r.done&&nowM>=sM&&nowM<eM;
@@ -7351,6 +7489,90 @@ function transSaqla(a){
   state.trans = a;
   S.s('i_trans', a);
 }
+/* ==================================================================
+   JINS — BITTA MANBA                               23.10.2026
+   Ilgari jins uch joyda alohida saqlanardi: Sport (i_jins),
+   Ratsion (i_ratsion_jins) va profil. Odam Sportda "ayol" desa,
+   Ratsion buni bilmasdi. Endi asosiy manba — i_profil.jins,
+   eski ikkala kalit esa unga ergashadi (eski foydalanuvchining
+   tanlovi yo'qolmasligi uchun ular o'qishda zaxira bo'lib qoladi).
+   ================================================================== */
+function jinsOl(){
+  try{
+    var p = S.g('i_profil');
+    if(p && p.jins === 'ayol') return 'ayol';
+    if(p && p.jins === 'erkak') return 'erkak';
+    var a = S.g('i_jins'), b = (jinsOl()||S.g('i_ratsion_jins'));
+    if(a === 'ayol' || b === 'ayol') return 'ayol';
+    if(a === 'erkak' || b === 'erkak') return 'erkak';
+  }catch(e){ console.warn('jinsOl', e); }
+  return '';
+}
+function jinsYoz(v){
+  if(v !== 'ayol' && v !== 'erkak') return '';
+  try{
+    profilSaqla({ jins: v });
+    S.s('i_jins', v);              /* Sport moduli shuni o'qiydi */
+    S.s('i_ratsion_jins', v);      /* Ratsion shuni o'qiydi */
+    try{ hodisaYubor('jins_' + v); }catch(e){ console.warn('jins hodisa', e); }
+  }catch(e){ console.warn('jinsYoz', e); }
+  try{ jinsQollash(); }catch(e){ console.warn('jinsQollash', e); }
+  return v;
+}
+/* .faqat-ayol / .faqat-erkak belgili joylarni ko'rsatadi yoki yashiradi.
+   Jins tanlanmagan bo'lsa ikkalasi ham yashirin turadi. */
+function jinsQollash(){
+  try{
+    var j = jinsOl();
+    Array.prototype.forEach.call(document.querySelectorAll('.faqat-ayol'), function(el){
+      el.style.display = (j === 'ayol') ? '' : 'none';
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.faqat-erkak'), function(el){
+      el.style.display = (j === 'erkak') ? '' : 'none';
+    });
+  }catch(e){ console.warn('jinsQollash', e); }
+}
+/* Toza yadro (test qilinadi): eski foydalanuvchidan so'rash kerakmi? */
+function _jinsSorovKerak(jins, keyin, bugun){
+  if(jins === 'ayol' || jins === 'erkak') return false;
+  if(!keyin) return true;
+  try{
+    var farq = Math.round((new Date(bugun+'T12:00:00') - new Date(keyin+'T12:00:00'))/86400000);
+    return !isFinite(farq) || farq >= 7;
+  }catch(e){ return true; }
+}
+function jinsSora(){
+  try{
+    if(!_jinsSorovKerak(jinsOl(), S.g('i_jins_keyin'), bugunKun())) return;
+    if(document.querySelector('.moverlay.open')) return;
+    var d = document.createElement('div');
+    d.id = 'jins-sorov';
+    d.style.cssText = 'position:fixed;inset:0;z-index:99985;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:22px';
+    d.innerHTML = '<div style="width:100%;max-width:360px;background:var(--card);border-radius:22px;padding:22px 18px">'+
+      '<div style="font-size:19px;font-weight:800;text-align:center;margin-bottom:6px">Siz\u2026</div>'+
+      '<div class="u-t13" style="text-align:center;margin-bottom:16px">Ba\u2018zi bo\u2018limlar shunga qarab ko\u2018rsatiladi. Keyin o\u2018zgartirsa bo\u2018ladi.</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+        '<button class="jins-t" data-v="ayol" style="padding:18px 10px;border:1.5px solid var(--bd);border-radius:18px;background:var(--bg);color:var(--text);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer"><div style="font-size:34px;line-height:1;margin-bottom:6px">\uD83D\uDC69</div>Ayol</button>'+
+        '<button class="jins-t" data-v="erkak" style="padding:18px 10px;border:1.5px solid var(--bd);border-radius:18px;background:var(--bg);color:var(--text);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer"><div style="font-size:34px;line-height:1;margin-bottom:6px">\uD83D\uDC68</div>Erkak</button>'+
+      '</div>'+
+      '<button id="jins-keyin" class="btn btn-out btn-block" style="margin-top:12px">Keyinroq</button>'+
+    '</div>';
+    document.body.appendChild(d);
+    Array.prototype.forEach.call(d.querySelectorAll('.jins-t'), function(b){
+      b.onclick = function(){
+        jinsYoz(b.getAttribute('data-v'));
+        d.remove();
+        try{ renderBosh(); renderSozlama(); }catch(e){ console.warn('jins render', e); }
+        showNotif('\u2705 Saqlandi', 'Sozlama \u2192 Profil orqali o\u2018zgartirsa bo\u2018ladi.');
+      };
+    });
+    d.querySelector('#jins-keyin').onclick = function(){
+      try{ S.s('i_jins_keyin', bugunKun()); }catch(e){ console.warn('jins keyin', e); }
+      d.remove();
+    };
+  }catch(e){ console.warn('jinsSora', e); }
+}
+
 function profilOl(){
   var p = S.g('i_profil');
   if(p && typeof p === 'object') state.profil = Object.assign({}, state.profil, p);
@@ -7734,8 +7956,8 @@ function toggleNamoz(id){
    ro'yxat qisqaradi. Saqlanishi: state.din.qazo[sana][vaqt].
    ================================================================== */
 /* 14.09.2026: toza yadro — namoz/qazo obyektlari va "bugun" beriladi, DOM/state yo'q */
-function qazoHisob(namoz, qazo, bugunSana, kunSoni, royxat){
-  namoz = namoz || {}; qazo = qazo || {}; royxat = royxat || NAMOZLAR_LIST; var chiq = [];
+function qazoHisob(namoz, qazo, bugunSana, kunSoni, royxat, uzr){
+  namoz = namoz || {}; qazo = qazo || {}; royxat = royxat || NAMOZLAR_LIST; uzr = uzr || {}; var chiq = [];
   var bosh = null;
   try{
     Object.keys(namoz).forEach(function(k){ if(Object.keys(namoz[k]||{}).length && (!bosh || k<bosh)) bosh=k; });
@@ -7747,6 +7969,7 @@ function qazoHisob(namoz, qazo, bugunSana, kunSoni, royxat){
     var t = new Date(b0.getTime()); t.setDate(t.getDate()-i);
     var k = kunKal(t);
     if(k < bosh) break;
+    if(uzr[k]) continue;                 /* uzr kuni — qazo yozilmaydi */
     var oqilgan = namoz[k] || {}, qazoQilingan = qazo[k] || {};
     royxat.forEach(function(v){
       if(v.id==='tahajjud') return;
@@ -7759,7 +7982,7 @@ function qazoHisob(namoz, qazo, bugunSana, kunSoni, royxat){
 function qazoRoyxat(kunSoni){
   var d = dinOl();
   d.qazo = d.qazo || {};
-  return qazoHisob(d.namoz, d.qazo, bugunKun(), kunSoni);
+  return qazoHisob(d.namoz, d.qazo, bugunKun(), kunSoni, null, uzrOl());
 }
 
 function qazoBelgila(kun, id){
@@ -7998,6 +8221,23 @@ function renderNamoz(){
     if(l) l.innerHTML='<div style="font-size:13.5px;color:var(--red);line-height:1.5">\u26A0\uFE0F Namoz ro\'yxati chizilmadi: '+String(e&&e.message||e).replace(/</g,'&lt;')+'</div>';
   }
 }
+/* Namoz sahifasidagi "Uzr" chizig'i — faqat ayollarga ko'rinadi */
+function uzrStrip(uzrmi){
+  var el = document.getElementById('namoz-uzr');
+  if(!el) return;
+  el.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;margin-bottom:12px;'+
+    'border-radius:14px;background:'+(uzrmi?'rgba(227,81,153,.10)':'var(--card)')+';'+
+    'border:1px solid '+(uzrmi?'rgba(227,81,153,.30)':'var(--bd)')+'">'+
+    '<span style="font-size:19px">\uD83E\uDD0D</span>'+
+    '<div class="u-f1"><div style="font-size:14px;font-weight:700">'+(uzrmi?'Bugun uzr kuni':'Uzr kunlari')+'</div>'+
+    '<div class="u-t13">'+(uzrmi
+        ? 'Namoz talab qilinmaydi. Qazo yozilmaydi, zanjir uzilmaydi.'
+        : 'Belgilasangiz, bugun namoz so\u2018ralmaydi va hisobga olinmaydi.')+'</div></div>'+
+    '<button onclick="uzrToggle()" class="btn btn-out" style="padding:6px 12px;font-size:12.5px">'+(uzrmi?'Olib tashlash':'Uzr')+'</button>'+
+  '</div>';
+  try{ jinsQollash(); }catch(e){ console.warn('uzrStrip jins', e); }
+}
+
 function _renderNamozIch(){
   const today=bugunKun();
   var vaqt = {};
@@ -8014,7 +8254,9 @@ function _renderNamozIch(){
   if(!state.din.namoz)state.din.namoz={};
   if(!state.din.namoz[today])state.din.namoz[today]={};
   const done=NAMOZLAR_LIST.filter(n=>state.din.namoz[today][n.id]).length;
-  document.getElementById('namoz-prog-t').textContent=done+'/6';
+  var _uzr = uzrKunmi(today);
+  document.getElementById('namoz-prog-t').textContent = _uzr ? 'Uzr kuni' : (done+'/6');
+  try{ uzrStrip(_uzr); }catch(e){ console.warn('uzrStrip', e); }
   try{ renderQazo(); }catch(e){}
   try{ renderNamozOylik(); }catch(e){}
   /* XATO TUZATILDI (10.09.2026): renderQazo ichidagi dinOl() state.din ni
@@ -8022,7 +8264,7 @@ function _renderNamozIch(){
      yo'qotardi \u2014 pastdagi ro'yxat "undefined.tahajjud" da yiqilardi. */
   if(!state.din.namoz)state.din.namoz={};
   if(!state.din.namoz[today])state.din.namoz[today]={};
-  document.getElementById('namoz-prog-b').style.width=(done/6*100)+'%';
+  document.getElementById('namoz-prog-b').style.width = (_uzr ? 100 : (done/6*100))+'%';
   const now=new Date(),nowM=now.getHours()*60+now.getMinutes();
   let nextId=null;
   /* XATO TUZATILDI (07.09.2026): vaqt matn bo'lmasa .split()
@@ -8040,6 +8282,15 @@ function _renderNamozIch(){
       if((hh*60+mm)>nowM && !state.din.namoz[today][n.id] && !nextId) nextId=n.id;
     });
   }catch(e){ console.warn('namoz vaqti:', e); }
+  if(_uzr){
+    document.getElementById('namoz-list').innerHTML =
+      '<div style="text-align:center;padding:22px 12px">'+
+        '<div style="font-size:40px;line-height:1;margin-bottom:10px">\uD83E\uDD0D</div>'+
+        '<div style="font-size:17px;font-weight:800;margin-bottom:6px">Uzr \u2014 namoz talab qilinmaydi</div>'+
+        '<div class="u-t13" style="line-height:1.6">Bu kunlar qazo qilinmaydi. Hisobotda \u201Cuzr\u201D deb ko\u2018rinadi.</div>'+
+      '</div>';
+    return;
+  }
   document.getElementById('namoz-list').innerHTML=NAMOZLAR_LIST.map(n=>{
     const isDone=!!state.din.namoz[today][n.id];
     const isNext=n.id===nextId;
@@ -8489,7 +8740,7 @@ function kaloriyaHisob(kg, boy, yosh, faol, jins, maqsad){
 function kunlikNorma(){
   try{
     var v = (state.sport && state.sport.vazn && state.sport.vazn[0]) || null;
-    return kaloriyaHisob(v ? v.kg : 0, v ? v.boy : 0, S.g('i_yosh'), S.g('i_faollik'), S.g('i_ratsion_jins'), S.g('i_ratsion_maqsad'));
+    return kaloriyaHisob(v ? v.kg : 0, v ? v.boy : 0, S.g('i_yosh'), S.g('i_faollik'), (jinsOl()||S.g('i_ratsion_jins')), S.g('i_ratsion_maqsad'));
   }catch(e){ return kaloriyaHisob(0,0); }
 }
 
@@ -8605,6 +8856,7 @@ function renderSport(){
 /* Eski toggleDark olib tashlandi (04.09.2026) — pastdagi tema tizimidagi
    toggleDark() ishlaydi, bu esa uni bekor qilib turgan edi. */
 function renderSozlama(){
+  try{ jinsQollash(); }catch(e){ console.warn('renderSozlama jins', e); }
   try{
     var p=state.profil||{name:'Foydalanuvchi',job:'',motto:'',avatar:''};
     /* kirishda kiritilgan ism — profil hali to'ldirilmagan bo'lsa ishlatamiz */
@@ -8681,11 +8933,15 @@ function _kunHisobot(){
 
   /* --- Namoz --- */
   try{
-    var nz = (state.din&&state.din.namoz&&state.din.namoz[bugun])||{};
-    var nb = Object.keys(nz).length;
-    if(nb) qildim.push(['\uD83D\uDD4C', nb+' vaqt namoz'+(nb>=6?' \u2014 to\'liq':'')]);
-    if(nb<6) qoldi.push(['\uD83D\uDD4C', (6-nb)+' vaqt namoz']);
-  }catch(e){}
+    if(uzrKunmi(bugun)){
+      qildim.push(['\uD83E\uDD0D', 'uzr kuni \u2014 namoz talab qilinmaydi']);
+    }else{
+      var nz = (state.din&&state.din.namoz&&state.din.namoz[bugun])||{};
+      var nb = Object.keys(nz).length;
+      if(nb) qildim.push(['\uD83D\uDD4C', nb+' vaqt namoz'+(nb>=6?' \u2014 to\'liq':'')]);
+      if(nb<6) qoldi.push(['\uD83D\uDD4C', (6-nb)+' vaqt namoz']);
+    }
+  }catch(e){ console.warn('kun namoz', e); }
 
   /* --- Suv --- */
   try{
@@ -9167,11 +9423,19 @@ window.intizomTest = function(){
   var RB={'2026-09-13':[{id:1,name:'Bank',start:'09:00',done:true},{id:2,name:'Sport',start:'18:00',done:false}]};
   var RS=[{id:9,name:'Namoz',start:'05:00'},{id:10,name:'Sport',start:'18:00'}];
   var R1=_rejaKunYangi(RB,RS,'2026-09-14');
-  t('reja kechagi ko\'chdi', R1.map(function(r){return r.name;}), ['Bank','Sport','Namoz']);
+  /* 23.10.2026: kechagi reja endi ko'chmaydi — faqat shablon qo'yiladi */
+  t('kechagi reja ko\'chmaydi', R1.map(function(r){return r.name;}), ['Namoz','Sport']);
   t('reja hammasi bajarilmagan', R1.every(function(r){return r.done===false;}), true);
+  /* kecha qolgani so'rab olinadi */
+  var KQ=_kechaQolgan(RB,'2026-09-14');
+  t('kecha qolgani topildi', KQ.royxat.map(function(r){return r.name;}), ['Sport']);
+  t('kecha qolgani sanasi', KQ.sana, '2026-09-13');
+  t('kecha hammasi bajarilgan', _kechaQolgan({'2026-09-13':[{id:1,name:'A',start:'09:00',done:true}]},'2026-09-14'), null);
+  t('kecha 8 kunlik olinmaydi', _kechaQolgan({'2026-09-01':[{id:1,name:'A',start:'09:00'}]},'2026-09-14'), null);
+  t('kecha namoz olinmaydi', _kechaQolgan({'2026-09-13':[{id:1,name:'Peshin',start:'13:00',namoz:1}]},'2026-09-14'), null);
   /* 27.09.2026: bir kunlik (AI) reja ertaga ko'chmaydi */
   var RB2={'2026-09-13':[{id:1,name:'Bank',start:'09:00'},{id:2,name:'AI ish',start:'10:00',bir:1}]};
-  t('bir kunlik reja ko\'chmaydi', _rejaKunYangi(RB2,[],'2026-09-14').map(function(r){return r.name;}), ['Bank']);
+  t('bir kunlik reja ko\'chmaydi', _rejaKunYangi(RB2,[],'2026-09-14'), null);
   /* 27.09.2026: haftalik dam kuni */
   t('dam kuni yakshanba', _damKunmi('2026-09-27', 0), true);       /* 27.09.2026 — yakshanba */
   t('dam kuni mos emas', _damKunmi('2026-09-28', 0), false);
@@ -9220,6 +9484,36 @@ window.intizomTest = function(){
   t('belgi yaqin daraja', _belgiGap(18), '3 kun qoldi: Sinovdan o\u2018tgan.');
   t('belgi o\'nlik', _belgiGap(40), '40 kun. Zanjir uzilmadi.');
   t('belgi daraja kuni', _belgiGap(66), 'Odat egasi \u2014 shu darajaga yetdingiz.');
+  /* 23.10.2026: alohida bo'limi bor ishlar va AI chegarasi */
+  t('modul suv', _modulIsh('3 litr suv ichish'), 'Suv');
+  t('modul namoz', _modulIsh('Peshin namozi'), 'Namoz');
+  t('modul oddiy ish', _modulIsh('Bankka borish'), '');
+  var AJ = _aiJadvalFiltr([
+    {soat:'07:00',vazifa:'Yugurish'}, {soat:'08:00',vazifa:'Suv ichish'},
+    {soat:'09:00',vazifa:'Bank'},     {soat:'10:00',vazifa:'Bomdod namozi'},
+    {soat:'11:00',vazifa:'Hisobot'},  {soat:'12:00',vazifa:'Uchrashuv'},
+    {soat:'13:00',vazifa:'Kitob'},    {soat:'14:00',vazifa:'Qo\'ng\'iroq'},
+    {soat:'15:00',vazifa:'Xarid'},    {soat:'16:00',vazifa:'Dars'}
+  ]);
+  t('ai chegara 6 ta', AJ.royxat.length, 6);
+  t('ai modul chiqarildi', AJ.modul, ['Suv','Namoz']);
+  t('ai ortiqcha sanaldi', AJ.ortiqcha, 2);
+  t('ai suv yo\'q', AJ.royxat.some(function(x){return /suv/i.test(x.vazifa);}), false);
+  /* 23.10.2026: jins va uzr */
+  t('jins sorov kerak', _jinsSorovKerak('', null, '2026-10-23'), true);
+  t('jins tanlangan \u2014 so\'ralmaydi', _jinsSorovKerak('ayol', null, '2026-10-23'), false);
+  t('jins keyinroq 3 kun', _jinsSorovKerak('', '2026-10-20', '2026-10-23'), false);
+  t('jins keyinroq 7 kun', _jinsSorovKerak('', '2026-10-16', '2026-10-23'), true);
+  (function(){
+    var N={'2026-10-21':{bomdod:true}}, U={'2026-10-22':true};
+    var bez=qazoHisob(N,{},'2026-10-23',2,null,{}).filter(function(x){return x.kun==='2026-10-22';}).length;
+    var bilan=qazoHisob(N,{},'2026-10-23',2,null,U).filter(function(x){return x.kun==='2026-10-22';}).length;
+    t('uzrsiz qazo yoziladi', bez > 0, true);
+    t('uzr kuni qazo yozilmaydi', bilan, 0);
+  })();
+  t('ai takror tashlanadi', _aiJadvalFiltr([
+      {soat:'09:00',vazifa:'Bank'},{soat:'09:00',vazifa:'bank'}
+    ]).royxat.length, 1);
   /* 22.09.2026: mashq videosi */
   (function(){
     var d=document.createElement('div'); d.id='sinov-video-joy'; document.body.appendChild(d);
@@ -9263,7 +9557,7 @@ window.intizomTest = function(){
   t('reja yangi id', R1[0].id!==1, true);
   t('reja ertaga tuzilgan tegilmaydi', _rejaKunYangi({'2026-09-13':RB['2026-09-13'],'2026-09-14':[{id:5,name:'X',start:'10:00'}]},RS,'2026-09-14'), null);
   t('reja 8 kunlik eski ko\'chmaydi', _rejaKunYangi({'2026-09-01':RB['2026-09-13']},[],'2026-09-14'), null);
-  t('reja 7 kunlik ko\'chadi', (_rejaKunYangi({'2026-09-07':RB['2026-09-13']},[],'2026-09-14')||[]).length, 2);
+  t('shablonsiz kun bo\'sh', _rejaKunYangi({'2026-09-07':RB['2026-09-13']},[],'2026-09-14'), null);
   t('reja bo\'sh + shablon', (_rejaKunYangi({},RS,'2026-09-14')||[]).length, 2);
   t('reja bo\'sh + shablonsiz', _rejaKunYangi({},[],'2026-09-14'), null);
 
@@ -9331,7 +9625,7 @@ window.intizomTest = function(){
   t('kunlik ertalab kechagini', _kunlikReja(8,'2026-09-14','2026-09-13',{},null).kun, '2026-09-13');
   t('kunlik tushdan keyin yo\'q', _kunlikReja(15,'2026-09-14','2026-09-13',{'2026-09-13':{matn:'x'}},null).korsat, false);
   t('kunlik yopilgan', _kunlikReja(9,'2026-09-14','2026-09-13',{'2026-09-13':{matn:'x'}},'2026-09-13').korsat, false);
-  t('reja hm ko\'chmaydi', (_rejaKunYangi({'2026-09-13':[{id:1,name:'Sport',start:'07:00',hm:5},{id:2,name:'Bank',start:'09:00'}]},[],'2026-09-14')||[]).map(function(r){return r.name;}), ['Bank']);
+  t('hm qoldiqqa tushmaydi', (_kechaQolgan({'2026-09-13':[{id:1,name:'Sport',start:'07:00',hm:5},{id:2,name:'Bank',start:'09:00'}]},'2026-09-14')||{royxat:[]}).royxat.map(function(r){return r.name;}), ['Bank']);
 
   /* ---------- Oila kunlik topshiriq (14.09.2026) ---------- */
   var OT={takror:'kunlik',bajarilgan:{}};
@@ -11217,7 +11511,7 @@ function renderKunMashq(){
   if(!el)return;
   var day=new Date().getDay();
   var idx=day===0?6:day-1;
-  var jins=S.g('i_jins')||'erkak';
+  var jins=jinsOl()||'erkak';
   var list=jins==='ayol'?AYOL_MASHQ:ERKAK_MASHQ;
   var m=list[idx];
 
@@ -11344,8 +11638,8 @@ function switchMashqTab(tab){
 }
 
 function toggleJins(){
-  var cur=S.g('i_jins')||'erkak';
-  S.s('i_jins',cur==='erkak'?'ayol':'erkak');
+  var cur=jinsOl()||'erkak';
+  jinsYoz(cur==='erkak'?'ayol':'erkak');
   renderKunMashq();
 }
 
@@ -14340,10 +14634,53 @@ function _aiFaolKun(){
   return bugunKun();
 }
 
+/* ==================================================================
+   AI REJA: KAM VA TOZA                              23.10.2026
+   Ilgari AI 20 dan ortiq ish berardi va ularning yarmi ilovada
+   allaqachon alohida sanaladigan narsalar edi (suv, namoz).
+   Natija: bajarib bo'lmaydigan ro'yxat va ikki marta belgilash.
+   Endi: alohida bo'limi bor ishlar o'tkazilmaydi, qolganidan
+   ko'pi bilan AI_REJA_CHEGARA tasi olinadi.
+   ================================================================== */
+var AI_REJA_CHEGARA = 6;
+
+/* Alohida bo'limda sanaladigan ish bo'lsa — shu bo'lim nomini
+   qaytaradi, aks holda ''. Toza yadro (test qilinadi). */
+function _modulIsh(nom){
+  var t = String(nom||'').toLowerCase();
+  if(/suv|ichimlik\s*suv/.test(t)) return 'Suv';
+  if(/namoz|bomdod|peshin|asr|shom|xufton|tahajjud/.test(t)) return 'Namoz';
+  if(/kaloriya|ratsion/.test(t)) return 'Ratsion';
+  return '';
+}
+/* AI jadvalini filtrlaydi. Qaytaradi: {royxat, modul:[nom...], ortiqcha:n} */
+function _aiJadvalFiltr(jadval){
+  var royxat = [], modul = [], korilgan = {};
+  (jadval||[]).forEach(function(v){
+    if(!v) return;
+    var nom = String(v.vazifa||'').trim();
+    if(!nom) return;
+    var m = _modulIsh(nom);
+    if(m){ if(modul.indexOf(m) < 0) modul.push(m); return; }
+    var kalit = nom.toLowerCase() + '|' + (v.soat||'');
+    if(korilgan[kalit]) return;
+    korilgan[kalit] = 1;
+    royxat.push(v);
+  });
+  var ortiqcha = Math.max(0, royxat.length - AI_REJA_CHEGARA);
+  return { royxat: royxat.slice(0, AI_REJA_CHEGARA), modul: modul, ortiqcha: ortiqcha };
+}
+
 function _aiRejagaQosh(soat, emoji, vazifa, xabar){
   try{
+    var sof = String(vazifa || '').trim();
+    var mod = _modulIsh(sof);
+    if(mod){
+      if(xabar) showNotif('\u2139\uFE0F ' + mod + ' bo\u2018limida sanaladi', sof + ' \u2014 Rejaga qo\u2018shish shart emas.');
+      return false;
+    }
     var nom = String(emoji || '').trim();
-    nom = (nom ? nom + ' ' : '') + String(vazifa || '').trim();
+    nom = (nom ? nom + ' ' : '') + sof;
     if(!nom) return false;
     var kun = _aiFaolKun();
     var boshi = /^\d{1,2}:\d{2}$/.test(String(soat||'')) ? soat : '09:00';
@@ -14378,9 +14715,10 @@ function _aiShablonYoz(jadval){
     var o = rejaObyekt();
     var sh = [];
     (jadval || []).forEach(function(v){
+      var sof = String(v.vazifa||'').trim();
+      if(!sof || _modulIsh(sof)) return;
       var nom = String(v.emoji||'').trim();
-      nom = (nom ? nom+' ' : '') + String(v.vazifa||'').trim();
-      if(!nom) return;
+      nom = (nom ? nom+' ' : '') + sof;
       var boshi = /^\d{1,2}:\d{2}$/.test(String(v.soat||'')) ? v.soat : '09:00';
       if(sh.some(function(x){ return _nomTeng(x.name, nom) && x.start === boshi; })) return;
       sh.push({ id: Date.now()+Math.random(), name: nom, text: nom, done:false,
@@ -14403,11 +14741,28 @@ function _aiRejaHammasiTugma(res){
     var el = document.getElementById('ai-reja-result');
     if(!el || !res || !res.jadval || !res.jadval.length) return;
     if(document.getElementById('ai-reja-hammasi')) return;
-    var n = res.jadval.length;
+
+    /* 23.10.2026: alohida bo'limi borlari chiqarib tashlanadi,
+       qolganidan ko'pi bilan 6 tasi olinadi. */
+    var f = _aiJadvalFiltr(res.jadval);
+    var tanlangan = f.royxat;
+    var n = tanlangan.length;
+    if(!n) return;
+
+    if(f.modul.length || f.ortiqcha){
+      var ogoh = document.createElement('div');
+      ogoh.style.cssText = 'font-size:13.5px;line-height:1.6;color:var(--t2);margin-top:14px;'+
+        'background:var(--bg);border:1px solid var(--bd);border-radius:14px;padding:12px 14px';
+      var q = [];
+      if(f.modul.length) q.push(f.modul.join(' va ') + ' alohida bo\u2018limda sanaladi \u2014 Rejaga qo\u2018shilmaydi.');
+      if(f.ortiqcha) q.push('Ro\u2018yxat uzun edi: eng muhim ' + n + ' tasi olindi. Kuniga oltita ish \u2014 bajariladigan reja.');
+      ogoh.textContent = q.join(' ');
+      el.appendChild(ogoh);
+    }
 
     function otkaz(){
       var q = 0;
-      res.jadval.forEach(function(v){ if(_aiRejagaQosh(v.soat, v.emoji, v.vazifa, false)) q++; });
+      tanlangan.forEach(function(v){ if(_aiRejagaQosh(v.soat, v.emoji, v.vazifa, false)) q++; });
       return q;
     }
 
@@ -14433,7 +14788,7 @@ function _aiRejaHammasiTugma(res){
     b2.textContent = '\uD83D\uDD01 Har kuni takrorlansin (' + n + ')';
     b2.onclick = function(){
       otkaz();
-      var m = _aiShablonYoz(res.jadval);
+      var m = _aiShablonYoz(tanlangan);
       try{ renderReja(); renderBosh(); }catch(e){}
       showNotif('\uD83D\uDD01 Kunlik jadval saqlandi',
         m + ' ta ish har kuni ertalab o\u2018z-o\u2018zidan qo\u2018yiladi. O\u2018zgartirmoqchi bo\u2018lsangiz \u2014 yangi AI reja oling.');
@@ -15203,8 +15558,17 @@ setTimeout(function(){
     if(typeof Notification!=='undefined' && Notification.permission==='granted'){
       pushObunaOl().then(function(ok){ if(ok) eslatmaSinx(true); });
     }
-  }catch(e){}
+  }catch(e){ console.warn('push boshlash', e); }
 }, 6000);
+
+/* Eski foydalanuvchida jins yo'q — bir marta so'raymiz.
+   "Keyinroq" bo'lsa 7 kun tinch qo'yiladi. */
+setTimeout(function(){
+  try{
+    if(localStorage.getItem('i_ilk_oqim') !== '1') return;   /* kirish suhbati o'zi so'raydi */
+    jinsSora();
+  }catch(e){ console.warn('jins sorov', e); }
+}, 3500);
 
 /* ==================================================================
    XATO KUZATUVI VA O'LCHASH  —  05.09.2026
@@ -15962,7 +16326,7 @@ function zaxiraBulutdan(id){ try{ window.intizomBulutdanQaytar(id); }catch(e){} 
    buni tashqaridan aniqlab bo'lmasdi.
    ================================================================== */
 var ILOVA_VERSIYA = '103';
-var NASHR = '66';   /* qaysi fayl ishlayotganini bilish uchun */
+var NASHR = '68';   /* qaysi fayl ishlayotganini bilish uchun */
 
 /* ==================================================================
    SINXRON O'Z-O'ZINI TUZATADI                          17.09.2026
